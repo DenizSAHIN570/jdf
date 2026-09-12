@@ -163,6 +163,16 @@ The last two steps prove the PDF ingestion path is alive — sample.pdf must pro
 
 All scripts read tokens from `/.env` (root) — `NPM_TOKEN` and `GITHUB_TOKEN` are required. See `/.env.example`.
 
+## Benchmark (`bench/`)
+
+The JDF-vs-PDF RAG benchmark is **Python** (`bench/rag_bench.py` accuracy, `bench/cost_bench.py` RAG cost at 1,000 files — chunks/tokens/$/re-index/query, NO parser timing: the user rejected parser benchmarks) so AI/RAG people can run it without the Node toolchain. Node is maintainer tooling only (`bench/src/`: seeded corpus generator, JDF→PDF printing via jdf.js in Chrome, `jdf chunk` export, publishing results to the site). Rules:
+
+- **Never hand-edit numbers.** Hero rows/tabs/JSON, the RAG-section tables, `docs/docs/benchmark.html`, `docs/bench.json` and the README tables are generated between `<!-- bench:*:start/end -->` markers by `pnpm --filter @jdf/bench render` from `bench/results/latest.json` + `cost-latest.json`.
+- **The JDF side must be what ships.** `corpus/jdf-chunks.jsonl` is the real output of `chunkDocument()` + `embeddingInput()` (`pnpm --filter @jdf/bench export-chunks`). After ANY change to `tools/jdf-cli/src/commands/chunk.ts`: export-chunks → `python rag_bench.py` → `python cost_bench.py` → `render`.
+- **Corpus is seeded and hashed.** `bench/corpus/` (JDF + PDF + questions + chunks + manifest) is committed. If `src/gen-corpus.ts` changes: `corpus` → `print` (needs Chrome) → `export-chunks` → both benchmarks → `render`.
+- **Be generous to PDF and honest about model dependence.** PDFs have a clean browser-printed text layer; every installed parser gets two chunk sizes; the landing page shows each parser's best. Headline metric is R@1k tokens (chunk-size neutral) because top-1 flips with tiny embedding models — report both, never hide the loss.
+- `python rag_bench.py --verify` (same `--embedder` list as the published run) and `python cost_bench.py --verify` must pass before publishing.
+
 ## Working language
 
 User talks Turkish. Replies in Turkish. Code comments, file paths, commit messages, technical terms remain in English.

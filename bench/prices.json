@@ -1,0 +1,14 @@
+{
+  "_comment": "Public list prices used by cost_bench.py to turn counted tokens into dollars. The benchmark never calls these APIs. Edit for your provider; keep as_of + source so numbers stay auditable.",
+  "embedding": {
+    "openai-text-embedding-3-small": { "label": "OpenAI text-embedding-3-small", "usd_per_1m_tokens": 0.02, "as_of": "2026-09-12", "source": "https://openai.com/api/pricing/" },
+    "openai-text-embedding-3-large": { "label": "OpenAI text-embedding-3-large", "usd_per_1m_tokens": 0.13, "as_of": "2026-09-12", "source": "https://openai.com/api/pricing/" },
+    "cohere-embed-v4": { "label": "Cohere Embed v4", "usd_per_1m_tokens": 0.12, "as_of": "2026-09-12", "source": "https://cohere.com/pricing" }
+  },
+  "llm_input": {
+    "claude-sonnet-5": { "label": "Claude Sonnet 5 input", "usd_per_1m_tokens": 2.00, "as_of": "2026-06-24", "source": "https://www.anthropic.com/pricing" },
+    "claude-haiku-4-5": { "label": "Claude Haiku 4.5 input", "usd_per_1m_tokens": 1.00, "as_of": "2026-06-24", "source": "https://www.anthropic.com/pricing" },
+    "claude-opus-5": { "label": "Claude Opus 5 input", "usd_per_1m_tokens": 5.00, "as_of": "2026-06-24", "source": "https://www.anthropic.com/pricing" },
+    "openai-gpt-4o-mini": { "label": "GPT-4o mini input", "usd_per_1m_tokens": 0.15, "as_of": "2026-09-12", "source": "https://openai.com/api/pricing/" }
+  }
+}

@@ -4,6 +4,7 @@ packages:
   - "tools/*"
   - "jdfjs"
   - "demos/*"
+  - "bench"
 allowBuilds:
   esbuild: true
 onlyBuiltDependencies:

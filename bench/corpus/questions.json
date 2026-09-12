@@ -1,0 +1,1922 @@
+[
+  {
+    "id": "q001",
+    "doc": "d01",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d01-s1-owner",
+    "key": "Search",
+    "answer": "Jonas Meyer",
+    "question": "Which person leads on-call for Acme Logistics's Search platform in Q3 2025?"
+  },
+  {
+    "id": "q002",
+    "doc": "d01",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d01-s6-list",
+    "key": "Customer concentration",
+    "answer": "Noor Rahman",
+    "question": "Who owns the \"Customer concentration\" risk at Acme Logistics for Q3 2025?"
+  },
+  {
+    "id": "q003",
+    "doc": "d01",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d01-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$1.9M",
+    "question": "How much capex did Acme Logistics plan for Q4 2025 according to its Q3 2025 report?"
+  },
+  {
+    "id": "q004",
+    "doc": "d01",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d01-s2-table",
+    "key": "ANZ",
+    "answer": "19",
+    "question": "What was Acme Logistics's nps in ANZ for Q3 2025?"
+  },
+  {
+    "id": "q005",
+    "doc": "d01",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d01-s3-table",
+    "key": "Data",
+    "answer": "14.7%",
+    "question": "What attrition did Acme Logistics's Data department report in Q3 2025?"
+  },
+  {
+    "id": "q006",
+    "doc": "d01",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d01-s4-table",
+    "key": "Pro",
+    "answer": "$225/mo",
+    "question": "What is the old price of the Pro plan in Acme Logistics's Q3 2025 pricing changes?"
+  },
+  {
+    "id": "q007",
+    "doc": "d01",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d01-s5-table",
+    "key": "Payments",
+    "answer": "8",
+    "question": "What incidents did Acme Logistics's Payments service achieve in Q3 2025?"
+  },
+  {
+    "id": "q008",
+    "doc": "d01",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d01-s7-table",
+    "key": "Tundra Hosting",
+    "answer": "$957,000",
+    "question": "What is the annual spend for Tundra Hosting in Acme Logistics's Q3 2025 vendor list?"
+  },
+  {
+    "id": "q009",
+    "doc": "d02",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d02-s1-owner",
+    "key": "Ingest",
+    "answer": "Hana Kovač",
+    "question": "Which person leads on-call for Acme Logistics's Ingest platform in Q1 2025?"
+  },
+  {
+    "id": "q010",
+    "doc": "d02",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d02-s6-list",
+    "key": "Capacity shortfall",
+    "answer": "Rafael Moreira",
+    "question": "Who owns the \"Capacity shortfall\" risk at Acme Logistics for Q1 2025?"
+  },
+  {
+    "id": "q011",
+    "doc": "d02",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d02-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$7.7M",
+    "question": "What capital expenditure did Acme Logistics budget for Q2 2025?"
+  },
+  {
+    "id": "q012",
+    "doc": "d02",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d02-s2-table",
+    "key": "APAC",
+    "answer": "$10.0M",
+    "question": "What was Acme Logistics's revenue in APAC for Q1 2025?"
+  },
+  {
+    "id": "q013",
+    "doc": "d02",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d02-s3-table",
+    "key": "Engineering",
+    "answer": "3.9%",
+    "question": "What attrition did Acme Logistics's Engineering department report in Q1 2025?"
+  },
+  {
+    "id": "q014",
+    "doc": "d02",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d02-s4-table",
+    "key": "Growth",
+    "answer": "$107/mo",
+    "question": "Acme Logistics, Q1 2025: Growth plan new price?"
+  },
+  {
+    "id": "q015",
+    "doc": "d02",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d02-s5-table",
+    "key": "Reporting",
+    "answer": "99.696%",
+    "question": "Acme Logistics Q1 2025 service levels: uptime for Reporting?"
+  },
+  {
+    "id": "q016",
+    "doc": "d02",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d02-s7-table",
+    "key": "Marlowe Consulting",
+    "answer": "Mar 2026",
+    "question": "What is the renewal for Marlowe Consulting in Acme Logistics's Q1 2025 vendor list?"
+  },
+  {
+    "id": "q017",
+    "doc": "d03",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d03-s1-owner",
+    "key": "Checkout",
+    "answer": "Elena Petrova",
+    "question": "Borealis Energy, Q3 2025: who was on-call lead for Checkout?"
+  },
+  {
+    "id": "q018",
+    "doc": "d03",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d03-s6-list",
+    "key": "Currency exposure",
+    "answer": "Chloé Martin",
+    "question": "Who owns the \"Currency exposure\" risk at Borealis Energy for Q3 2025?"
+  },
+  {
+    "id": "q019",
+    "doc": "d03",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d03-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$15.4M",
+    "question": "How much capex did Borealis Energy plan for Q4 2025 according to its Q3 2025 report?"
+  },
+  {
+    "id": "q020",
+    "doc": "d03",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d03-s2-table",
+    "key": "North America",
+    "answer": "2.3%",
+    "question": "Borealis Energy Q3 2025: churn rate for the North America region?"
+  },
+  {
+    "id": "q021",
+    "doc": "d03",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d03-s3-table",
+    "key": "Security",
+    "answer": "15",
+    "question": "Borealis Energy Q3 2025 headcount report — open roles for Security?"
+  },
+  {
+    "id": "q022",
+    "doc": "d03",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d03-s4-table",
+    "key": "Team",
+    "answer": "$220/mo",
+    "question": "Borealis Energy, Q3 2025: Team plan old price?"
+  },
+  {
+    "id": "q023",
+    "doc": "d03",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d03-s5-table",
+    "key": "Billing",
+    "answer": "99.756%",
+    "question": "What uptime did Borealis Energy's Billing service achieve in Q3 2025?"
+  },
+  {
+    "id": "q024",
+    "doc": "d03",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d03-s7-table",
+    "key": "Obsidian Data",
+    "answer": "Telecom",
+    "question": "Borealis Energy Q3 2025: Obsidian Data category?"
+  },
+  {
+    "id": "q025",
+    "doc": "d04",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d04-s1-owner",
+    "key": "Ingest",
+    "answer": "Mateo Rossi",
+    "question": "Who is the on-call lead for the Ingest platform at Borealis Energy in Q2 2025?"
+  },
+  {
+    "id": "q026",
+    "doc": "d04",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d04-s6-list",
+    "key": "Capacity shortfall",
+    "answer": "Aiko Tanaka",
+    "question": "In Borealis Energy's Q2 2025 report, which executive is the owner of the Capacity shortfall risk?"
+  },
+  {
+    "id": "q027",
+    "doc": "d04",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d04-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$7.3M",
+    "question": "What capital expenditure did Borealis Energy budget for Q3 2025?"
+  },
+  {
+    "id": "q028",
+    "doc": "d04",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d04-s2-table",
+    "key": "Japan",
+    "answer": "+1.1%",
+    "question": "Borealis Energy Q2 2025: growth for the Japan region?"
+  },
+  {
+    "id": "q029",
+    "doc": "d04",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d04-s3-table",
+    "key": "Finance",
+    "answer": "249",
+    "question": "How many headcount did Borealis Energy's Finance department report in Q2 2025?"
+  },
+  {
+    "id": "q030",
+    "doc": "d04",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d04-s4-table",
+    "key": "Lite",
+    "answer": "$70/mo",
+    "question": "What is the new price of the Lite plan in Borealis Energy's Q2 2025 pricing changes?"
+  },
+  {
+    "id": "q031",
+    "doc": "d04",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d04-s5-table",
+    "key": "Ingest",
+    "answer": "689 ms",
+    "question": "What p95 latency did Borealis Energy's Ingest service achieve in Q2 2025?"
+  },
+  {
+    "id": "q032",
+    "doc": "d04",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d04-s7-table",
+    "key": "Redwood Facilities",
+    "answer": "$843,000",
+    "question": "Borealis Energy Q2 2025: Redwood Facilities annual spend?"
+  },
+  {
+    "id": "q033",
+    "doc": "d05",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d05-s1-owner",
+    "key": "Billing",
+    "answer": "Owen Gallagher",
+    "question": "Who is the on-call lead for the Billing platform at Cobalt Health in Q4 2025?"
+  },
+  {
+    "id": "q034",
+    "doc": "d05",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d05-s6-list",
+    "key": "Key-person dependency",
+    "answer": "Amara Okafor",
+    "question": "Who owns the \"Key-person dependency\" risk at Cobalt Health for Q4 2025?"
+  },
+  {
+    "id": "q035",
+    "doc": "d05",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d05-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$23.2M",
+    "question": "What capital expenditure did Cobalt Health budget for Q1 2026?"
+  },
+  {
+    "id": "q036",
+    "doc": "d05",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d05-s2-table",
+    "key": "Benelux",
+    "answer": "$29.3M",
+    "question": "Cobalt Health Q4 2025: revenue for the Benelux region?"
+  },
+  {
+    "id": "q037",
+    "doc": "d05",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d05-s3-table",
+    "key": "Customer Success",
+    "answer": "13.7%",
+    "question": "Cobalt Health Q4 2025 headcount report — attrition for Customer Success?"
+  },
+  {
+    "id": "q038",
+    "doc": "d05",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d05-s4-table",
+    "key": "Team",
+    "answer": "$182/mo",
+    "question": "Cobalt Health, Q4 2025: Team plan new price?"
+  },
+  {
+    "id": "q039",
+    "doc": "d05",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d05-s5-table",
+    "key": "Checkout",
+    "answer": "5",
+    "question": "Cobalt Health Q4 2025 service levels: incidents for Checkout?"
+  },
+  {
+    "id": "q040",
+    "doc": "d05",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d05-s7-table",
+    "key": "Basalt Storage",
+    "answer": "HR & benefits",
+    "question": "What is the category for Basalt Storage in Cobalt Health's Q4 2025 vendor list?"
+  },
+  {
+    "id": "q041",
+    "doc": "d06",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d06-s1-owner",
+    "key": "Billing",
+    "answer": "Sena Yıldız",
+    "question": "Cobalt Health, Q3 2025: who was on-call lead for Billing?"
+  },
+  {
+    "id": "q042",
+    "doc": "d06",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d06-s6-list",
+    "key": "Migration slippage",
+    "answer": "Sofia Lindgren",
+    "question": "In Cobalt Health's Q3 2025 report, which executive is the owner of the Migration slippage risk?"
+  },
+  {
+    "id": "q043",
+    "doc": "d06",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d06-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$10.9M",
+    "question": "How much capex did Cobalt Health plan for Q4 2025 according to its Q3 2025 report?"
+  },
+  {
+    "id": "q044",
+    "doc": "d06",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d06-s2-table",
+    "key": "Japan",
+    "answer": "$47.0M",
+    "question": "Cobalt Health Q3 2025: revenue for the Japan region?"
+  },
+  {
+    "id": "q045",
+    "doc": "d06",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d06-s3-table",
+    "key": "People",
+    "answer": "12",
+    "question": "How many open roles did Cobalt Health's People department report in Q3 2025?"
+  },
+  {
+    "id": "q046",
+    "doc": "d06",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d06-s4-table",
+    "key": "Pro",
+    "answer": "$255/mo",
+    "question": "Cobalt Health, Q3 2025: Pro plan new price?"
+  },
+  {
+    "id": "q047",
+    "doc": "d06",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d06-s5-table",
+    "key": "Ingest",
+    "answer": "99.693%",
+    "question": "What uptime did Cobalt Health's Ingest service achieve in Q3 2025?"
+  },
+  {
+    "id": "q048",
+    "doc": "d06",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d06-s7-table",
+    "key": "Vega Observability",
+    "answer": "Jul 2026",
+    "question": "What is the renewal for Vega Observability in Cobalt Health's Q3 2025 vendor list?"
+  },
+  {
+    "id": "q049",
+    "doc": "d07",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d07-s1-owner",
+    "key": "Search",
+    "answer": "Mateo Rossi",
+    "question": "Who is the on-call lead for the Search platform at Delta Foods in Q1 2025?"
+  },
+  {
+    "id": "q050",
+    "doc": "d07",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d07-s6-list",
+    "key": "Data residency",
+    "answer": "Zoe Papadakis",
+    "question": "In Delta Foods's Q1 2025 report, which executive is the owner of the Data residency risk?"
+  },
+  {
+    "id": "q051",
+    "doc": "d07",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d07-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$16.2M",
+    "question": "What capital expenditure did Delta Foods budget for Q2 2025?"
+  },
+  {
+    "id": "q052",
+    "doc": "d07",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d07-s2-table",
+    "key": "Benelux",
+    "answer": "−4.2%",
+    "question": "Delta Foods Q1 2025: growth for the Benelux region?"
+  },
+  {
+    "id": "q053",
+    "doc": "d07",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d07-s3-table",
+    "key": "Sales",
+    "answer": "194",
+    "question": "Delta Foods Q1 2025 headcount report — headcount for Sales?"
+  },
+  {
+    "id": "q054",
+    "doc": "d07",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d07-s4-table",
+    "key": "Pro",
+    "answer": "15 Feb 2025",
+    "question": "Delta Foods, Q1 2025: Pro plan effective date?"
+  },
+  {
+    "id": "q055",
+    "doc": "d07",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d07-s5-table",
+    "key": "Payments",
+    "answer": "5",
+    "question": "Delta Foods Q1 2025 service levels: incidents for Payments?"
+  },
+  {
+    "id": "q056",
+    "doc": "d07",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d07-s7-table",
+    "key": "Redwood Facilities",
+    "answer": "$1,836,000",
+    "question": "What is the annual spend for Redwood Facilities in Delta Foods's Q1 2025 vendor list?"
+  },
+  {
+    "id": "q057",
+    "doc": "d08",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d08-s1-owner",
+    "key": "Scheduler",
+    "answer": "Elena Petrova",
+    "question": "Delta Foods, Q4 2025: who was on-call lead for Scheduler?"
+  },
+  {
+    "id": "q058",
+    "doc": "d08",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d08-s6-list",
+    "key": "Migration slippage",
+    "answer": "Ingrid Solberg",
+    "question": "Who owns the \"Migration slippage\" risk at Delta Foods for Q4 2025?"
+  },
+  {
+    "id": "q059",
+    "doc": "d08",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d08-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$18.0M",
+    "question": "What capital expenditure did Delta Foods budget for Q1 2026?"
+  },
+  {
+    "id": "q060",
+    "doc": "d08",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d08-s2-table",
+    "key": "APAC",
+    "answer": "8.7%",
+    "question": "Delta Foods Q4 2025: churn rate for the APAC region?"
+  },
+  {
+    "id": "q061",
+    "doc": "d08",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d08-s3-table",
+    "key": "People",
+    "answer": "14",
+    "question": "Delta Foods Q4 2025 headcount report — open roles for People?"
+  },
+  {
+    "id": "q062",
+    "doc": "d08",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d08-s4-table",
+    "key": "Team",
+    "answer": "$42/mo",
+    "question": "Delta Foods, Q4 2025: Team plan old price?"
+  },
+  {
+    "id": "q063",
+    "doc": "d08",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d08-s5-table",
+    "key": "Payments",
+    "answer": "99.996%",
+    "question": "Delta Foods Q4 2025 service levels: uptime for Payments?"
+  },
+  {
+    "id": "q064",
+    "doc": "d08",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d08-s7-table",
+    "key": "Saffron Design",
+    "answer": "$1,844,000",
+    "question": "Delta Foods Q4 2025: Saffron Design annual spend?"
+  },
+  {
+    "id": "q065",
+    "doc": "d09",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d09-s1-owner",
+    "key": "Scheduler",
+    "answer": "Leila Farahani",
+    "question": "Which person leads on-call for Evergreen Retail's Scheduler platform in Q3 2025?"
+  },
+  {
+    "id": "q066",
+    "doc": "d09",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d09-s6-list",
+    "key": "Regulatory change",
+    "answer": "Jonas Meyer",
+    "question": "In Evergreen Retail's Q3 2025 report, which executive is the owner of the Regulatory change risk?"
+  },
+  {
+    "id": "q067",
+    "doc": "d09",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d09-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$3.4M",
+    "question": "What capital expenditure did Evergreen Retail budget for Q4 2025?"
+  },
+  {
+    "id": "q068",
+    "doc": "d09",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d09-s2-table",
+    "key": "Nordics",
+    "answer": "27",
+    "question": "Evergreen Retail Q3 2025: nps for the Nordics region?"
+  },
+  {
+    "id": "q069",
+    "doc": "d09",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d09-s3-table",
+    "key": "Security",
+    "answer": "37",
+    "question": "How many headcount did Evergreen Retail's Security department report in Q3 2025?"
+  },
+  {
+    "id": "q070",
+    "doc": "d09",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d09-s4-table",
+    "key": "Pro",
+    "answer": "$211/mo",
+    "question": "What is the new price of the Pro plan in Evergreen Retail's Q3 2025 pricing changes?"
+  },
+  {
+    "id": "q071",
+    "doc": "d09",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d09-s5-table",
+    "key": "Ingest",
+    "answer": "797 ms",
+    "question": "What p95 latency did Evergreen Retail's Ingest service achieve in Q3 2025?"
+  },
+  {
+    "id": "q072",
+    "doc": "d09",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d09-s7-table",
+    "key": "Redwood Facilities",
+    "answer": "$1,096,000",
+    "question": "Evergreen Retail Q3 2025: Redwood Facilities annual spend?"
+  },
+  {
+    "id": "q073",
+    "doc": "d10",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d10-s1-owner",
+    "key": "Checkout",
+    "answer": "Liam O'Connor",
+    "question": "Evergreen Retail, Q4 2025: who was on-call lead for Checkout?"
+  },
+  {
+    "id": "q074",
+    "doc": "d10",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d10-s6-list",
+    "key": "Regulatory change",
+    "answer": "Hana Kovač",
+    "question": "In Evergreen Retail's Q4 2025 report, which executive is the owner of the Regulatory change risk?"
+  },
+  {
+    "id": "q075",
+    "doc": "d10",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d10-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$4.1M",
+    "question": "What capital expenditure did Evergreen Retail budget for Q1 2026?"
+  },
+  {
+    "id": "q076",
+    "doc": "d10",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d10-s2-table",
+    "key": "DACH",
+    "answer": "4.6%",
+    "question": "Evergreen Retail Q4 2025: churn rate for the DACH region?"
+  },
+  {
+    "id": "q077",
+    "doc": "d10",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d10-s3-table",
+    "key": "Support",
+    "answer": "18",
+    "question": "Evergreen Retail Q4 2025 headcount report — open roles for Support?"
+  },
+  {
+    "id": "q078",
+    "doc": "d10",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d10-s4-table",
+    "key": "Growth",
+    "answer": "$167/mo",
+    "question": "What is the new price of the Growth plan in Evergreen Retail's Q4 2025 pricing changes?"
+  },
+  {
+    "id": "q079",
+    "doc": "d10",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d10-s5-table",
+    "key": "Ingest",
+    "answer": "204 ms",
+    "question": "Evergreen Retail Q4 2025 service levels: p95 latency for Ingest?"
+  },
+  {
+    "id": "q080",
+    "doc": "d10",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d10-s7-table",
+    "key": "Redwood Facilities",
+    "answer": "$1,065,000",
+    "question": "Evergreen Retail Q4 2025: Redwood Facilities annual spend?"
+  },
+  {
+    "id": "q081",
+    "doc": "d11",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d11-s1-owner",
+    "key": "Checkout",
+    "answer": "Ibrahim Sow",
+    "question": "Fjord Analytics, Q3 2025: who was on-call lead for Checkout?"
+  },
+  {
+    "id": "q082",
+    "doc": "d11",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d11-s6-list",
+    "key": "Data residency",
+    "answer": "Mara Lindqvist",
+    "question": "In Fjord Analytics's Q3 2025 report, which executive is the owner of the Data residency risk?"
+  },
+  {
+    "id": "q083",
+    "doc": "d11",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d11-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$4.9M",
+    "question": "What capital expenditure did Fjord Analytics budget for Q4 2025?"
+  },
+  {
+    "id": "q084",
+    "doc": "d11",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d11-s2-table",
+    "key": "EMEA",
+    "answer": "5.3%",
+    "question": "Fjord Analytics Q3 2025: churn rate for the EMEA region?"
+  },
+  {
+    "id": "q085",
+    "doc": "d11",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d11-s3-table",
+    "key": "Customer Success",
+    "answer": "79",
+    "question": "Fjord Analytics Q3 2025 headcount report — headcount for Customer Success?"
+  },
+  {
+    "id": "q086",
+    "doc": "d11",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d11-s4-table",
+    "key": "Enterprise",
+    "answer": "$213/mo",
+    "question": "What is the new price of the Enterprise plan in Fjord Analytics's Q3 2025 pricing changes?"
+  },
+  {
+    "id": "q087",
+    "doc": "d11",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d11-s5-table",
+    "key": "Scheduler",
+    "answer": "99.692%",
+    "question": "What uptime did Fjord Analytics's Scheduler service achieve in Q3 2025?"
+  },
+  {
+    "id": "q088",
+    "doc": "d11",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d11-s7-table",
+    "key": "Solstice CRM",
+    "answer": "Feb 2026",
+    "question": "Fjord Analytics Q3 2025: Solstice CRM renewal?"
+  },
+  {
+    "id": "q089",
+    "doc": "d12",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d12-s1-owner",
+    "key": "Search",
+    "answer": "Sena Yıldız",
+    "question": "Fjord Analytics, Q4 2025: who was on-call lead for Search?"
+  },
+  {
+    "id": "q090",
+    "doc": "d12",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d12-s6-list",
+    "key": "Vendor concentration",
+    "answer": "Samuel Adeyemi",
+    "question": "In Fjord Analytics's Q4 2025 report, which executive is the owner of the Vendor concentration risk?"
+  },
+  {
+    "id": "q091",
+    "doc": "d12",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d12-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$21.3M",
+    "question": "What capital expenditure did Fjord Analytics budget for Q1 2026?"
+  },
+  {
+    "id": "q092",
+    "doc": "d12",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d12-s2-table",
+    "key": "UK & Ireland",
+    "answer": "$37.3M",
+    "question": "What was Fjord Analytics's revenue in UK & Ireland for Q4 2025?"
+  },
+  {
+    "id": "q093",
+    "doc": "d12",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d12-s3-table",
+    "key": "Support",
+    "answer": "18.8%",
+    "question": "Fjord Analytics Q4 2025 headcount report — attrition for Support?"
+  },
+  {
+    "id": "q094",
+    "doc": "d12",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d12-s4-table",
+    "key": "Enterprise",
+    "answer": "22 Aug 2025",
+    "question": "What is the effective date of the Enterprise plan in Fjord Analytics's Q4 2025 pricing changes?"
+  },
+  {
+    "id": "q095",
+    "doc": "d12",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d12-s5-table",
+    "key": "Notifications",
+    "answer": "75 ms",
+    "question": "What p95 latency did Fjord Analytics's Notifications service achieve in Q4 2025?"
+  },
+  {
+    "id": "q096",
+    "doc": "d12",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d12-s7-table",
+    "key": "Halcyon Security",
+    "answer": "$1,655,000",
+    "question": "Fjord Analytics Q4 2025: Halcyon Security annual spend?"
+  },
+  {
+    "id": "q097",
+    "doc": "d13",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d13-s1-owner",
+    "key": "Ingest",
+    "answer": "Mara Lindqvist",
+    "question": "Which person leads on-call for Granite Insurance's Ingest platform in Q3 2025?"
+  },
+  {
+    "id": "q098",
+    "doc": "d13",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d13-s6-list",
+    "key": "Currency exposure",
+    "answer": "Liam O'Connor",
+    "question": "Who owns the \"Currency exposure\" risk at Granite Insurance for Q3 2025?"
+  },
+  {
+    "id": "q099",
+    "doc": "d13",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d13-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$17.2M",
+    "question": "What capital expenditure did Granite Insurance budget for Q4 2025?"
+  },
+  {
+    "id": "q100",
+    "doc": "d13",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d13-s2-table",
+    "key": "DACH",
+    "answer": "6",
+    "question": "Granite Insurance Q3 2025: nps for the DACH region?"
+  },
+  {
+    "id": "q101",
+    "doc": "d13",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d13-s3-table",
+    "key": "Engineering",
+    "answer": "172",
+    "question": "Granite Insurance Q3 2025 headcount report — headcount for Engineering?"
+  },
+  {
+    "id": "q102",
+    "doc": "d13",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d13-s4-table",
+    "key": "Starter",
+    "answer": "25 Jun 2025",
+    "question": "What is the effective date of the Starter plan in Granite Insurance's Q3 2025 pricing changes?"
+  },
+  {
+    "id": "q103",
+    "doc": "d13",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d13-s5-table",
+    "key": "Catalog",
+    "answer": "556 ms",
+    "question": "What p95 latency did Granite Insurance's Catalog service achieve in Q3 2025?"
+  },
+  {
+    "id": "q104",
+    "doc": "d13",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d13-s7-table",
+    "key": "Cinder Marketing",
+    "answer": "$1,891,000",
+    "question": "What is the annual spend for Cinder Marketing in Granite Insurance's Q3 2025 vendor list?"
+  },
+  {
+    "id": "q105",
+    "doc": "d14",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d14-s1-owner",
+    "key": "Search",
+    "answer": "Zoe Papadakis",
+    "question": "Granite Insurance, Q1 2025: who was on-call lead for Search?"
+  },
+  {
+    "id": "q106",
+    "doc": "d14",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d14-s6-list",
+    "key": "Customer concentration",
+    "answer": "Ravi Menon",
+    "question": "Who owns the \"Customer concentration\" risk at Granite Insurance for Q1 2025?"
+  },
+  {
+    "id": "q107",
+    "doc": "d14",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d14-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$16.0M",
+    "question": "What capital expenditure did Granite Insurance budget for Q2 2025?"
+  },
+  {
+    "id": "q108",
+    "doc": "d14",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d14-s2-table",
+    "key": "DACH",
+    "answer": "-3",
+    "question": "What was Granite Insurance's nps in DACH for Q1 2025?"
+  },
+  {
+    "id": "q109",
+    "doc": "d14",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d14-s3-table",
+    "key": "Legal",
+    "answer": "226",
+    "question": "How many headcount did Granite Insurance's Legal department report in Q1 2025?"
+  },
+  {
+    "id": "q110",
+    "doc": "d14",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d14-s4-table",
+    "key": "Scale",
+    "answer": "$149/mo",
+    "question": "What is the old price of the Scale plan in Granite Insurance's Q1 2025 pricing changes?"
+  },
+  {
+    "id": "q111",
+    "doc": "d14",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d14-s5-table",
+    "key": "Storage",
+    "answer": "508 ms",
+    "question": "What p95 latency did Granite Insurance's Storage service achieve in Q1 2025?"
+  },
+  {
+    "id": "q112",
+    "doc": "d14",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d14-s7-table",
+    "key": "Corvid Analytics",
+    "answer": "$136,000",
+    "question": "Granite Insurance Q1 2025: Corvid Analytics annual spend?"
+  },
+  {
+    "id": "q113",
+    "doc": "d15",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d15-s1-owner",
+    "key": "Payments",
+    "answer": "Luca Ferretti",
+    "question": "Which person leads on-call for Helix Biotech's Payments platform in Q4 2025?"
+  },
+  {
+    "id": "q114",
+    "doc": "d15",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d15-s6-list",
+    "key": "Customer concentration",
+    "answer": "Mara Lindqvist",
+    "question": "In Helix Biotech's Q4 2025 report, which executive is the owner of the Customer concentration risk?"
+  },
+  {
+    "id": "q115",
+    "doc": "d15",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d15-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$12.1M",
+    "question": "What capital expenditure did Helix Biotech budget for Q1 2026?"
+  },
+  {
+    "id": "q116",
+    "doc": "d15",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d15-s2-table",
+    "key": "UK & Ireland",
+    "answer": "17",
+    "question": "Helix Biotech Q4 2025: nps for the UK & Ireland region?"
+  },
+  {
+    "id": "q117",
+    "doc": "d15",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d15-s3-table",
+    "key": "Operations",
+    "answer": "9.7%",
+    "question": "What attrition did Helix Biotech's Operations department report in Q4 2025?"
+  },
+  {
+    "id": "q118",
+    "doc": "d15",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d15-s4-table",
+    "key": "Lite",
+    "answer": "14 Sep 2025",
+    "question": "Helix Biotech, Q4 2025: Lite plan effective date?"
+  },
+  {
+    "id": "q119",
+    "doc": "d15",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d15-s5-table",
+    "key": "Payments",
+    "answer": "3",
+    "question": "What incidents did Helix Biotech's Payments service achieve in Q4 2025?"
+  },
+  {
+    "id": "q120",
+    "doc": "d15",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d15-s7-table",
+    "key": "Redwood Facilities",
+    "answer": "$1,520,000",
+    "question": "Helix Biotech Q4 2025: Redwood Facilities annual spend?"
+  },
+  {
+    "id": "q121",
+    "doc": "d16",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d16-s1-owner",
+    "key": "Notifications",
+    "answer": "Sena Yıldız",
+    "question": "Who is the on-call lead for the Notifications platform at Helix Biotech in Q1 2025?"
+  },
+  {
+    "id": "q122",
+    "doc": "d16",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d16-s6-list",
+    "key": "Vendor concentration",
+    "answer": "Kwame Mensah",
+    "question": "Who owns the \"Vendor concentration\" risk at Helix Biotech for Q1 2025?"
+  },
+  {
+    "id": "q123",
+    "doc": "d16",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d16-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$15.0M",
+    "question": "How much capex did Helix Biotech plan for Q2 2025 according to its Q1 2025 report?"
+  },
+  {
+    "id": "q124",
+    "doc": "d16",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d16-s2-table",
+    "key": "Middle East",
+    "answer": "66",
+    "question": "Helix Biotech Q1 2025: nps for the Middle East region?"
+  },
+  {
+    "id": "q125",
+    "doc": "d16",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d16-s3-table",
+    "key": "Security",
+    "answer": "308",
+    "question": "How many headcount did Helix Biotech's Security department report in Q1 2025?"
+  },
+  {
+    "id": "q126",
+    "doc": "d16",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d16-s4-table",
+    "key": "Business",
+    "answer": "$114/mo",
+    "question": "What is the new price of the Business plan in Helix Biotech's Q1 2025 pricing changes?"
+  },
+  {
+    "id": "q127",
+    "doc": "d16",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d16-s5-table",
+    "key": "Search",
+    "answer": "1",
+    "question": "Helix Biotech Q1 2025 service levels: incidents for Search?"
+  },
+  {
+    "id": "q128",
+    "doc": "d16",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d16-s7-table",
+    "key": "Pinnacle Staffing",
+    "answer": "$732,000",
+    "question": "What is the annual spend for Pinnacle Staffing in Helix Biotech's Q1 2025 vendor list?"
+  },
+  {
+    "id": "q129",
+    "doc": "d17",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d17-s1-owner",
+    "key": "Billing",
+    "answer": "Hana Kovač",
+    "question": "Which person leads on-call for Ironwood Media's Billing platform in Q4 2025?"
+  },
+  {
+    "id": "q130",
+    "doc": "d17",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d17-s6-list",
+    "key": "Currency exposure",
+    "answer": "Sofia Lindgren",
+    "question": "Who owns the \"Currency exposure\" risk at Ironwood Media for Q4 2025?"
+  },
+  {
+    "id": "q131",
+    "doc": "d17",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d17-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$20.5M",
+    "question": "How much capex did Ironwood Media plan for Q1 2026 according to its Q4 2025 report?"
+  },
+  {
+    "id": "q132",
+    "doc": "d17",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d17-s2-table",
+    "key": "Iberia",
+    "answer": "4.3%",
+    "question": "Ironwood Media Q4 2025: churn rate for the Iberia region?"
+  },
+  {
+    "id": "q133",
+    "doc": "d17",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d17-s3-table",
+    "key": "Finance",
+    "answer": "14",
+    "question": "Ironwood Media Q4 2025 headcount report — open roles for Finance?"
+  },
+  {
+    "id": "q134",
+    "doc": "d17",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d17-s4-table",
+    "key": "Pro",
+    "answer": "14 Jun 2025",
+    "question": "Ironwood Media, Q4 2025: Pro plan effective date?"
+  },
+  {
+    "id": "q135",
+    "doc": "d17",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d17-s5-table",
+    "key": "Reporting",
+    "answer": "1",
+    "question": "Ironwood Media Q4 2025 service levels: incidents for Reporting?"
+  },
+  {
+    "id": "q136",
+    "doc": "d17",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d17-s7-table",
+    "key": "Zephyr Networks",
+    "answer": "HR & benefits",
+    "question": "Ironwood Media Q4 2025: Zephyr Networks category?"
+  },
+  {
+    "id": "q137",
+    "doc": "d18",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d18-s1-owner",
+    "key": "Payments",
+    "answer": "Aiko Tanaka",
+    "question": "Who is the on-call lead for the Payments platform at Ironwood Media in Q1 2025?"
+  },
+  {
+    "id": "q138",
+    "doc": "d18",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d18-s6-list",
+    "key": "Currency exposure",
+    "answer": "Kwame Mensah",
+    "question": "Who owns the \"Currency exposure\" risk at Ironwood Media for Q1 2025?"
+  },
+  {
+    "id": "q139",
+    "doc": "d18",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d18-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$16.6M",
+    "question": "What capital expenditure did Ironwood Media budget for Q2 2025?"
+  },
+  {
+    "id": "q140",
+    "doc": "d18",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d18-s2-table",
+    "key": "UK & Ireland",
+    "answer": "$18.3M",
+    "question": "What was Ironwood Media's revenue in UK & Ireland for Q1 2025?"
+  },
+  {
+    "id": "q141",
+    "doc": "d18",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d18-s3-table",
+    "key": "Sales",
+    "answer": "138",
+    "question": "How many headcount did Ironwood Media's Sales department report in Q1 2025?"
+  },
+  {
+    "id": "q142",
+    "doc": "d18",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d18-s4-table",
+    "key": "Starter",
+    "answer": "21 Jan 2025",
+    "question": "Ironwood Media, Q1 2025: Starter plan effective date?"
+  },
+  {
+    "id": "q143",
+    "doc": "d18",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d18-s5-table",
+    "key": "API Gateway",
+    "answer": "8",
+    "question": "Ironwood Media Q1 2025 service levels: incidents for API Gateway?"
+  },
+  {
+    "id": "q144",
+    "doc": "d18",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d18-s7-table",
+    "key": "Solstice CRM",
+    "answer": "HR & benefits",
+    "question": "Ironwood Media Q1 2025: Solstice CRM category?"
+  },
+  {
+    "id": "q145",
+    "doc": "d19",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d19-s1-owner",
+    "key": "Scheduler",
+    "answer": "Nadia Haddad",
+    "question": "Which person leads on-call for Juniper Telecom's Scheduler platform in Q3 2025?"
+  },
+  {
+    "id": "q146",
+    "doc": "d19",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d19-s6-list",
+    "key": "Key-person dependency",
+    "answer": "Ingrid Solberg",
+    "question": "Who owns the \"Key-person dependency\" risk at Juniper Telecom for Q3 2025?"
+  },
+  {
+    "id": "q147",
+    "doc": "d19",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d19-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$22.2M",
+    "question": "What capital expenditure did Juniper Telecom budget for Q4 2025?"
+  },
+  {
+    "id": "q148",
+    "doc": "d19",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d19-s2-table",
+    "key": "North America",
+    "answer": "+8.8%",
+    "question": "What was Juniper Telecom's growth in North America for Q3 2025?"
+  },
+  {
+    "id": "q149",
+    "doc": "d19",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d19-s3-table",
+    "key": "Operations",
+    "answer": "5.7%",
+    "question": "What attrition did Juniper Telecom's Operations department report in Q3 2025?"
+  },
+  {
+    "id": "q150",
+    "doc": "d19",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d19-s4-table",
+    "key": "Starter",
+    "answer": "$83/mo",
+    "question": "Juniper Telecom, Q3 2025: Starter plan new price?"
+  },
+  {
+    "id": "q151",
+    "doc": "d19",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d19-s5-table",
+    "key": "Checkout",
+    "answer": "99.979%",
+    "question": "What uptime did Juniper Telecom's Checkout service achieve in Q3 2025?"
+  },
+  {
+    "id": "q152",
+    "doc": "d19",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d19-s7-table",
+    "key": "Meridian Legal",
+    "answer": "HR & benefits",
+    "question": "Juniper Telecom Q3 2025: Meridian Legal category?"
+  },
+  {
+    "id": "q153",
+    "doc": "d20",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d20-s1-owner",
+    "key": "Payments",
+    "answer": "Kwame Mensah",
+    "question": "Who is the on-call lead for the Payments platform at Juniper Telecom in Q4 2025?"
+  },
+  {
+    "id": "q154",
+    "doc": "d20",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d20-s6-list",
+    "key": "Customer concentration",
+    "answer": "Mara Lindqvist",
+    "question": "In Juniper Telecom's Q4 2025 report, which executive is the owner of the Customer concentration risk?"
+  },
+  {
+    "id": "q155",
+    "doc": "d20",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d20-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$19.5M",
+    "question": "What capital expenditure did Juniper Telecom budget for Q1 2026?"
+  },
+  {
+    "id": "q156",
+    "doc": "d20",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d20-s2-table",
+    "key": "ANZ",
+    "answer": "+8.5%",
+    "question": "Juniper Telecom Q4 2025: growth for the ANZ region?"
+  },
+  {
+    "id": "q157",
+    "doc": "d20",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d20-s3-table",
+    "key": "Customer Success",
+    "answer": "13.8%",
+    "question": "Juniper Telecom Q4 2025 headcount report — attrition for Customer Success?"
+  },
+  {
+    "id": "q158",
+    "doc": "d20",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d20-s4-table",
+    "key": "Lite",
+    "answer": "$98/mo",
+    "question": "Juniper Telecom, Q4 2025: Lite plan old price?"
+  },
+  {
+    "id": "q159",
+    "doc": "d20",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d20-s5-table",
+    "key": "Search",
+    "answer": "295 ms",
+    "question": "Juniper Telecom Q4 2025 service levels: p95 latency for Search?"
+  },
+  {
+    "id": "q160",
+    "doc": "d20",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d20-s7-table",
+    "key": "Redwood Facilities",
+    "answer": "Nov 2026",
+    "question": "Juniper Telecom Q4 2025: Redwood Facilities renewal?"
+  },
+  {
+    "id": "q161",
+    "doc": "d21",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d21-s1-owner",
+    "key": "Identity",
+    "answer": "Kwame Mensah",
+    "question": "Who is the on-call lead for the Identity platform at Kestrel Aviation in Q1 2025?"
+  },
+  {
+    "id": "q162",
+    "doc": "d21",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d21-s6-list",
+    "key": "Currency exposure",
+    "answer": "Liam O'Connor",
+    "question": "In Kestrel Aviation's Q1 2025 report, which executive is the owner of the Currency exposure risk?"
+  },
+  {
+    "id": "q163",
+    "doc": "d21",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d21-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$11.4M",
+    "question": "What capital expenditure did Kestrel Aviation budget for Q2 2025?"
+  },
+  {
+    "id": "q164",
+    "doc": "d21",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d21-s2-table",
+    "key": "Iberia",
+    "answer": "72",
+    "question": "What was Kestrel Aviation's nps in Iberia for Q1 2025?"
+  },
+  {
+    "id": "q165",
+    "doc": "d21",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d21-s3-table",
+    "key": "Marketing",
+    "answer": "325",
+    "question": "Kestrel Aviation Q1 2025 headcount report — headcount for Marketing?"
+  },
+  {
+    "id": "q166",
+    "doc": "d21",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d21-s4-table",
+    "key": "Growth",
+    "answer": "$93/mo",
+    "question": "What is the new price of the Growth plan in Kestrel Aviation's Q1 2025 pricing changes?"
+  },
+  {
+    "id": "q167",
+    "doc": "d21",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d21-s5-table",
+    "key": "Notifications",
+    "answer": "99.580%",
+    "question": "Kestrel Aviation Q1 2025 service levels: uptime for Notifications?"
+  },
+  {
+    "id": "q168",
+    "doc": "d21",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d21-s7-table",
+    "key": "Tundra Hosting",
+    "answer": "SaaS",
+    "question": "Kestrel Aviation Q1 2025: Tundra Hosting category?"
+  },
+  {
+    "id": "q169",
+    "doc": "d22",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d22-s1-owner",
+    "key": "Reporting",
+    "answer": "Yara Mansour",
+    "question": "Kestrel Aviation, Q4 2025: who was on-call lead for Reporting?"
+  },
+  {
+    "id": "q170",
+    "doc": "d22",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d22-s6-list",
+    "key": "Vendor concentration",
+    "answer": "Mateo Rossi",
+    "question": "In Kestrel Aviation's Q4 2025 report, which executive is the owner of the Vendor concentration risk?"
+  },
+  {
+    "id": "q171",
+    "doc": "d22",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d22-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$23.0M",
+    "question": "How much capex did Kestrel Aviation plan for Q1 2026 according to its Q4 2025 report?"
+  },
+  {
+    "id": "q172",
+    "doc": "d22",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d22-s2-table",
+    "key": "Iberia",
+    "answer": "−3.6%",
+    "question": "Kestrel Aviation Q4 2025: growth for the Iberia region?"
+  },
+  {
+    "id": "q173",
+    "doc": "d22",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d22-s3-table",
+    "key": "Finance",
+    "answer": "9",
+    "question": "How many open roles did Kestrel Aviation's Finance department report in Q4 2025?"
+  },
+  {
+    "id": "q174",
+    "doc": "d22",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d22-s4-table",
+    "key": "Scale",
+    "answer": "23 Aug 2025",
+    "question": "Kestrel Aviation, Q4 2025: Scale plan effective date?"
+  },
+  {
+    "id": "q175",
+    "doc": "d22",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d22-s5-table",
+    "key": "Checkout",
+    "answer": "183 ms",
+    "question": "Kestrel Aviation Q4 2025 service levels: p95 latency for Checkout?"
+  },
+  {
+    "id": "q176",
+    "doc": "d22",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d22-s7-table",
+    "key": "Solstice CRM",
+    "answer": "$1,574,000",
+    "question": "What is the annual spend for Solstice CRM in Kestrel Aviation's Q4 2025 vendor list?"
+  },
+  {
+    "id": "q177",
+    "doc": "d23",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d23-s1-owner",
+    "key": "API Gateway",
+    "answer": "Leila Farahani",
+    "question": "Which person leads on-call for Lumen Education's API Gateway platform in Q3 2025?"
+  },
+  {
+    "id": "q178",
+    "doc": "d23",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d23-s6-list",
+    "key": "Regulatory change",
+    "answer": "Sena Yıldız",
+    "question": "Who owns the \"Regulatory change\" risk at Lumen Education for Q3 2025?"
+  },
+  {
+    "id": "q179",
+    "doc": "d23",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d23-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$7.4M",
+    "question": "What capital expenditure did Lumen Education budget for Q4 2025?"
+  },
+  {
+    "id": "q180",
+    "doc": "d23",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d23-s2-table",
+    "key": "EMEA",
+    "answer": "+10.2%",
+    "question": "What was Lumen Education's growth in EMEA for Q3 2025?"
+  },
+  {
+    "id": "q181",
+    "doc": "d23",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d23-s3-table",
+    "key": "Security",
+    "answer": "10.9%",
+    "question": "Lumen Education Q3 2025 headcount report — attrition for Security?"
+  },
+  {
+    "id": "q182",
+    "doc": "d23",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d23-s4-table",
+    "key": "Starter",
+    "answer": "$125/mo",
+    "question": "What is the old price of the Starter plan in Lumen Education's Q3 2025 pricing changes?"
+  },
+  {
+    "id": "q183",
+    "doc": "d23",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d23-s5-table",
+    "key": "API Gateway",
+    "answer": "1",
+    "question": "What incidents did Lumen Education's API Gateway service achieve in Q3 2025?"
+  },
+  {
+    "id": "q184",
+    "doc": "d23",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d23-s7-table",
+    "key": "Marlowe Consulting",
+    "answer": "Marketing",
+    "question": "Lumen Education Q3 2025: Marlowe Consulting category?"
+  },
+  {
+    "id": "q185",
+    "doc": "d24",
+    "type": "prose",
+    "section": "Executive Summary",
+    "element": "d24-s1-owner",
+    "key": "API Gateway",
+    "answer": "Sena Yıldız",
+    "question": "Who is the on-call lead for the API Gateway platform at Lumen Education in Q4 2025?"
+  },
+  {
+    "id": "q186",
+    "doc": "d24",
+    "type": "list",
+    "section": "Risks and Mitigations",
+    "element": "d24-s6-list",
+    "key": "Key-person dependency",
+    "answer": "Yara Mansour",
+    "question": "In Lumen Education's Q4 2025 report, which executive is the owner of the Key-person dependency risk?"
+  },
+  {
+    "id": "q187",
+    "doc": "d24",
+    "type": "prose",
+    "section": "Outlook",
+    "element": "d24-s8-outlook",
+    "key": "capital expenditure",
+    "answer": "$3.6M",
+    "question": "How much capex did Lumen Education plan for Q1 2026 according to its Q4 2025 report?"
+  },
+  {
+    "id": "q188",
+    "doc": "d24",
+    "type": "table",
+    "section": "Regional Performance",
+    "element": "d24-s2-table",
+    "key": "LATAM",
+    "answer": "−1.2%",
+    "question": "Lumen Education Q4 2025: growth for the LATAM region?"
+  },
+  {
+    "id": "q189",
+    "doc": "d24",
+    "type": "table",
+    "section": "Headcount",
+    "element": "d24-s3-table",
+    "key": "Finance",
+    "answer": "99",
+    "question": "Lumen Education Q4 2025 headcount report — headcount for Finance?"
+  },
+  {
+    "id": "q190",
+    "doc": "d24",
+    "type": "table",
+    "section": "Pricing Changes",
+    "element": "d24-s4-table",
+    "key": "Pro",
+    "answer": "24 Dec 2025",
+    "question": "What is the effective date of the Pro plan in Lumen Education's Q4 2025 pricing changes?"
+  },
+  {
+    "id": "q191",
+    "doc": "d24",
+    "type": "table",
+    "section": "Service Levels",
+    "element": "d24-s5-table",
+    "key": "Search",
+    "answer": "4",
+    "question": "What incidents did Lumen Education's Search service achieve in Q4 2025?"
+  },
+  {
+    "id": "q192",
+    "doc": "d24",
+    "type": "table",
+    "section": "Vendor Spend",
+    "element": "d24-s7-table",
+    "key": "Solstice CRM",
+    "answer": "Marketing",
+    "question": "Lumen Education Q4 2025: Solstice CRM category?"
+  }
+]

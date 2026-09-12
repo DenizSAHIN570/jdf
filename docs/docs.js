@@ -13,6 +13,7 @@ const SIDEBAR = (base) => `
     <li><a href="${base}index.html">Introduction</a></li>
     <li><a href="${base}getting-started.html">Getting started</a></li>
     <li><a href="${base}why-ai.html">Why AI-friendly</a></li>
+    <li><a href="${base}benchmark.html">RAG benchmark</a></li>
   </ul>
 
   <h4>Web embed — jdf.js</h4>

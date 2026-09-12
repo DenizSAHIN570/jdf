@@ -1,0 +1,182 @@
+{
+  "seed": 20260912,
+  "documents": [
+    {
+      "id": "d01",
+      "file": "docs/d01.jdf",
+      "title": "Acme Logistics — Q3 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "e77237e5d741579f1ddcfff60d0254b393c637a74e482f08940e06d361bf52a2"
+    },
+    {
+      "id": "d02",
+      "file": "docs/d02.jdf",
+      "title": "Acme Logistics — Q1 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "eeabcdc484ac0bec7a549609a976199242caf2605bfa313b28cd1734e7227ef2"
+    },
+    {
+      "id": "d03",
+      "file": "docs/d03.jdf",
+      "title": "Borealis Energy — Q3 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "7782d95b91c80bab388f2340bbed7bed2835fc0c5adc6e3aaac8f21db7170e92"
+    },
+    {
+      "id": "d04",
+      "file": "docs/d04.jdf",
+      "title": "Borealis Energy — Q2 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "5c286ff58415f98d5f9cb5e90ef02de82eba203ad06ee955f0563c47e82cfc39"
+    },
+    {
+      "id": "d05",
+      "file": "docs/d05.jdf",
+      "title": "Cobalt Health — Q4 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "bde16dd26adc6cec20f79034b901f90200d1b2b90fcb06186b55b6e36ebf68e5"
+    },
+    {
+      "id": "d06",
+      "file": "docs/d06.jdf",
+      "title": "Cobalt Health — Q3 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "28ddeeb5c9b3d7556457528b83a3e2e9f028da8f5e65dedb0185d2a9820560ca"
+    },
+    {
+      "id": "d07",
+      "file": "docs/d07.jdf",
+      "title": "Delta Foods — Q1 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "54245ee5a3caa447db8d91e7241ebbd586ff3266e2d3e27d13e84e7b1ccddf0a"
+    },
+    {
+      "id": "d08",
+      "file": "docs/d08.jdf",
+      "title": "Delta Foods — Q4 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "4587ccc2216f46f49e2fb66ea67a308a78d7e400d5170e1aaf1e5272f4538438"
+    },
+    {
+      "id": "d09",
+      "file": "docs/d09.jdf",
+      "title": "Evergreen Retail — Q3 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "b3d30d7a350fe15a257377bfb9c9ad40dde3d8362014c5f13e7216762b77cb2b"
+    },
+    {
+      "id": "d10",
+      "file": "docs/d10.jdf",
+      "title": "Evergreen Retail — Q4 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "95165dd7263e064fe397d5fc85cd61477c96923615b5954e5914e9cd89b5237b"
+    },
+    {
+      "id": "d11",
+      "file": "docs/d11.jdf",
+      "title": "Fjord Analytics — Q3 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "e815304e3dff5c8f5dc4d25feb236db00bacc28605eb15152c251ce58f7f4a72"
+    },
+    {
+      "id": "d12",
+      "file": "docs/d12.jdf",
+      "title": "Fjord Analytics — Q4 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "e082d7ae0bf66e246b36598c4c9a8a6eca5a0ef5b2af1328dd3550f7b49f4afb"
+    },
+    {
+      "id": "d13",
+      "file": "docs/d13.jdf",
+      "title": "Granite Insurance — Q3 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "f2a997981bb7c18425dd5e69a8e66e64e8f726df7a168d9d541999192a3c3107"
+    },
+    {
+      "id": "d14",
+      "file": "docs/d14.jdf",
+      "title": "Granite Insurance — Q1 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "c3f3aa9df64fbb2237f996f5bd0e07b8b7a0d9b5a94c443b9c95b03a49b45988"
+    },
+    {
+      "id": "d15",
+      "file": "docs/d15.jdf",
+      "title": "Helix Biotech — Q4 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "795be5b9031cd8f665412fc2496292c46690ad1cdb29d5e6e89f95ab88dec9f4"
+    },
+    {
+      "id": "d16",
+      "file": "docs/d16.jdf",
+      "title": "Helix Biotech — Q1 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "6c90df50ed825f703ae0b66d0ad37b1a557a3f3e4c63d7cbca7aa20a244cdd1b"
+    },
+    {
+      "id": "d17",
+      "file": "docs/d17.jdf",
+      "title": "Ironwood Media — Q4 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "67f3be3bf90adca3990ca9546e527c6663c6466e4fb4d39d876ce959c1b404c2"
+    },
+    {
+      "id": "d18",
+      "file": "docs/d18.jdf",
+      "title": "Ironwood Media — Q1 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "138e8d01df6b3ca04f56e58c9306d550f6c7496f5c00541b73a8e29517039be8"
+    },
+    {
+      "id": "d19",
+      "file": "docs/d19.jdf",
+      "title": "Juniper Telecom — Q3 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "ae347effdd5612b70b35d7b1db1fe1538b1d6e30f5ce60fd4610328e734130d4"
+    },
+    {
+      "id": "d20",
+      "file": "docs/d20.jdf",
+      "title": "Juniper Telecom — Q4 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "3bc0c90f8d8f9146c95e2ff8d69b16a23f811b92f94d81ab362fea6823940241"
+    },
+    {
+      "id": "d21",
+      "file": "docs/d21.jdf",
+      "title": "Kestrel Aviation — Q1 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "a12f40ed4775b147315c819d33a2b2b4177172d76a4c17e2089f4abeff6558ef"
+    },
+    {
+      "id": "d22",
+      "file": "docs/d22.jdf",
+      "title": "Kestrel Aviation — Q4 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "cf4971a658b010a23c9d49ee6c670b74d428a0fa834681146dbe59aff32674dd"
+    },
+    {
+      "id": "d23",
+      "file": "docs/d23.jdf",
+      "title": "Lumen Education — Q3 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "ad93786c05781131f1bdab680f172ecbae28868a78df5c4ba026d6bd839650d1"
+    },
+    {
+      "id": "d24",
+      "file": "docs/d24.jdf",
+      "title": "Lumen Education — Q4 2025 Operations Report",
+      "pages": 5,
+      "sha256_jdf": "80b3d93167e1334e86846ae63e655e079613bb11171d260217c13bf6892d0f84"
+    }
+  ],
+  "questions": {
+    "count": 192,
+    "sha256": "755255b7c6c3bcd14ea8cc8a4d4b124a91ca6485bc7cb4f7af691b79c8370d5a",
+    "byType": {
+      "table": 120,
+      "prose": 48,
+      "list": 24
+    }
+  }
+}

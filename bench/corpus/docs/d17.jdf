@@ -1,0 +1,771 @@
+{
+  "$jdf": "1.0.0",
+  "meta": {
+    "title": "Ironwood Media — Q4 2025 Operations Report",
+    "author": "Ironwood Media Finance",
+    "pageSize": "A4",
+    "unit": "mm",
+    "language": "en",
+    "margins": {
+      "top": 22,
+      "right": 22,
+      "bottom": 22,
+      "left": 22
+    }
+  },
+  "styles": {
+    "h1": {
+      "fontFamily": "Helvetica, Arial, sans-serif",
+      "fontSize": 24,
+      "fontWeight": "bold",
+      "color": "#0f172a"
+    },
+    "h2": {
+      "fontFamily": "Helvetica, Arial, sans-serif",
+      "fontSize": 15,
+      "fontWeight": "bold",
+      "color": "#1d4ed8"
+    },
+    "body": {
+      "fontFamily": "Helvetica, Arial, sans-serif",
+      "fontSize": 11,
+      "lineHeight": 1.6,
+      "color": "#334155"
+    }
+  },
+  "header": {
+    "height": 10,
+    "content": "{{title}}"
+  },
+  "footer": {
+    "height": 10,
+    "content": "Confidential — {{author}} · Page {{pageNumber}} of {{totalPages}}"
+  },
+  "pages": [
+    {
+      "id": "d17-page-1",
+      "elements": [
+        {
+          "id": "d17-title",
+          "type": "text",
+          "content": "Ironwood Media — Q4 2025 Operations Report",
+          "heading": 1,
+          "style": "h1",
+          "tocEntry": "Ironwood Media — Q4 2025 Operations Report",
+          "tocLevel": 1,
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s1",
+          "type": "text",
+          "content": "1. Executive Summary",
+          "heading": 2,
+          "style": "h2",
+          "tocEntry": "1. Executive Summary",
+          "tocLevel": 2,
+          "position": {
+            "x": 0,
+            "y": 29.5
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s1-p0",
+          "type": "text",
+          "content": "The following pages present Ironwood Media's Q4 2025 operating review. The period was characterised by two platform migrations and a reorganisation of the support function; management attention centred on regional streaming and publishing fundamentals, cost discipline and platform reliability.",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 43.9
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s1-owner",
+          "type": "text",
+          "content": "The Billing platform is owned by the Growth team; its on-call lead for the quarter is Hana Kovač, who also chairs the weekly reliability review.",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 74.2
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s1-p1",
+          "type": "text",
+          "content": "Detailed departmental commentary is available in the appendix distributed to budget owners.",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 92.2
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s2",
+          "type": "text",
+          "content": "2. Regional Performance",
+          "heading": 2,
+          "style": "h2",
+          "tocEntry": "2. Regional Performance",
+          "tocLevel": 2,
+          "position": {
+            "x": 0,
+            "y": 110.1
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s2-p2",
+          "type": "text",
+          "content": "Regional results are reported in constant currency. Revenue reflects recognised subscription and services revenue; growth is quarter-over-quarter; churn is logo churn measured at renewal; NPS is the trailing 90-day relationship score.",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 124.4
+          },
+          "width": 166
+        }
+      ]
+    },
+    {
+      "id": "d17-page-2",
+      "elements": [
+        {
+          "id": "d17-s2-table",
+          "type": "table",
+          "headers": [
+            "Region",
+            "Revenue",
+            "Growth",
+            "Churn rate",
+            "NPS"
+          ],
+          "rows": [
+            [
+              "Japan",
+              "$38.0M",
+              "+15.6%",
+              "6.2%",
+              "62"
+            ],
+            [
+              "Middle East",
+              "$46.3M",
+              "+15.6%",
+              "1.1%",
+              "49"
+            ],
+            [
+              "Iberia",
+              "$20.2M",
+              "+7.3%",
+              "4.3%",
+              "64"
+            ],
+            [
+              "EMEA",
+              "$32.1M",
+              "−2.7%",
+              "2.6%",
+              "60"
+            ],
+            [
+              "Benelux",
+              "$34.5M",
+              "+3.0%",
+              "1.1%",
+              "69"
+            ],
+            [
+              "DACH",
+              "$25.5M",
+              "+12.2%",
+              "4.2%",
+              "30"
+            ]
+          ],
+          "borders": true,
+          "columns": [
+            {
+              "width": 46,
+              "align": "left"
+            },
+            {
+              "width": 30,
+              "align": "right"
+            },
+            {
+              "width": 30,
+              "align": "right"
+            },
+            {
+              "width": 30,
+              "align": "right"
+            },
+            {
+              "width": 30,
+              "align": "right"
+            }
+          ],
+          "headerStyle": {
+            "backgroundColor": "#f1f5f9",
+            "fontWeight": "bold",
+            "color": "#0f172a"
+          },
+          "alternatingRowColor": "#f8fafc",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s2-p3",
+          "type": "text",
+          "content": "The finance team will publish a reconciliation to the statutory accounts after the audit.",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 83
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s3",
+          "type": "text",
+          "content": "3. Headcount",
+          "heading": 2,
+          "style": "h2",
+          "tocEntry": "3. Headcount",
+          "tocLevel": 2,
+          "position": {
+            "x": 0,
+            "y": 100.9
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s3-p4",
+          "type": "text",
+          "content": "The people plan tracks each department against its approved headcount. The attrition column is annualised and covers voluntary departures only.",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 115.3
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s3-table",
+          "type": "table",
+          "headers": [
+            "Department",
+            "Headcount",
+            "Open roles",
+            "Attrition"
+          ],
+          "rows": [
+            [
+              "Data",
+              "248",
+              "11",
+              "16.7%"
+            ],
+            [
+              "Product",
+              "12",
+              "22",
+              "9.0%"
+            ],
+            [
+              "Engineering",
+              "13",
+              "22",
+              "2.4%"
+            ],
+            [
+              "Operations",
+              "336",
+              "24",
+              "17.4%"
+            ],
+            [
+              "Sales",
+              "74",
+              "1",
+              "2.8%"
+            ],
+            [
+              "Finance",
+              "285",
+              "14",
+              "6.9%"
+            ]
+          ],
+          "borders": true,
+          "columns": [
+            {
+              "width": 61,
+              "align": "left"
+            },
+            {
+              "width": 35,
+              "align": "right"
+            },
+            {
+              "width": 35,
+              "align": "right"
+            },
+            {
+              "width": 35,
+              "align": "right"
+            }
+          ],
+          "headerStyle": {
+            "backgroundColor": "#f1f5f9",
+            "fontWeight": "bold",
+            "color": "#0f172a"
+          },
+          "alternatingRowColor": "#f8fafc",
+          "position": {
+            "x": 0,
+            "y": 133.2
+          },
+          "width": 166
+        }
+      ]
+    },
+    {
+      "id": "d17-page-3",
+      "elements": [
+        {
+          "id": "d17-s4",
+          "type": "text",
+          "content": "4. Pricing Changes",
+          "heading": 2,
+          "style": "h2",
+          "tocEntry": "4. Pricing Changes",
+          "tocLevel": 2,
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s4-p5",
+          "type": "text",
+          "content": "The following list-price changes were approved by the pricing committee and communicated to customers at least 30 days ahead of their effective date. Existing contracts move to the new price at renewal.",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 14.4
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s4-table",
+          "type": "table",
+          "headers": [
+            "Plan",
+            "Old price",
+            "New price",
+            "Effective date"
+          ],
+          "rows": [
+            [
+              "Business",
+              "$38/mo",
+              "$67/mo",
+              "9 Feb 2025"
+            ],
+            [
+              "Scale",
+              "$140/mo",
+              "$198/mo",
+              "10 Dec 2025"
+            ],
+            [
+              "Starter",
+              "$222/mo",
+              "$264/mo",
+              "7 Nov 2025"
+            ],
+            [
+              "Pro",
+              "$225/mo",
+              "$261/mo",
+              "14 Jun 2025"
+            ],
+            [
+              "Lite",
+              "$177/mo",
+              "$216/mo",
+              "7 Nov 2025"
+            ]
+          ],
+          "borders": true,
+          "columns": [
+            {
+              "width": 46,
+              "align": "left"
+            },
+            {
+              "width": 40,
+              "align": "right"
+            },
+            {
+              "width": 40,
+              "align": "right"
+            },
+            {
+              "width": 40,
+              "align": "left"
+            }
+          ],
+          "headerStyle": {
+            "backgroundColor": "#f1f5f9",
+            "fontWeight": "bold",
+            "color": "#0f172a"
+          },
+          "alternatingRowColor": "#f8fafc",
+          "position": {
+            "x": 0,
+            "y": 38.5
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s4-p6",
+          "type": "text",
+          "content": "Where a metric definition changed during the quarter, the prior quarter has been restated on the new basis.",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 110.5
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s5",
+          "type": "text",
+          "content": "5. Service Levels",
+          "heading": 2,
+          "style": "h2",
+          "tocEntry": "5. Service Levels",
+          "tocLevel": 2,
+          "position": {
+            "x": 0,
+            "y": 128.4
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s5-p7",
+          "type": "text",
+          "content": "Service levels are measured against the published SLA. Uptime excludes scheduled maintenance windows. P95 latency is measured at the edge over the whole quarter. Incidents count customer-impacting events of severity 2 or higher.",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 142.8
+          },
+          "width": 166
+        }
+      ]
+    },
+    {
+      "id": "d17-page-4",
+      "elements": [
+        {
+          "id": "d17-s5-table",
+          "type": "table",
+          "headers": [
+            "Service",
+            "Uptime",
+            "P95 latency",
+            "Incidents"
+          ],
+          "rows": [
+            [
+              "Scheduler",
+              "99.669%",
+              "537 ms",
+              "4"
+            ],
+            [
+              "Checkout",
+              "99.843%",
+              "616 ms",
+              "0"
+            ],
+            [
+              "Storage",
+              "99.745%",
+              "127 ms",
+              "6"
+            ],
+            [
+              "Notifications",
+              "99.868%",
+              "49 ms",
+              "7"
+            ],
+            [
+              "Catalog",
+              "99.582%",
+              "835 ms",
+              "0"
+            ],
+            [
+              "Reporting",
+              "99.558%",
+              "73 ms",
+              "1"
+            ]
+          ],
+          "borders": true,
+          "columns": [
+            {
+              "width": 61,
+              "align": "left"
+            },
+            {
+              "width": 35,
+              "align": "right"
+            },
+            {
+              "width": 35,
+              "align": "right"
+            },
+            {
+              "width": 35,
+              "align": "right"
+            }
+          ],
+          "headerStyle": {
+            "backgroundColor": "#f1f5f9",
+            "fontWeight": "bold",
+            "color": "#0f172a"
+          },
+          "alternatingRowColor": "#f8fafc",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s6",
+          "type": "text",
+          "content": "6. Risks and Mitigations",
+          "heading": 2,
+          "style": "h2",
+          "tocEntry": "6. Risks and Mitigations",
+          "tocLevel": 2,
+          "position": {
+            "x": 0,
+            "y": 83
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s6-p8",
+          "type": "text",
+          "content": "The risk register was reviewed by the executive team in the final month of the quarter. Each item has a named owner responsible for the mitigation plan and its monthly status update.",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 97.4
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s6-list",
+          "type": "list",
+          "listType": "unordered",
+          "style": "body",
+          "items": [
+            {
+              "content": "Regulatory change — owner: Ayşe Demir. Mitigation reviewed monthly; residual exposure rated high."
+            },
+            {
+              "content": "Migration slippage — owner: Mara Lindqvist. Mitigation reviewed monthly; residual exposure rated low."
+            },
+            {
+              "content": "Data residency — owner: Owen Gallagher. Mitigation reviewed monthly; residual exposure rated medium."
+            },
+            {
+              "content": "Currency exposure — owner: Sofia Lindgren. Mitigation reviewed monthly; residual exposure rated medium."
+            }
+          ],
+          "position": {
+            "x": 0,
+            "y": 121.5
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s6-p9",
+          "type": "text",
+          "content": "Operational KPIs are refreshed weekly on the internal dashboard; this document is the quarterly point-in-time snapshot.",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 182.9
+          },
+          "width": 166
+        }
+      ]
+    },
+    {
+      "id": "d17-page-5",
+      "elements": [
+        {
+          "id": "d17-s7",
+          "type": "text",
+          "content": "7. Vendor Spend",
+          "heading": 2,
+          "style": "h2",
+          "tocEntry": "7. Vendor Spend",
+          "tocLevel": 2,
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s7-p10",
+          "type": "text",
+          "content": "Vendor spend covers contracted annual commitments above the procurement threshold. Renewal dates are contract anniversaries at which terms can be renegotiated or the contract terminated.",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 14.4
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s7-table",
+          "type": "table",
+          "headers": [
+            "Vendor",
+            "Category",
+            "Annual spend",
+            "Renewal"
+          ],
+          "rows": [
+            [
+              "Solstice CRM",
+              "SaaS",
+              "$477,000",
+              "May 2026"
+            ],
+            [
+              "Redwood Facilities",
+              "Facilities",
+              "$1,040,000",
+              "May 2026"
+            ],
+            [
+              "Marlowe Consulting",
+              "Security",
+              "$1,230,000",
+              "Nov 2026"
+            ],
+            [
+              "Zephyr Networks",
+              "HR & benefits",
+              "$1,706,000",
+              "Mar 2026"
+            ],
+            [
+              "Halcyon Security",
+              "Facilities",
+              "$421,000",
+              "May 2026"
+            ],
+            [
+              "Obsidian Data",
+              "Security",
+              "$1,228,000",
+              "Nov 2026"
+            ]
+          ],
+          "borders": true,
+          "columns": [
+            {
+              "width": 50,
+              "align": "left"
+            },
+            {
+              "width": 46,
+              "align": "left"
+            },
+            {
+              "width": 36,
+              "align": "right"
+            },
+            {
+              "width": 34,
+              "align": "left"
+            }
+          ],
+          "headerStyle": {
+            "backgroundColor": "#f1f5f9",
+            "fontWeight": "bold",
+            "color": "#0f172a"
+          },
+          "alternatingRowColor": "#f8fafc",
+          "position": {
+            "x": 0,
+            "y": 38.5
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s8",
+          "type": "text",
+          "content": "8. Outlook",
+          "heading": 2,
+          "style": "h2",
+          "tocEntry": "8. Outlook",
+          "tocLevel": 2,
+          "position": {
+            "x": 0,
+            "y": 121.5
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s8-outlook",
+          "type": "text",
+          "content": "For Q1 2026 the plan assumes a return to hiring in engineering and customer success. The board approved a capital expenditure budget of $20.5M for Q1 2026, weighted towards data-centre capacity and network hardware.",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 135.9
+          },
+          "width": 166
+        },
+        {
+          "id": "d17-s8-p11",
+          "type": "text",
+          "content": "Management notes that comparisons to the prior year are affected by the change in revenue recognition adopted at the start of the fiscal year.",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 160
+          },
+          "width": 166
+        }
+      ]
+    }
+  ]
+}

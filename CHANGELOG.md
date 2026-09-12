@@ -5,6 +5,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · semantic-ish
 
 ## [Unreleased]
 
+### Added — RAG benchmark (JDF vs PDF)
+- `bench/`: reproducible, Python-only benchmark. 24 generated reports as JDF and as browser-printed PDF, 192 questions with ground truth. Accuracy (`rag_bench.py`): PyMuPDF / pdfplumber / pypdf / pdftotext + LangChain-style chunking vs `jdf chunk`, BM25 + any sentence-transformers or Ollama embedding model, Recall@k / MRR / R@1k-tokens, per-question ranks, `--verify`. Cost (`cost_bench.py`): 1,000 PDF vs 1,000 JDF files through the same RAG pipeline — chunks, embedding tokens/$, measured embedding time, vector-store payload, re-index cost after edits, per-query LLM context cost, with accuracy alongside; prices from `prices.json`.
+- Landing page hero: bun.com-style benchmark card (per-retriever tabs, metric switch, measured cost strip); RAG section, new `docs/benchmark.html` page and README carry the full tables. All generated from `bench/results/*.json`.
+
+### Changed — CLI chunking
+- `jdf chunk --strategy section` no longer emits heading-only chunks: a title directly followed by the first section heading (or an empty H2) is merged into the section that follows. Title-only fragments were a retrieval magnet with no content (found by the benchmark). Chunk ids of the first section change accordingly.
+- `jdf embed` embeds the heading breadcrumb + chunk text (`embeddingInput()`), so vectors carry document/section context; chunk hashes unchanged. New `--cache <path>` flag for `--incremental` (was accepted by the library but not wired into the CLI).
+
 ### Fixed — jdf.js
 - Zoom no longer leaves the page's unscaled footprint in layout: the page wrapper is sized to the rendered box and scaled from its corner, so pages stay centred and the pages column doesn't scroll sideways. In `fit="manual"` (the default) the zoom is capped so a page never renders wider than its container — an A4 page in a phone viewport used to be cut in half. Zooming by hand lifts the cap.
 

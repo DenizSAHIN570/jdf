@@ -31,6 +31,10 @@ Thumbs.db
 # Logs
 *.log
 
+# Bench: embedding cache + scratch (corpus + results ARE tracked)
+bench/.cache/
+bench/out/
+
 # Temp
 *.tmp
 .cache/
@@ -46,3 +50,5 @@ CLAUDE.md
 sow/
 *_sow.md
 *_pricing_calculator_inputs.md
+bench/.venv/
+__pycache__/

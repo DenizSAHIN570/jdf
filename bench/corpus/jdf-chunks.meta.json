@@ -1,0 +1,8 @@
+{
+  "tool": "jdf chunk",
+  "cli_version": "0.1.26",
+  "strategy": "section",
+  "max_tokens": 512,
+  "chunks": 192,
+  "embed_text": "heading breadcrumb + chunk text (embeddingInput)"
+}

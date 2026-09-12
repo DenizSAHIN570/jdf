@@ -1,0 +1,24 @@
+{
+  "name": "@jdf/bench",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Maintainer tooling for the JDF-vs-PDF RAG benchmark: seeded corpus generator, JDF\u2192PDF printing via jdf.js in Chrome, export of `jdf chunk` output, and publishing results to the site. The benchmark itself is Python: rag_bench.py / cost_bench.py.",
+  "scripts": {
+    "corpus": "tsx src/gen-corpus.ts",
+    "print": "node src/print-pdf.mjs",
+    "export-chunks": "tsx src/export-chunks.ts",
+    "render": "node src/render.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pdfjs-dist": "^4.10.38"
+  },
+  "devDependencies": {
+    "@jdf/core": "workspace:*",
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.5.0",
+    "playwright": "^1.49.0"
+  }
+}

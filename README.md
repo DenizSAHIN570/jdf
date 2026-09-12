@@ -342,7 +342,56 @@ JDF removes most of the work a typical retrieval-augmented-generation pipeline d
 | **Tables** | Cells smear across columns; multi-row headers collapse | `{ headers: [...], rows: [[...]] }` — every cell at its real coordinate |
 | **Images** | Dropped or stubbed as `[image]` | Stored in `resources.images` with alt text and an anchor element — a vision step can fetch the image at the exact retrieval point |
 
-> **Benchmarks coming.** The wins above are *structural* — pipeline stages JDF removes entirely — not measured timings. We're running benchmarks on a public corpus (academic PDFs, financial filings, scanned reports) covering parse, chunk, embed, and retrieval cost; this section will be updated with the numbers as soon as they're ready. Real-world speedup depends on your PDFs (text-only vs. scanned), parser, and chunker — if you run a comparison on your own corpus first, please [open an issue](https://github.com/uurtech/jdf/issues) with the methodology and we'll include it.
+### Benchmark — measured, not claimed
+
+Same 24 multi-page reports, two ways in: as **PDF** (printed by a real browser from the JDF originals, so the content is identical) through the usual Python parsers + LangChain-style fixed chunking, and as **JDF** through `jdf chunk`. Same local embedding models, same BM25, same 192 questions with known answers, same hit rule (right document *and* the chunk contains the answer together with its row/subject key). Higher is better.
+
+<!-- bench:results:start -->
+| Pipeline | Chunks | BM25 (lexical) R@1k tok | nomic-embed-text R@1k tok | bge-small R@1k tok | MiniLM-L6-v2 R@1k tok | bge-base R@1k tok | nomic-embed-text top-1 | Ctx tokens @5 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| **JDF · jdf chunk (section, 512 tok)** | 192 | **100.0%** | **99.0%** | **96.9%** | **97.4%** | **96.9%** | **76.6%** | 753 |
+| PDF · PyMuPDF get_text() · fixed 1000/200 | 153 | 98.4% | 81.8% | 74.5% | 70.3% | 78.6% | 41.7% | 1,226 |
+| PDF · PyMuPDF get_text() · fixed 2000/200 | 90 | 97.9% | 77.1% | 64.1% | 60.9% | 56.8% | 63.0% | 1,781 |
+| PDF · pdfplumber extract_text() · fixed 1000/200 | 150 | 99.5% | 80.7% | 75.0% | 65.6% | 80.2% | 42.2% | 1,219 |
+| PDF · pdfplumber extract_text() · fixed 2000/200 | 90 | 97.9% | 77.1% | 66.1% | 61.5% | 57.8% | 63.5% | 1,773 |
+| PDF · pypdf extract_text() · fixed 1000/200 | 151 | 99.5% | 83.3% | 75.0% | 66.7% | 77.6% | 41.1% | 1,224 |
+| PDF · pypdf extract_text() · fixed 2000/200 | 90 | 97.9% | 77.1% | 66.1% | 62.5% | 57.3% | 63.0% | 1,774 |
+| PDF · pdftotext -layout (poppler) · fixed 1000/200 | 268 | 85.9% | 71.9% | 66.7% | 66.1% | 74.0% | 35.9% | 1,040 |
+| PDF · pdftotext -layout (poppler) · fixed 2000/200 | 96 | 92.7% | 62.0% | 48.4% | 54.2% | 44.8% | 46.4% | 2,269 |
+
+R@1k tok = answer found within the first 1,000 tokens of retrieved context (chunk-size neutral). 24 documents / 120 pages / 192 questions. All embeddings local. Editing one paragraph re-embeds **1 of 192** JDF chunks; a PDF pipeline re-embeds the whole document. Apple M5, 2026-09-12. Full tables incl. top-1/top-5/MRR per model: [`bench/results/report.md`](bench/results/report.md).
+<!-- bench:results:end -->
+
+**RAG cost — 1,000 PDF files vs 1,000 JDF files.** Same pipeline, only the input format differs: chunks → embeddings → vector store → top-5 context → LLM. Tokens counted from the chunks each pipeline produces, dollars from published prices (`bench/prices.json`); the benchmark never calls a paid API.
+
+<!-- bench:cost:start -->
+| Per 1,000 documents | JDF · jdf chunk (section) | PDF · pypdf extract_text() · fixed 1000/200 |
+|---|---:|---:|
+| Accuracy · answer in first 1,000 tokens (nomic-embed-text) | **99.0%** | 83.3% |
+| Accuracy · top-1 hit | **76.6%** | 41.1% |
+| Chunks | **8,000** | 6,291 |
+| Embedding tokens, initial index | **1,305,820** | 1,390,646 |
+| Embedding cost · OpenAI text-embedding-3-small | **$0.0261** | $0.0278 |
+| Local embedding time · bge-small-en-v1.5 (measured throughput) | **36.7 s** | 31.6 s |
+| Vector-store payload | **5.8 MB** | 5.6 MB |
+| Re-embed tokens when one paragraph changes in every document | **91,000** | 1,461,000 |
+| Re-index cost · OpenAI text-embedding-3-small | **$0.0018** | $0.0292 |
+| LLM input tokens per 1,000,000 queries (top-5 context) | **753,364,583** | 1,223,625,000 |
+| LLM input cost · Claude Sonnet 5 input | **$1,506.73** | $2,447.25 |
+
+1,000 files per format (24-document corpus cycled); tokens counted from each pipeline's chunks, embedding time measured on Apple M5, 2026-09-13. Prices: [`bench/prices.json`](bench/prices.json). Method: [`bench/README.md`](bench/README.md).
+<!-- bench:cost:end -->
+
+Reproduce it — Python only, no Node toolchain:
+
+```bash
+cd bench && pip install -r requirements.txt
+python rag_bench.py            # accuracy (BM25 + local embeddings; --embedder none for BM25 only)
+python cost_bench.py           # RAG cost at 1,000 files per format
+python rag_bench.py --verify   # re-run and fail on any discrepancy with the published numbers
+```
+
+The corpus is synthetic on purpose — a retrieval benchmark needs ground truth for every question, which public PDF corpora don't provide; the generator, every document, every question and every retrieved rank are in [`bench/`](bench/README.md). Full write-up: [docs/benchmark](https://uurtech.github.io/jdf/docs/benchmark.html). If you run the pipelines on your own corpus, please [open an issue](https://github.com/uurtech/jdf/issues) with the numbers.
 
 A minimal RAG ingestor for JDF is a single loop — no PDF library, no layout heuristics, no chunker config:
 
@@ -543,6 +592,7 @@ jdf validate doc.jdf
 | `--provider <p>` | embed | `ollama` (default, local) · `openai` (remote API). |
 | `--model <name>` | embed | Model id (default `nomic-embed-text` / `text-embedding-3-small`). |
 | `--incremental` | embed | Skip chunks whose content hash is unchanged — re-embed only what changed. |
+| `--cache <path>` | embed | Sidecar to reuse vectors from with `--incremental` (default: the output path itself). |
 
 ### RAG ingestion, incrementally
 
@@ -724,7 +774,7 @@ The next surface area, grouped by theme. Items at the top of each group are sche
 
 ### RAG / AI tooling
 
-- **Public benchmark suite** — parse / chunk / embed / retrieval cost measured on a shared corpus (academic PDFs, financial filings, scanned reports). Results published at `docs/docs/benchmarks.html` and linked from the RAG section. Backs the structural claims in [`docs/docs/why-ai.html`](docs/docs/why-ai.html) with real numbers.
+- **Benchmark on real-world corpora** — the shipped benchmark (`bench/`) uses a generated corpus so every answer location is known; next is a second suite on public PDFs (academic papers, financial filings, scanned reports) with LLM-judged answers, plus a hosted results page.
 - **`@uurtech/jdf-rag`** — the CLI's `chunk` / `embed` logic as a published library (programmatic `chunkDocument()` / `embedDocument()`), so an ingestor can call it in-process instead of shelling out. The CLI commands already ship today; this packages them for embedding in apps.
 - **`@uurtech/jdf-llm`** — structured-output helpers for the major LLM APIs (OpenAI `response_format`, Anthropic `tools`, Google `responseSchema`). Ships the JDF JSON Schema as a guaranteed-valid generation target plus prompt scaffolding for "produce a one-page report" workflows.
 

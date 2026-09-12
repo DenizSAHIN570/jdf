@@ -20,6 +20,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <noscript><style>.bench-rows .bench-bar { width: var(--w); } .bench-tabs, .bench-replay { display: none; }</style></noscript>
 
   <!-- jdf.js — powers the live <jdf> embeds lower on the page. Build is
        served from /jdfjs-local so the demo always reflects the current
@@ -43,6 +44,7 @@
       <span>JDF</span>
     </a>
     <nav class="nav-links">
+      <a class="nav-bench" href="#bench">Benchmark</a>
       <a href="#why">Why</a>
       <a href="#rag">RAG</a>
       <a href="#cli">CLI</a>
@@ -57,82 +59,136 @@
   </header>
 
   <main>
-    <section class="hero">
-      <div class="logo-large">
-        <svg viewBox="0 0 1024 1024" width="120" height="120" aria-hidden="true">
-          <defs>
-            <linearGradient id="hero-grad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#3b82f6"/>
-              <stop offset="1" stop-color="#1d4ed8"/>
-            </linearGradient>
-          </defs>
-          <rect width="1024" height="1024" rx="225" fill="url(#hero-grad)"/>
-          <text x="512" y="512" font-family="Inter, sans-serif" font-size="380" font-weight="900" fill="#ffffff" text-anchor="middle" dominant-baseline="central" letter-spacing="-12">JDF</text>
-        </svg>
-      </div>
-      <h1>JDF<br /><span class="grad">JSON document standard</span></h1>
-      <p class="hero-tagline">the AI-native document standard</p>
-      <p class="lead">
-        Built for the AI era — a JSON document format that LLMs read without a translator. PDFs were designed for humans and printers; JDF is designed for the systems that read, write, and reason over documents next. Beautiful pages. Editable in any text editor. Diffable in <code>git</code>. Generated with one line of code. Searchable with <code>grep</code>. Validatable with a JSON Schema. Embeddable on any web page.
-      </p>
+    <section class="hero hero-split" id="top">
+      <div class="hero-copy">
+        <div class="logo-large">
+          <svg viewBox="0 0 1024 1024" width="84" height="84" aria-hidden="true">
+            <defs>
+              <linearGradient id="hero-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#3b82f6"/>
+                <stop offset="1" stop-color="#1d4ed8"/>
+              </linearGradient>
+            </defs>
+            <rect width="1024" height="1024" rx="225" fill="url(#hero-grad)"/>
+            <text x="512" y="512" font-family="Inter, sans-serif" font-size="380" font-weight="900" fill="#ffffff" text-anchor="middle" dominant-baseline="central" letter-spacing="-12">JDF</text>
+          </svg>
+        </div>
+        <h1>JDF<br /><span class="grad">JSON document standard</span></h1>
+        <p class="hero-tagline">the AI-native document standard</p>
+        <p class="lead">
+          Built for the AI era — a JSON document format that LLMs read without a translator. PDFs were designed for humans and printers; JDF is designed for the systems that read, write, and reason over documents next. Beautiful pages. Editable in any text editor. Diffable in <code>git</code>. Generated with one line of code. Searchable with <code>grep</code>. Validatable with a JSON Schema. Embeddable on any web page.
+        </p>
 
-      <a class="hero-flag" href="#forms">
-        <span class="hero-flag-badge">★ NEW</span>
-        <span class="hero-flag-title">JDF Forms — fillable in the browser, save back as JSON</span>
-        <span class="hero-flag-arrow">→</span>
-      </a>
+        <a class="hero-flag" href="#forms">
+          <span class="hero-flag-badge">★ NEW</span>
+          <span class="hero-flag-title">JDF Forms — fillable in the browser, save back as JSON</span>
+          <span class="hero-flag-arrow">→</span>
+        </a>
 
-      <div class="channel-strip">
-        <a class="channel" href="#install">
-          <div class="channel-icon">⌘</div>
-          <div>
-            <div class="channel-title">Desktop reader</div>
-            <div class="channel-sub">Native macOS app · <code>brew tap uurtech/jdf</code></div>
-          </div>
-        </a>
-        <a class="channel" href="#embed">
-          <div class="channel-icon">&lt;/&gt;</div>
-          <div>
-            <div class="channel-title">jdf.js — web embed</div>
-            <div class="channel-sub">25 kB JS library · <code>&lt;jdf src="..."&gt;</code></div>
-          </div>
-        </a>
-        <a class="channel" href="docs/cli.html">
-          <div class="channel-icon">$</div>
-          <div>
-            <div class="channel-title">CLI — convert · chunk · embed</div>
-            <div class="channel-sub">RAG-native: PDF/JSON → JDF, then chunk &amp; embed · <code>npx @uurtech/jdf-cli chunk report.jdf</code></div>
-          </div>
-        </a>
-      </div>
-
-      <div class="cta">
-        <button class="copy" data-copy="brew tap uurtech/jdf
+        <div class="cta">
+          <button class="copy" data-copy="brew tap uurtech/jdf
 brew install jdf">
-          <span class="copy-cmd">
-            <span class="copy-line">brew tap uurtech/jdf</span>
-            <span class="copy-line">brew install jdf</span>
-          </span>
-          <span class="copy-hint">click to copy</span>
-        </button>
-        <a class="btn-primary" href="https://github.com/uurtech/jdf/releases/latest" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-            <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/>
-          </svg>
-          Download for macOS
-        </a>
-        <a class="btn-secondary" href="https://github.com/uurtech/jdf" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-            <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.4 7.86 10.92.58.1.79-.25.79-.56v-2.16c-3.2.7-3.87-1.36-3.87-1.36-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.25 3.34.95.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.16 1.18.92-.26 1.91-.39 2.89-.39.98 0 1.97.13 2.89.39 2.2-1.49 3.16-1.18 3.16-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.83 1.18 3.09 0 4.42-2.69 5.4-5.25 5.68.41.36.78 1.05.78 2.12v3.14c0 .31.21.66.79.55C20.21 21.4 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/>
-          </svg>
-          View on GitHub
-        </a>
+            <span class="copy-cmd">
+              <span class="copy-line">brew tap uurtech/jdf</span>
+              <span class="copy-line">brew install jdf</span>
+            </span>
+            <span class="copy-hint">click to copy</span>
+          </button>
+          <a class="btn-primary" href="https://github.com/uurtech/jdf/releases/latest" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/>
+            </svg>
+            Download for macOS
+          </a>
+          <a class="btn-secondary" href="https://github.com/uurtech/jdf" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.4 7.86 10.92.58.1.79-.25.79-.56v-2.16c-3.2.7-3.87-1.36-3.87-1.36-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.25 3.34.95.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.16 1.18.92-.26 1.91-.39 2.89-.39.98 0 1.97.13 2.89.39 2.2-1.49 3.16-1.18 3.16-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.83 1.18 3.09 0 4.42-2.69 5.4-5.25 5.68.41.36.78 1.05.78 2.12v3.14c0 .31.21.66.79.55C20.21 21.4 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/>
+            </svg>
+            View on GitHub
+          </a>
+        </div>
+
+        <p class="install-alt">
+          Linux, Windows, and Intel Macs: grab a build from the <a href="https://github.com/uurtech/jdf/releases/latest">latest release</a>.
+        </p>
       </div>
 
-      <p class="install-alt">
-        Linux, Windows, and Intel Macs: grab a build from the <a href="https://github.com/uurtech/jdf/releases/latest">latest release</a>.
-      </p>
+      <!-- Benchmark card. The rows + JSON below are GENERATED from
+           bench/results/latest.json by `pnpm --filter @jdf/bench render`.
+           Do not hand-edit numbers — re-run the benchmark. -->
+      <aside class="hero-bench" id="bench" aria-label="RAG retrieval benchmark">
+        <div class="bench-head">
+          <div>
+            <div class="bench-title">RAG retrieval — same reports as <span class="bench-pdf">PDF</span> vs <span class="bench-jdf">JDF</span></div>
+            <div class="bench-sub" data-bench-sub>answer inside the first 1,000 tokens of retrieved context · higher is better</div>
+          </div>
+          <button class="bench-replay" type="button" data-bench-replay>replay</button>
+        </div>
+        <div class="bench-tabs" role="tablist" data-bench-tabs>
+<!-- bench:tabs:start -->
+          <button class="bench-tab" role="tab" data-bench-retriever="bm25">BM25 (lexical)</button>
+          <button class="bench-tab is-active" role="tab" data-bench-retriever="dense:nomic-embed-text">nomic-embed-text</button>
+          <button class="bench-tab" role="tab" data-bench-retriever="dense:BAAI/bge-small-en-v1.5">bge-small</button>
+          <button class="bench-tab" role="tab" data-bench-retriever="dense:sentence-transformers/all-MiniLM-L6-v2">MiniLM-L6-v2</button>
+          <button class="bench-tab" role="tab" data-bench-retriever="dense:BAAI/bge-base-en-v1.5">bge-base</button>
+<!-- bench:tabs:end -->
+        </div>
+        <ol class="bench-rows" data-bench-rows>
+<!-- bench:hero:start -->
+          <li class="bench-row is-jdf" style="--w:100.0%"><div class="bench-name">JDF<span class="bench-ver">jdf-cli v0.1.26 · jdf chunk · section</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">99.0%</div></li>
+          <li class="bench-row" style="--w:84.2%"><div class="bench-name">PDF · pypdf<span class="bench-ver">v6.18.1 · fixed 1000/200 chars</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">83.3%</div></li>
+          <li class="bench-row" style="--w:82.6%"><div class="bench-name">PDF · PyMuPDF<span class="bench-ver">v1.28.2 · fixed 1000/200 chars</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">81.8%</div></li>
+          <li class="bench-row" style="--w:81.6%"><div class="bench-name">PDF · pdfplumber<span class="bench-ver">v0.11.10 · fixed 1000/200 chars</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">80.7%</div></li>
+          <li class="bench-row" style="--w:72.6%"><div class="bench-name">PDF · pdftotext<span class="bench-ver">v26.06.0 · fixed 1000/200 chars</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">71.9%</div></li>
+<!-- bench:hero:end -->
+        </ol>
+        <div class="bench-metric-row">
+          <span class="bench-metric-label">metric</span>
+          <select class="bench-metric" data-bench-metric aria-label="metric">
+            <option value="recallAt1000Tok">answer in first 1k tokens</option>
+            <option value="recall1">top-1 hit</option>
+            <option value="recall5">top-5 hit</option>
+            <option value="ctxTokensTop5">LLM context tokens (lower is better)</option>
+          </select>
+        </div>
+        <div class="bench-incremental" data-bench-incremental></div>
+        <div class="bench-cost-strip" data-bench-cost></div>
+        <div class="bench-foot">
+          <span data-bench-foot></span>
+          <a href="docs/benchmark.html">Full tables, method, RAG cost at 1,000 files →</a>
+          <code>pip install -r requirements.txt &amp;&amp; python rag_bench.py</code> reproduces it · <code>--verify</code> checks it
+        </div>
+        <script type="application/json" id="bench-data">
+<!-- bench:data:start -->
+{"date":"2026-09-12","machine":{"cpu":"Apple M5","platform":"macOS-26.6.2-arm64-arm-64bit-Mach-O","python":"3.14.6"},"corpus":{"documents":24,"pages":120,"questions":192,"byType":{"table":120,"prose":48,"list":24},"manifestHash":"fe51f0728669744d"},"jdfOnly":{"deterministic":true,"editedDocChunks":8,"chunksReembedded":1,"corpusChunks":192},"headline":"dense:nomic-embed-text","retrievers":[{"id":"bm25","label":"BM25 (lexical)"},{"id":"dense:nomic-embed-text","label":"nomic-embed-text"},{"id":"dense:BAAI/bge-small-en-v1.5","label":"bge-small"},{"id":"dense:sentence-transformers/all-MiniLM-L6-v2","label":"MiniLM-L6-v2"},{"id":"dense:BAAI/bge-base-en-v1.5","label":"bge-base"}],"metrics":{"recallAt1000Tok":{"label":"answer inside the first 1,000 tokens of retrieved context · higher is better","higher":true},"recall1":{"label":"top-1 hit rate · higher is better","higher":true},"recall5":{"label":"top-5 hit rate · higher is better","higher":true},"ctxTokensTop5":{"label":"tokens handed to the LLM for the top-5 chunks · lower is better","higher":false}},"rows":{"bm25":[{"id":"jdf","name":"JDF","version":"jdf-cli v0.1.26 · jdf chunk · section","jdf":true,"values":{"recallAt1000Tok":1,"recall1":0.8958333333333334,"recall5":1,"ctxTokensTop5":798.4375},"display":{"recallAt1000Tok":"100.0%","recall1":"89.6%","recall5":"100.0%","ctxTokensTop5":"798"}},{"id":"pdf-pdfplumber-1000","name":"PDF · pdfplumber","version":"v0.11.10 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.9947916666666666,"recall1":0.7552083333333334,"recall5":1,"ctxTokensTop5":1190.2135416666667},"display":{"recallAt1000Tok":"99.5%","recall1":"75.5%","recall5":"100.0%","ctxTokensTop5":"1,190"}},{"id":"pdf-pypdf-1000","name":"PDF · pypdf","version":"v6.18.1 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.9947916666666666,"recall1":0.75,"recall5":1,"ctxTokensTop5":1193.1197916666667},"display":{"recallAt1000Tok":"99.5%","recall1":"75.0%","recall5":"100.0%","ctxTokensTop5":"1,193"}},{"id":"pdf-pymupdf-1000","name":"PDF · PyMuPDF","version":"v1.28.2 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.984375,"recall1":0.75,"recall5":0.9895833333333334,"ctxTokensTop5":1193.7239583333333},"display":{"recallAt1000Tok":"98.4%","recall1":"75.0%","recall5":"99.0%","ctxTokensTop5":"1,194"}},{"id":"pdf-pdftotext-2000","name":"PDF · pdftotext","version":"v26.06.0 · fixed 2000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.9270833333333334,"recall1":0.734375,"recall5":0.9947916666666666,"ctxTokensTop5":2193.1145833333335},"display":{"recallAt1000Tok":"92.7%","recall1":"73.4%","recall5":"99.5%","ctxTokensTop5":"2,193"}}],"dense:nomic-embed-text":[{"id":"jdf","name":"JDF","version":"jdf-cli v0.1.26 · jdf chunk · section","jdf":true,"values":{"recallAt1000Tok":0.9895833333333334,"recall1":0.765625,"recall5":0.9895833333333334,"ctxTokensTop5":753.3645833333334},"display":{"recallAt1000Tok":"99.0%","recall1":"76.6%","recall5":"99.0%","ctxTokensTop5":"753"}},{"id":"pdf-pypdf-1000","name":"PDF · pypdf","version":"v6.18.1 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.8333333333333334,"recall1":0.4114583333333333,"recall5":0.921875,"ctxTokensTop5":1223.625},"display":{"recallAt1000Tok":"83.3%","recall1":"41.1%","recall5":"92.2%","ctxTokensTop5":"1,224"}},{"id":"pdf-pymupdf-1000","name":"PDF · PyMuPDF","version":"v1.28.2 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.8177083333333334,"recall1":0.4166666666666667,"recall5":0.9114583333333334,"ctxTokensTop5":1225.6979166666667},"display":{"recallAt1000Tok":"81.8%","recall1":"41.7%","recall5":"91.1%","ctxTokensTop5":"1,226"}},{"id":"pdf-pdfplumber-1000","name":"PDF · pdfplumber","version":"v0.11.10 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.8072916666666666,"recall1":0.421875,"recall5":0.9114583333333334,"ctxTokensTop5":1218.671875},"display":{"recallAt1000Tok":"80.7%","recall1":"42.2%","recall5":"91.1%","ctxTokensTop5":"1,219"}},{"id":"pdf-pdftotext-1000","name":"PDF · pdftotext","version":"v26.06.0 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.71875,"recall1":0.359375,"recall5":0.734375,"ctxTokensTop5":1039.953125},"display":{"recallAt1000Tok":"71.9%","recall1":"35.9%","recall5":"73.4%","ctxTokensTop5":"1,040"}}],"dense:BAAI/bge-small-en-v1.5":[{"id":"jdf","name":"JDF","version":"jdf-cli v0.1.26 · jdf chunk · section","jdf":true,"values":{"recallAt1000Tok":0.96875,"recall1":0.46875,"recall5":0.9166666666666666,"ctxTokensTop5":716.3177083333334},"display":{"recallAt1000Tok":"96.9%","recall1":"46.9%","recall5":"91.7%","ctxTokensTop5":"716"}},{"id":"pdf-pdfplumber-1000","name":"PDF · pdfplumber","version":"v0.11.10 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.75,"recall1":0.3489583333333333,"recall5":0.84375,"ctxTokensTop5":1210.21875},"display":{"recallAt1000Tok":"75.0%","recall1":"34.9%","recall5":"84.4%","ctxTokensTop5":"1,210"}},{"id":"pdf-pypdf-1000","name":"PDF · pypdf","version":"v6.18.1 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.75,"recall1":0.3177083333333333,"recall5":0.84375,"ctxTokensTop5":1210.4947916666667},"display":{"recallAt1000Tok":"75.0%","recall1":"31.8%","recall5":"84.4%","ctxTokensTop5":"1,210"}},{"id":"pdf-pymupdf-1000","name":"PDF · PyMuPDF","version":"v1.28.2 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.7447916666666666,"recall1":0.34375,"recall5":0.8333333333333334,"ctxTokensTop5":1213.5104166666667},"display":{"recallAt1000Tok":"74.5%","recall1":"34.4%","recall5":"83.3%","ctxTokensTop5":"1,214"}},{"id":"pdf-pdftotext-1000","name":"PDF · pdftotext","version":"v26.06.0 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.6666666666666666,"recall1":0.3489583333333333,"recall5":0.7135416666666666,"ctxTokensTop5":1043.9114583333333},"display":{"recallAt1000Tok":"66.7%","recall1":"34.9%","recall5":"71.4%","ctxTokensTop5":"1,044"}}],"dense:sentence-transformers/all-MiniLM-L6-v2":[{"id":"jdf","name":"JDF","version":"jdf-cli v0.1.26 · jdf chunk · section","jdf":true,"values":{"recallAt1000Tok":0.9739583333333334,"recall1":0.4010416666666667,"recall5":0.9114583333333334,"ctxTokensTop5":692.6927083333334},"display":{"recallAt1000Tok":"97.4%","recall1":"40.1%","recall5":"91.1%","ctxTokensTop5":"693"}},{"id":"pdf-pymupdf-1000","name":"PDF · PyMuPDF","version":"v1.28.2 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.703125,"recall1":0.3020833333333333,"recall5":0.8020833333333334,"ctxTokensTop5":1204.2916666666667},"display":{"recallAt1000Tok":"70.3%","recall1":"30.2%","recall5":"80.2%","ctxTokensTop5":"1,204"}},{"id":"pdf-pypdf-1000","name":"PDF · pypdf","version":"v6.18.1 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.6666666666666666,"recall1":0.28125,"recall5":0.7864583333333334,"ctxTokensTop5":1197.4166666666667},"display":{"recallAt1000Tok":"66.7%","recall1":"28.1%","recall5":"78.6%","ctxTokensTop5":"1,197"}},{"id":"pdf-pdftotext-1000","name":"PDF · pdftotext","version":"v26.06.0 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.6614583333333334,"recall1":0.2916666666666667,"recall5":0.6875,"ctxTokensTop5":1021.4166666666666},"display":{"recallAt1000Tok":"66.1%","recall1":"29.2%","recall5":"68.8%","ctxTokensTop5":"1,021"}},{"id":"pdf-pdfplumber-1000","name":"PDF · pdfplumber","version":"v0.11.10 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.65625,"recall1":0.28125,"recall5":0.78125,"ctxTokensTop5":1193.21875},"display":{"recallAt1000Tok":"65.6%","recall1":"28.1%","recall5":"78.1%","ctxTokensTop5":"1,193"}}],"dense:BAAI/bge-base-en-v1.5":[{"id":"jdf","name":"JDF","version":"jdf-cli v0.1.26 · jdf chunk · section","jdf":true,"values":{"recallAt1000Tok":0.96875,"recall1":0.6302083333333334,"recall5":0.9479166666666666,"ctxTokensTop5":728.0885416666666},"display":{"recallAt1000Tok":"96.9%","recall1":"63.0%","recall5":"94.8%","ctxTokensTop5":"728"}},{"id":"pdf-pdfplumber-1000","name":"PDF · pdfplumber","version":"v0.11.10 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.8020833333333334,"recall1":0.3229166666666667,"recall5":0.90625,"ctxTokensTop5":1214.6197916666667},"display":{"recallAt1000Tok":"80.2%","recall1":"32.3%","recall5":"90.6%","ctxTokensTop5":"1,215"}},{"id":"pdf-pymupdf-1000","name":"PDF · PyMuPDF","version":"v1.28.2 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.7864583333333334,"recall1":0.3177083333333333,"recall5":0.9010416666666666,"ctxTokensTop5":1219.8020833333333},"display":{"recallAt1000Tok":"78.6%","recall1":"31.8%","recall5":"90.1%","ctxTokensTop5":"1,220"}},{"id":"pdf-pypdf-1000","name":"PDF · pypdf","version":"v6.18.1 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.7760416666666666,"recall1":0.3020833333333333,"recall5":0.9166666666666666,"ctxTokensTop5":1215.34375},"display":{"recallAt1000Tok":"77.6%","recall1":"30.2%","recall5":"91.7%","ctxTokensTop5":"1,215"}},{"id":"pdf-pdftotext-1000","name":"PDF · pdftotext","version":"v26.06.0 · fixed 1000/200 chars","jdf":false,"values":{"recallAt1000Tok":0.7395833333333334,"recall1":0.34375,"recall5":0.765625,"ctxTokensTop5":1036.5052083333333},"display":{"recallAt1000Tok":"74.0%","recall1":"34.4%","recall5":"76.6%","ctxTokensTop5":"1,037"}}]},"cost":{"files":1000,"ek":"openai-text-embedding-3-small","lk":"claude-sonnet-5","embedLabel":"OpenAI text-embedding-3-small","llmLabel":"Claude Sonnet 5 input","jdf":{"acc":0.9895833333333334,"tokens":1305820,"usd":0.0261164,"reindexUsd":0.00182,"queryUsd":1506.7291666666667},"pdf":{"label":"PDF · pypdf extract_text() · fixed 1000/200","acc":0.8333333333333334,"tokens":1390646,"usd":0.02781292,"reindexUsd":0.029220000000000003,"queryUsd":2447.25}}}
+<!-- bench:data:end -->
+        </script>
+      </aside>
     </section>
+
+    <div class="channel-strip">
+      <a class="channel" href="#install">
+        <div class="channel-icon">⌘</div>
+        <div>
+          <div class="channel-title">Desktop reader</div>
+          <div class="channel-sub">Native macOS app · <code>brew tap uurtech/jdf</code></div>
+        </div>
+      </a>
+      <a class="channel" href="#embed">
+        <div class="channel-icon">&lt;/&gt;</div>
+        <div>
+          <div class="channel-title">jdf.js — web embed</div>
+          <div class="channel-sub">25 kB JS library · <code>&lt;jdf src="..."&gt;</code></div>
+        </div>
+      </a>
+      <a class="channel" href="docs/cli.html">
+        <div class="channel-icon">$</div>
+        <div>
+          <div class="channel-title">CLI — convert · chunk · embed</div>
+          <div class="channel-sub">RAG-native: PDF/JSON → JDF, then chunk &amp; embed · <code>npx @uurtech/jdf-cli chunk report.jdf</code></div>
+        </div>
+      </a>
+    </div>
 
     <section class="screenshots">
       <figure class="shot">
@@ -244,8 +300,109 @@ $ jdf chunk report.jdf
 $ jdf embed report.jdf <span class="cli-flag">--incremental</span>   <span class="cli-comment"># → report.embeddings.json</span></code></pre>
       </div>
 
-      <div class="rag-note">
-        <strong>Benchmarks coming.</strong> The wins above are <em>structural</em> — pipeline stages JDF removes entirely — not measured timings. We're running benchmarks on a public corpus (academic PDFs, financial filings, scanned reports) and will publish parse / chunk / embed / retrieval numbers here as soon as they're ready. If you run a comparison on your own corpus, please <a href="https://github.com/uurtech/jdf/issues" target="_blank" rel="noopener">open an issue</a> — we'd like to include it.
+      <div class="rag-bench" id="rag-bench">
+        <h3>Measured, not claimed — the benchmark</h3>
+        <p>Twenty-four multi-page operations reports, authored as JDF and printed to PDF by a real browser, so both pipelines see identical content. 192 questions with known answers (120 table cells, 48 prose facts, 24 list items). The PDF side runs the usual Python parsers (PyMuPDF, pdfplumber, pypdf, poppler) and LangChain-style fixed chunking at two sizes; the JDF side runs <code>jdf chunk</code>. Same local embedding models, same BM25, same hit rule for both. Every number below is regenerated by <code>python rag_bench.py</code> / <code>python cost_bench.py</code> and checked by <code>--verify</code>. <a href="docs/benchmark.html">Method and full tables →</a></p>
+<!-- bench:table:start -->
+        <h4 class="bench-table-title">BM25 — lexical, offline, deterministic</h4>
+        <div class="bench-table-wrap"><table class="bench-table">
+          <thead><tr><th>Pipeline</th><th>Chunks</th><th>R@1k tokens</th><th>R@2k tokens</th><th>Top-1</th><th>Top-5</th><th>MRR@10</th><th>Table cells R@1k</th><th>Ctx tokens @5</th></tr></thead>
+          <tbody>
+            <tr class="is-jdf"><td>JDF · jdf chunk (section, 512 tok)</td><td>192</td><td class="bench-best">100.0%</td><td class="bench-best">100.0%</td><td class="bench-best">89.6%</td><td class="bench-best">100.0%</td><td class="bench-best">0.945</td><td>100.0%</td><td>798</td></tr>
+            <tr><td>PDF · PyMuPDF get_text() · fixed 1000/200</td><td>153</td><td>98.4%</td><td class="bench-best">100.0%</td><td>75.0%</td><td>99.0%</td><td>0.858</td><td>100.0%</td><td>1,194</td></tr>
+            <tr><td>PDF · PyMuPDF get_text() · fixed 2000/200</td><td>90</td><td>97.9%</td><td class="bench-best">100.0%</td><td>84.4%</td><td class="bench-best">100.0%</td><td>0.918</td><td>99.2%</td><td>1,759</td></tr>
+            <tr><td>PDF · pdfplumber extract_text() · fixed 1000/200</td><td>150</td><td>99.5%</td><td class="bench-best">100.0%</td><td>75.5%</td><td class="bench-best">100.0%</td><td>0.865</td><td>100.0%</td><td>1,190</td></tr>
+            <tr><td>PDF · pdfplumber extract_text() · fixed 2000/200</td><td>90</td><td>97.9%</td><td class="bench-best">100.0%</td><td>84.4%</td><td class="bench-best">100.0%</td><td>0.918</td><td>99.2%</td><td>1,744</td></tr>
+            <tr><td>PDF · pypdf extract_text() · fixed 1000/200</td><td>151</td><td>99.5%</td><td class="bench-best">100.0%</td><td>75.0%</td><td class="bench-best">100.0%</td><td>0.863</td><td>100.0%</td><td>1,193</td></tr>
+            <tr><td>PDF · pypdf extract_text() · fixed 2000/200</td><td>90</td><td>97.9%</td><td class="bench-best">100.0%</td><td>84.4%</td><td class="bench-best">100.0%</td><td>0.918</td><td>99.2%</td><td>1,755</td></tr>
+            <tr><td>PDF · pdftotext -layout (poppler) · fixed 1000/200</td><td>268</td><td>85.9%</td><td>91.1%</td><td>68.2%</td><td>87.0%</td><td>0.766</td><td>89.2%</td><td>1,016</td></tr>
+            <tr><td>PDF · pdftotext -layout (poppler) · fixed 2000/200</td><td>96</td><td>92.7%</td><td>98.4%</td><td>73.4%</td><td>99.5%</td><td>0.852</td><td>92.5%</td><td>2,193</td></tr>
+          </tbody>
+        </table></div>
+        <h4 class="bench-table-title">Embeddings — nomic-embed-text</h4>
+        <div class="bench-table-wrap"><table class="bench-table">
+          <thead><tr><th>Pipeline</th><th>Chunks</th><th>R@1k tokens</th><th>R@2k tokens</th><th>Top-1</th><th>Top-5</th><th>MRR@10</th><th>Table cells R@1k</th><th>Ctx tokens @5</th></tr></thead>
+          <tbody>
+            <tr class="is-jdf"><td>JDF · jdf chunk (section, 512 tok)</td><td>192</td><td class="bench-best">99.0%</td><td class="bench-best">100.0%</td><td class="bench-best">76.6%</td><td class="bench-best">99.0%</td><td class="bench-best">0.864</td><td>98.3%</td><td>753</td></tr>
+            <tr><td>PDF · PyMuPDF get_text() · fixed 1000/200</td><td>153</td><td>81.8%</td><td>98.4%</td><td>41.7%</td><td>91.1%</td><td>0.606</td><td>80.0%</td><td>1,226</td></tr>
+            <tr><td>PDF · PyMuPDF get_text() · fixed 2000/200</td><td>90</td><td>77.1%</td><td>99.5%</td><td>63.0%</td><td class="bench-best">99.0%</td><td>0.760</td><td>82.5%</td><td>1,781</td></tr>
+            <tr><td>PDF · pdfplumber extract_text() · fixed 1000/200</td><td>150</td><td>80.7%</td><td>99.0%</td><td>42.2%</td><td>91.1%</td><td>0.608</td><td>79.2%</td><td>1,219</td></tr>
+            <tr><td>PDF · pdfplumber extract_text() · fixed 2000/200</td><td>90</td><td>77.1%</td><td>99.0%</td><td>63.5%</td><td>97.9%</td><td>0.763</td><td>82.5%</td><td>1,773</td></tr>
+            <tr><td>PDF · pypdf extract_text() · fixed 1000/200</td><td>151</td><td>83.3%</td><td>97.9%</td><td>41.1%</td><td>92.2%</td><td>0.605</td><td>81.7%</td><td>1,224</td></tr>
+            <tr><td>PDF · pypdf extract_text() · fixed 2000/200</td><td>90</td><td>77.1%</td><td>99.0%</td><td>63.0%</td><td>97.4%</td><td>0.759</td><td>82.5%</td><td>1,774</td></tr>
+            <tr><td>PDF · pdftotext -layout (poppler) · fixed 1000/200</td><td>268</td><td>71.9%</td><td>86.5%</td><td>35.9%</td><td>73.4%</td><td>0.508</td><td>70.8%</td><td>1,040</td></tr>
+            <tr><td>PDF · pdftotext -layout (poppler) · fixed 2000/200</td><td>96</td><td>62.0%</td><td>89.1%</td><td>46.4%</td><td>93.8%</td><td>0.642</td><td>60.0%</td><td>2,269</td></tr>
+          </tbody>
+        </table></div>
+        <h4 class="bench-table-title">Embeddings — BAAI/bge-small-en-v1.5</h4>
+        <div class="bench-table-wrap"><table class="bench-table">
+          <thead><tr><th>Pipeline</th><th>Chunks</th><th>R@1k tokens</th><th>R@2k tokens</th><th>Top-1</th><th>Top-5</th><th>MRR@10</th><th>Table cells R@1k</th><th>Ctx tokens @5</th></tr></thead>
+          <tbody>
+            <tr class="is-jdf"><td>JDF · jdf chunk (section, 512 tok)</td><td>192</td><td class="bench-best">96.9%</td><td class="bench-best">100.0%</td><td>46.9%</td><td>91.7%</td><td>0.646</td><td>95.0%</td><td>716</td></tr>
+            <tr><td>PDF · PyMuPDF get_text() · fixed 1000/200</td><td>153</td><td>74.5%</td><td>94.3%</td><td>34.4%</td><td>83.3%</td><td>0.530</td><td>71.7%</td><td>1,214</td></tr>
+            <tr><td>PDF · PyMuPDF get_text() · fixed 2000/200</td><td>90</td><td>64.1%</td><td>92.2%</td><td>50.0%</td><td>90.6%</td><td>0.649</td><td>67.5%</td><td>1,783</td></tr>
+            <tr><td>PDF · pdfplumber extract_text() · fixed 1000/200</td><td>150</td><td>75.0%</td><td>93.8%</td><td>34.9%</td><td>84.4%</td><td>0.534</td><td>72.5%</td><td>1,210</td></tr>
+            <tr><td>PDF · pdfplumber extract_text() · fixed 2000/200</td><td>90</td><td>66.1%</td><td>92.2%</td><td>50.5%</td><td>91.7%</td><td>0.659</td><td>69.2%</td><td>1,771</td></tr>
+            <tr><td>PDF · pypdf extract_text() · fixed 1000/200</td><td>151</td><td>75.0%</td><td>94.8%</td><td>31.8%</td><td>84.4%</td><td>0.515</td><td>72.5%</td><td>1,210</td></tr>
+            <tr><td>PDF · pypdf extract_text() · fixed 2000/200</td><td>90</td><td>66.1%</td><td>90.1%</td><td class="bench-best">52.1%</td><td>88.5%</td><td class="bench-best">0.665</td><td>69.2%</td><td>1,777</td></tr>
+            <tr><td>PDF · pdftotext -layout (poppler) · fixed 1000/200</td><td>268</td><td>66.7%</td><td>82.8%</td><td>34.9%</td><td>71.4%</td><td>0.487</td><td>61.7%</td><td>1,044</td></tr>
+            <tr><td>PDF · pdftotext -layout (poppler) · fixed 2000/200</td><td>96</td><td>48.4%</td><td>87.0%</td><td>38.0%</td><td class="bench-best">95.3%</td><td>0.572</td><td>49.2%</td><td>2,211</td></tr>
+          </tbody>
+        </table></div>
+        <h4 class="bench-table-title">Embeddings — sentence-transformers/all-MiniLM-L6-v2</h4>
+        <div class="bench-table-wrap"><table class="bench-table">
+          <thead><tr><th>Pipeline</th><th>Chunks</th><th>R@1k tokens</th><th>R@2k tokens</th><th>Top-1</th><th>Top-5</th><th>MRR@10</th><th>Table cells R@1k</th><th>Ctx tokens @5</th></tr></thead>
+          <tbody>
+            <tr class="is-jdf"><td>JDF · jdf chunk (section, 512 tok)</td><td>192</td><td class="bench-best">97.4%</td><td class="bench-best">100.0%</td><td>40.1%</td><td>91.1%</td><td>0.599</td><td>95.8%</td><td>693</td></tr>
+            <tr><td>PDF · PyMuPDF get_text() · fixed 1000/200</td><td>153</td><td>70.3%</td><td>90.1%</td><td>30.2%</td><td>80.2%</td><td>0.492</td><td>63.3%</td><td>1,204</td></tr>
+            <tr><td>PDF · PyMuPDF get_text() · fixed 2000/200</td><td>90</td><td>60.9%</td><td>82.8%</td><td class="bench-best">45.8%</td><td>81.8%</td><td class="bench-best">0.606</td><td>63.3%</td><td>1,695</td></tr>
+            <tr><td>PDF · pdfplumber extract_text() · fixed 1000/200</td><td>150</td><td>65.6%</td><td>89.1%</td><td>28.1%</td><td>78.1%</td><td>0.474</td><td>58.3%</td><td>1,193</td></tr>
+            <tr><td>PDF · pdfplumber extract_text() · fixed 2000/200</td><td>90</td><td>61.5%</td><td>83.9%</td><td class="bench-best">45.8%</td><td>82.8%</td><td>0.605</td><td>62.5%</td><td>1,684</td></tr>
+            <tr><td>PDF · pypdf extract_text() · fixed 1000/200</td><td>151</td><td>66.7%</td><td>88.0%</td><td>28.1%</td><td>78.6%</td><td>0.477</td><td>59.2%</td><td>1,197</td></tr>
+            <tr><td>PDF · pypdf extract_text() · fixed 2000/200</td><td>90</td><td>62.5%</td><td>84.9%</td><td>42.7%</td><td>81.8%</td><td>0.590</td><td>63.3%</td><td>1,693</td></tr>
+            <tr><td>PDF · pdftotext -layout (poppler) · fixed 1000/200</td><td>268</td><td>66.1%</td><td>82.8%</td><td>29.2%</td><td>68.8%</td><td>0.441</td><td>60.8%</td><td>1,021</td></tr>
+            <tr><td>PDF · pdftotext -layout (poppler) · fixed 2000/200</td><td>96</td><td>54.2%</td><td>83.9%</td><td>37.0%</td><td class="bench-best">91.7%</td><td>0.571</td><td>50.8%</td><td>2,214</td></tr>
+          </tbody>
+        </table></div>
+        <h4 class="bench-table-title">Embeddings — BAAI/bge-base-en-v1.5</h4>
+        <div class="bench-table-wrap"><table class="bench-table">
+          <thead><tr><th>Pipeline</th><th>Chunks</th><th>R@1k tokens</th><th>R@2k tokens</th><th>Top-1</th><th>Top-5</th><th>MRR@10</th><th>Table cells R@1k</th><th>Ctx tokens @5</th></tr></thead>
+          <tbody>
+            <tr class="is-jdf"><td>JDF · jdf chunk (section, 512 tok)</td><td>192</td><td class="bench-best">96.9%</td><td class="bench-best">100.0%</td><td class="bench-best">63.0%</td><td>94.8%</td><td class="bench-best">0.758</td><td>95.0%</td><td>728</td></tr>
+            <tr><td>PDF · PyMuPDF get_text() · fixed 1000/200</td><td>153</td><td>78.6%</td><td>97.4%</td><td>31.8%</td><td>90.1%</td><td>0.528</td><td>81.7%</td><td>1,220</td></tr>
+            <tr><td>PDF · PyMuPDF get_text() · fixed 2000/200</td><td>90</td><td>56.8%</td><td>94.3%</td><td>46.9%</td><td>92.7%</td><td>0.630</td><td>69.2%</td><td>1,793</td></tr>
+            <tr><td>PDF · pdfplumber extract_text() · fixed 1000/200</td><td>150</td><td>80.2%</td><td>97.4%</td><td>32.3%</td><td>90.6%</td><td>0.534</td><td>83.3%</td><td>1,215</td></tr>
+            <tr><td>PDF · pdfplumber extract_text() · fixed 2000/200</td><td>90</td><td>57.8%</td><td>95.3%</td><td>47.4%</td><td>93.2%</td><td>0.634</td><td>70.0%</td><td>1,778</td></tr>
+            <tr><td>PDF · pypdf extract_text() · fixed 1000/200</td><td>151</td><td>77.6%</td><td>98.4%</td><td>30.2%</td><td>91.7%</td><td>0.519</td><td>78.3%</td><td>1,215</td></tr>
+            <tr><td>PDF · pypdf extract_text() · fixed 2000/200</td><td>90</td><td>57.3%</td><td>94.8%</td><td>46.9%</td><td>91.1%</td><td>0.631</td><td>69.2%</td><td>1,790</td></tr>
+            <tr><td>PDF · pdftotext -layout (poppler) · fixed 1000/200</td><td>268</td><td>74.0%</td><td>87.5%</td><td>34.4%</td><td>76.6%</td><td>0.504</td><td>73.3%</td><td>1,037</td></tr>
+            <tr><td>PDF · pdftotext -layout (poppler) · fixed 2000/200</td><td>96</td><td>44.8%</td><td>89.6%</td><td>34.4%</td><td class="bench-best">95.3%</td><td>0.547</td><td>48.3%</td><td>2,296</td></tr>
+          </tbody>
+        </table></div>
+        <p class="rag-bench-note">R@1k tokens = the answer was inside the first 1,000 tokens of retrieved context (chunk-size neutral: a 2,000-character PDF chunk “hits” more often at top-1 simply because it is a quarter of the document, and then costs 3× the tokens). Hit = right document and the chunk contains both the answer and its row/subject key. 24 documents, 120 pages, 192 questions (120 table cells, 48 prose, 24 list). Embeddings run locally (nomic-embed-text via Ollama 0.32.6; BAAI/bge-small-en-v1.5 via sentence-transformers 6.0.1; sentence-transformers/all-MiniLM-L6-v2 via sentence-transformers 6.0.1; BAAI/bge-base-en-v1.5 via sentence-transformers 6.0.1). JDF chunk hashes verified; editing one paragraph re-embeds <strong>1 of 192</strong> chunks. Apple M5, 2026-09-12.</p>
+<!-- bench:table:end -->
+        <h3 class="rag-bench-h3">RAG cost — 1,000 PDF files vs 1,000 JDF files</h3>
+        <p>Same pipeline, only the input format differs: chunks → embeddings → vector store → top-5 context → LLM. Tokens counted from the chunks each pipeline produces, dollars from published prices; the benchmark never calls a paid API.</p>
+<!-- bench:cost:start -->
+        <div class="bench-table-wrap"><table class="bench-table bench-cost">
+          <thead><tr><th>Per 1,000 documents</th><th class="is-jdf">JDF · jdf chunk (section)</th><th>PDF · pypdf extract_text() · fixed 1000/200</th></tr></thead>
+          <tbody>
+            <tr><td>Accuracy · answer in first 1,000 tokens (nomic-embed-text)</td><td class="is-jdf">99.0%</td><td>83.3%</td></tr>
+            <tr><td>Accuracy · top-1 hit</td><td class="is-jdf">76.6%</td><td>41.1%</td></tr>
+            <tr><td>Chunks</td><td class="is-jdf">8,000</td><td>6,291</td></tr>
+            <tr><td>Embedding tokens, initial index</td><td class="is-jdf">1,305,820</td><td>1,390,646</td></tr>
+            <tr><td>Embedding cost · OpenAI text-embedding-3-small</td><td class="is-jdf">$0.0261</td><td>$0.0278</td></tr>
+            <tr><td>Local embedding time · bge-small-en-v1.5 (measured throughput)</td><td class="is-jdf">36.7 s</td><td>31.6 s</td></tr>
+            <tr><td>Vector-store payload</td><td class="is-jdf">5.8 MB</td><td>5.6 MB</td></tr>
+            <tr><td>Re-embed tokens when one paragraph changes in every document</td><td class="is-jdf">91,000</td><td>1,461,000</td></tr>
+            <tr><td>Re-index cost · OpenAI text-embedding-3-small</td><td class="is-jdf">$0.0018</td><td>$0.0292</td></tr>
+            <tr><td>LLM input tokens per 1,000,000 queries (top-5 context)</td><td class="is-jdf">753,364,583</td><td>1,223,625,000</td></tr>
+            <tr><td>LLM input cost · Claude Sonnet 5 input</td><td class="is-jdf">$1,506.73</td><td>$2,447.25</td></tr>
+          </tbody>
+        </table></div>
+        <p class="rag-bench-note">1,000 files per format = the 24-document corpus cycled. Tokens are counted from the chunks each pipeline produces (ceil(chars/4), both sides); embedding time is measured throughput on Apple M5 (2026-09-13) applied to the totals. Prices from <code>bench/prices.json</code> (as of 2026-09-12); edit it for your provider — the benchmark never calls a paid API. The PDF column is the PDF pipeline that scored best in the accuracy run. Re-index: JDF re-embeds only chunks whose content hash changed (<code>jdf embed --incremental</code>); a PDF has no chunk identity, so an edit means re-chunking and re-embedding the whole document.</p>
+<!-- bench:cost:end -->
+        <p class="rag-bench-note">Synthetic corpus by design — a retrieval benchmark needs ground truth for every question, which public PDF corpora don't ship. The generator, every document, every question and every retrieved rank are in <a href="https://github.com/uurtech/jdf/tree/master/bench">bench/</a>. Run it on your own corpus and <a href="https://github.com/uurtech/jdf/issues" target="_blank" rel="noopener">open an issue</a> with the numbers.</p>
       </div>
 
       <div class="rag-foot">
@@ -631,6 +788,59 @@ pnpm tauri build</code></pre>
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    // ── Benchmark card (data generated by bench/src/render.mjs) ──────────
+    (() => {
+      const card = document.getElementById("bench");
+      const raw = document.getElementById("bench-data");
+      if (!card || !raw) return;
+      let data; try { data = JSON.parse(raw.textContent.replace(/<!--[\s\S]*?-->/g, "")); } catch { return; }
+      if (!data.rows) return;
+      const rowsEl = card.querySelector("[data-bench-rows]");
+      const subEl = card.querySelector("[data-bench-sub]");
+      const metricSel = card.querySelector("[data-bench-metric]");
+      let retriever = data.headline, metric = "recallAt1000Tok";
+
+      const render = () => {
+        const m = data.metrics[metric];
+        const rows = data.rows[retriever] || [];
+        const vals = rows.map((r) => r.values[metric] ?? 0);
+        const max = Math.max(...vals) || 1;
+        rowsEl.classList.remove("is-ready");
+        rowsEl.innerHTML = rows.map((r) => {
+          const v = r.values[metric] ?? 0;
+          return `<li class="bench-row${r.jdf ? " is-jdf" : ""}" style="--w:${((v / max) * 100).toFixed(1)}%"><div class="bench-name">${r.name}<span class="bench-ver">${r.version}</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">${r.display[metric]}</div></li>`;
+        }).join("");
+        subEl.textContent = m.label;
+        requestAnimationFrame(() => requestAnimationFrame(() => rowsEl.classList.add("is-ready")));
+      };
+      card.querySelectorAll("[data-bench-retriever]").forEach((b) => b.addEventListener("click", () => {
+        card.querySelectorAll("[data-bench-retriever]").forEach((x) => x.classList.toggle("is-active", x === b));
+        retriever = b.getAttribute("data-bench-retriever"); render();
+      }));
+      if (metricSel) metricSel.addEventListener("change", () => { metric = metricSel.value; render(); });
+      card.querySelector("[data-bench-replay]").addEventListener("click", render);
+
+      const inc = card.querySelector("[data-bench-incremental]");
+      if (inc && data.jdfOnly) inc.innerHTML = `Edit one paragraph, re-index: JDF re-embeds <strong>${data.jdfOnly.chunksReembedded} of ${data.jdfOnly.corpusChunks}</strong> chunks (<code>jdf embed --incremental</code>, content-hashed chunks). A PDF has no chunk identity — re-parse, re-chunk, re-embed the whole document.`;
+      const costEl = card.querySelector("[data-bench-cost]");
+      if (costEl && data.cost) {
+        const usd = (x) => x >= 1 ? "$" + x.toLocaleString("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 }) : "$" + x.toFixed(4);
+        const secs = (s) => s < 120 ? s.toFixed(1) + " s" : s < 7200 ? (s / 60).toFixed(1) + " min" : (s / 3600).toFixed(2) + " h";
+        const c = data.cost;
+        const pc = (x) => (x * 100).toFixed(1) + "%";
+        costEl.innerHTML = `<div class="bench-cost-title">${c.files.toLocaleString("en-US")} documents · JDF vs best PDF pipeline</div>
+          <div class="bench-cost-grid">
+            <div><span>answer in first 1k tokens</span><b>${pc(c.jdf.acc)}</b><i>vs ${pc(c.pdf.acc)}</i></div>
+            <div><span>index · ${c.embedLabel}</span><b>${usd(c.jdf.usd)}</b><i>vs ${usd(c.pdf.usd)}</i></div>
+            <div><span>edit every doc, re-index</span><b>${usd(c.jdf.reindexUsd)}</b><i>vs ${usd(c.pdf.reindexUsd)}</i></div>
+            ${c.jdf.queryUsd != null ? `<div><span>1M queries · ${c.llmLabel}</span><b>${usd(c.jdf.queryUsd)}</b><i>vs ${usd(c.pdf.queryUsd)}</i></div>` : ""}
+          </div>`;
+      }
+      const foot = card.querySelector("[data-bench-foot]");
+      if (foot) foot.textContent = `${data.corpus.documents} reports · ${data.corpus.pages} pages · ${data.corpus.questions} questions · embeddings run locally · PDF rows show each parser's best chunk size · ${data.machine.cpu} · ${data.date}`;
+      render();
+    })();
 
     document.querySelectorAll("[data-copy]").forEach((btn) => {
       btn.addEventListener("click", async () => {

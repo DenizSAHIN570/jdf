@@ -149,7 +149,7 @@ jq <span class="str">'.. | objects | select(.type == "external") | .target'</spa
       <p>The bottom line is qualitative: fewer pipeline stages, smaller vector index, no chunker tuning, and incremental re-indexing on every save.</p>
 
       <div class="callout">
-        <strong>Benchmarks coming.</strong> The wins above are <em>structural</em> — pipeline stages JDF removes entirely — not measured timings. We're running benchmarks on a public corpus (academic PDFs, financial filings, scanned reports) covering parse, chunk, embed, and retrieval cost. This page will be updated with numbers as soon as they're ready. If you run a comparison on your own corpus first, please <a href="https://github.com/uurtech/jdf/issues" target="_blank" rel="noopener">open an issue</a> with the methodology — we'd like to include it.
+        <strong>Measured.</strong> The same 24 reports as PDF (PyMuPDF, pdfplumber, pypdf, poppler + LangChain-style chunking) and as JDF (<code>jdf chunk</code>), same local embedding models, same 192 questions with known answers. On the chunk-size-neutral metric (answer within the first 1,000 tokens of context) JDF leads with every retriever tested and hands the LLM about a third of the tokens; editing one paragraph re-embeds one chunk instead of the whole document. Plus a cost run at 10,000 files per format. Numbers, method and per-question results: <a href="benchmark.html">RAG benchmark</a>. Python only: <code>pip install -r requirements.txt &amp;&amp; python rag_bench.py</code>, check with <code>--verify</code>.
       </div>
 
       <h2>Side-by-side: same document, two formats</h2>

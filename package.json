@@ -2,11 +2,12 @@
   "name": "jdf",
   "version": "0.1.0",
   "private": true,
-  "description": "JDF (JSON Document Format) — a human-readable, JSON-based document format. JDF Reader app, schema, CLI.",
+  "description": "JDF (JSON Document Format) \u2014 a human-readable, JSON-based document format. JDF Reader app, schema, CLI.",
   "scripts": {
     "dev": "pnpm --filter @jdf/reader dev",
     "build": "pnpm --filter @jdf/reader build",
     "tauri": "pnpm --filter @jdf/reader tauri",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "bench:render": "pnpm --filter @jdf/bench render"
   }
 }

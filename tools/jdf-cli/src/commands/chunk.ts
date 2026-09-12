@@ -131,6 +131,20 @@ export function serializeElement(el: Element): string {
   }
 }
 
+/**
+ * The string that actually gets embedded for a chunk: the heading breadcrumb
+ * followed by the chunk text ("contextual chunk header"). A table row deep in
+ * section 7 of a quarterly report embeds as
+ *   "Acme — Q3 2025 Operations Report > 7. Vendor Spend\nVendor: … | Annual spend: …"
+ * so the vector carries *which document and section* the row belongs to. The
+ * chunk `hash` stays a hash of `text` only, so a heading rename does not
+ * invalidate every chunk below it. `jdf embed` and the bench both use this.
+ */
+export function embeddingInput(chunk: Pick<Chunk, "text" | "path">): string {
+  const crumb = (chunk.path || []).filter((s) => s && s.trim().length > 0);
+  return crumb.length ? `${crumb.join(" > ")}\n${chunk.text}` : chunk.text;
+}
+
 /** Stable per-element id: use author-provided `id`, else page+index coordinate. */
 function elementId(el: any, pageIdx: number, elIdx: number): string {
   if (typeof el.id === "string" && el.id.length > 0) return el.id;
@@ -235,7 +249,14 @@ export function chunkDocument(doc: JdfDocument, options: ChunkOptions = {}): Chu
   for (const f of flat) {
     const lvl = headingLevel(f.el);
     if (lvl != null) {
-      flushSection();
+      // A section whose buffer holds nothing but headings (a title directly
+      // followed by "1. Introduction", or an empty H2) carries no content of
+      // its own — emitting it as a chunk creates a title-only fragment that
+      // dense retrievers latch onto ("Acme — Q3 report" matches every Acme Q3
+      // question) while answering none of them. Keep accumulating so the
+      // headings become the opening lines of the next section instead.
+      const onlyHeadings = buf.length > 0 && buf.every((b) => headingLevel(b.el) != null);
+      if (!onlyHeadings) flushSection();
       crumb.length = Math.max(0, lvl - 1);
       crumb[lvl - 1] = serializeElement(f.el);
     }

@@ -43,6 +43,8 @@ Flags:
       --provider <p>    embed: ollama (default, local) | openai (remote API)
       --model <name>    embed: model id (default: nomic-embed-text / text-embedding-3-small)
       --incremental     embed: skip chunks whose content hash is unchanged
+      --cache <path>    embed: sidecar to reuse vectors from (default: the
+                        output path itself)
       --no-auto-start   embed(ollama): don't auto-launch Ollama via Docker
 
 Environment (embed):
@@ -161,7 +163,7 @@ async function main() {
       }
       case "embed": {
         const input = positional[0];
-        if (!input) { console.error("Usage: jdf embed <file.{jdf,jdfx}> [--provider ollama|openai] [--model NAME] [--strategy …] [--incremental] [--no-auto-start] [-o out]"); process.exit(1); }
+        if (!input) { console.error("Usage: jdf embed <file.{jdf,jdfx}> [--provider ollama|openai] [--model NAME] [--strategy …] [--incremental] [--cache prev.embeddings.json] [--no-auto-start] [-o out]"); process.exit(1); }
         await embedFile(input, {
           provider: (typeof flags.provider === "string" ? flags.provider : undefined) as EmbeddingProvider | undefined,
           model: typeof flags.model === "string" ? flags.model : undefined,
@@ -170,6 +172,7 @@ async function main() {
           incremental: flags.incremental === true,
           autoStart: flags["no-auto-start"] !== true,
           output: typeof flags.output === "string" ? flags.output : undefined,
+          cache: typeof flags.cache === "string" ? flags.cache : undefined,
         });
         process.exit(0);
       }

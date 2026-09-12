@@ -1,0 +1,407 @@
+{
+  "date": "2026-09-13",
+  "machine": {
+    "cpu": "Apple M5",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.6"
+  },
+  "files": 1000,
+  "corpusDocuments": 24,
+  "pdfPipeline": "pdf-pypdf-1000",
+  "pdfChunking": {
+    "chars": 1000,
+    "overlap": 200
+  },
+  "queries": 1000000,
+  "embedding": {
+    "provider": "st",
+    "model": "BAAI/bge-small-en-v1.5",
+    "version": "sentence-transformers 6.0.1",
+    "measuredOn": "first 2000 unique chunks per pipeline",
+    "tokensPerSecond": {
+      "jdf": 35536.11415719101,
+      "pypdf": 44014.11178361404
+    }
+  },
+  "prices": {
+    "_comment": "Public list prices used by cost_bench.py to turn counted tokens into dollars. The benchmark never calls these APIs. Edit for your provider; keep as_of + source so numbers stay auditable.",
+    "embedding": {
+      "openai-text-embedding-3-small": {
+        "label": "OpenAI text-embedding-3-small",
+        "usd_per_1m_tokens": 0.02,
+        "as_of": "2026-09-12",
+        "source": "https://openai.com/api/pricing/"
+      },
+      "openai-text-embedding-3-large": {
+        "label": "OpenAI text-embedding-3-large",
+        "usd_per_1m_tokens": 0.13,
+        "as_of": "2026-09-12",
+        "source": "https://openai.com/api/pricing/"
+      },
+      "cohere-embed-v4": {
+        "label": "Cohere Embed v4",
+        "usd_per_1m_tokens": 0.12,
+        "as_of": "2026-09-12",
+        "source": "https://cohere.com/pricing"
+      }
+    },
+    "llm_input": {
+      "claude-sonnet-5": {
+        "label": "Claude Sonnet 5 input",
+        "usd_per_1m_tokens": 2.0,
+        "as_of": "2026-06-24",
+        "source": "https://www.anthropic.com/pricing"
+      },
+      "claude-haiku-4-5": {
+        "label": "Claude Haiku 4.5 input",
+        "usd_per_1m_tokens": 1.0,
+        "as_of": "2026-06-24",
+        "source": "https://www.anthropic.com/pricing"
+      },
+      "claude-opus-5": {
+        "label": "Claude Opus 5 input",
+        "usd_per_1m_tokens": 5.0,
+        "as_of": "2026-06-24",
+        "source": "https://www.anthropic.com/pricing"
+      },
+      "openai-gpt-4o-mini": {
+        "label": "GPT-4o mini input",
+        "usd_per_1m_tokens": 0.15,
+        "as_of": "2026-09-12",
+        "source": "https://openai.com/api/pricing/"
+      }
+    }
+  },
+  "sides": [
+    {
+      "id": "jdf",
+      "label": "JDF \u00b7 jdf chunk (section)",
+      "version": "0.1.26",
+      "files": 1000,
+      "perDoc": {
+        "d01": {
+          "chunks": 8,
+          "tokens": 1338,
+          "bytes": 5887
+        },
+        "d02": {
+          "chunks": 8,
+          "tokens": 1320,
+          "bytes": 5806
+        },
+        "d03": {
+          "chunks": 8,
+          "tokens": 1290,
+          "bytes": 5690
+        },
+        "d04": {
+          "chunks": 8,
+          "tokens": 1313,
+          "bytes": 5788
+        },
+        "d05": {
+          "chunks": 8,
+          "tokens": 1351,
+          "bytes": 5916
+        },
+        "d06": {
+          "chunks": 8,
+          "tokens": 1272,
+          "bytes": 5610
+        },
+        "d07": {
+          "chunks": 8,
+          "tokens": 1321,
+          "bytes": 5784
+        },
+        "d08": {
+          "chunks": 8,
+          "tokens": 1280,
+          "bytes": 5628
+        },
+        "d09": {
+          "chunks": 8,
+          "tokens": 1298,
+          "bytes": 5730
+        },
+        "d10": {
+          "chunks": 8,
+          "tokens": 1336,
+          "bytes": 5882
+        },
+        "d11": {
+          "chunks": 8,
+          "tokens": 1298,
+          "bytes": 5726
+        },
+        "d12": {
+          "chunks": 8,
+          "tokens": 1348,
+          "bytes": 5928
+        },
+        "d13": {
+          "chunks": 8,
+          "tokens": 1311,
+          "bytes": 5791
+        },
+        "d14": {
+          "chunks": 8,
+          "tokens": 1300,
+          "bytes": 5747
+        },
+        "d15": {
+          "chunks": 8,
+          "tokens": 1261,
+          "bytes": 5566
+        },
+        "d16": {
+          "chunks": 8,
+          "tokens": 1284,
+          "bytes": 5652
+        },
+        "d17": {
+          "chunks": 8,
+          "tokens": 1334,
+          "bytes": 5860
+        },
+        "d18": {
+          "chunks": 8,
+          "tokens": 1310,
+          "bytes": 5759
+        },
+        "d19": {
+          "chunks": 8,
+          "tokens": 1304,
+          "bytes": 5738
+        },
+        "d20": {
+          "chunks": 8,
+          "tokens": 1281,
+          "bytes": 5656
+        },
+        "d21": {
+          "chunks": 8,
+          "tokens": 1321,
+          "bytes": 5821
+        },
+        "d22": {
+          "chunks": 8,
+          "tokens": 1281,
+          "bytes": 5670
+        },
+        "d23": {
+          "chunks": 8,
+          "tokens": 1324,
+          "bytes": 5829
+        },
+        "d24": {
+          "chunks": 8,
+          "tokens": 1263,
+          "bytes": 5593
+        }
+      },
+      "accuracy": {
+        "recallAt1000Tok": 0.9895833333333334,
+        "recall1": 0.765625,
+        "recall5": 0.9895833333333334,
+        "mrr10": 0.8643229166666666,
+        "retriever": "dense:nomic-embed-text"
+      },
+      "chunks": 8000,
+      "embedTokens": 1305820,
+      "chunkStoreBytes": 5752468,
+      "embedUsd": {
+        "openai-text-embedding-3-small": 0.0261164,
+        "openai-text-embedding-3-large": 0.1697566,
+        "cohere-embed-v4": 0.1566984
+      },
+      "localEmbedSeconds": 36.74627997377021,
+      "reindex": {
+        "chunksPerEditedDoc": 1,
+        "tokensPerEditedDoc": 91,
+        "tokensAllDocsEdited": 91000,
+        "usd": {
+          "openai-text-embedding-3-small": 0.00182,
+          "openai-text-embedding-3-large": 0.01183,
+          "cohere-embed-v4": 0.01092
+        }
+      },
+      "query": {
+        "ctxTokensPerQuery": 753.3645833333334,
+        "queries": 1000000,
+        "inputTokens": 753364583.3333334,
+        "usd": {
+          "claude-sonnet-5": 1506.7291666666667,
+          "claude-haiku-4-5": 753.3645833333334,
+          "claude-opus-5": 3766.822916666667,
+          "openai-gpt-4o-mini": 113.0046875
+        }
+      }
+    },
+    {
+      "id": "pypdf",
+      "label": "PDF \u00b7 pypdf extract_text() \u00b7 fixed 1000/200",
+      "version": "6.18.1",
+      "files": 1000,
+      "perDoc": {
+        "d01": {
+          "chunks": 7,
+          "tokens": 1461,
+          "bytes": 5925
+        },
+        "d02": {
+          "chunks": 5,
+          "tokens": 1325,
+          "bytes": 5365
+        },
+        "d03": {
+          "chunks": 6,
+          "tokens": 1359,
+          "bytes": 5498
+        },
+        "d04": {
+          "chunks": 7,
+          "tokens": 1438,
+          "bytes": 5820
+        },
+        "d05": {
+          "chunks": 6,
+          "tokens": 1414,
+          "bytes": 5715
+        },
+        "d06": {
+          "chunks": 6,
+          "tokens": 1336,
+          "bytes": 5418
+        },
+        "d07": {
+          "chunks": 7,
+          "tokens": 1438,
+          "bytes": 5813
+        },
+        "d08": {
+          "chunks": 6,
+          "tokens": 1340,
+          "bytes": 5425
+        },
+        "d09": {
+          "chunks": 7,
+          "tokens": 1431,
+          "bytes": 5780
+        },
+        "d10": {
+          "chunks": 6,
+          "tokens": 1408,
+          "bytes": 5691
+        },
+        "d11": {
+          "chunks": 7,
+          "tokens": 1427,
+          "bytes": 5757
+        },
+        "d12": {
+          "chunks": 6,
+          "tokens": 1427,
+          "bytes": 5763
+        },
+        "d13": {
+          "chunks": 6,
+          "tokens": 1385,
+          "bytes": 5592
+        },
+        "d14": {
+          "chunks": 5,
+          "tokens": 1312,
+          "bytes": 5312
+        },
+        "d15": {
+          "chunks": 7,
+          "tokens": 1384,
+          "bytes": 5607
+        },
+        "d16": {
+          "chunks": 6,
+          "tokens": 1345,
+          "bytes": 5448
+        },
+        "d17": {
+          "chunks": 6,
+          "tokens": 1400,
+          "bytes": 5659
+        },
+        "d18": {
+          "chunks": 6,
+          "tokens": 1377,
+          "bytes": 5565
+        },
+        "d19": {
+          "chunks": 6,
+          "tokens": 1373,
+          "bytes": 5545
+        },
+        "d20": {
+          "chunks": 7,
+          "tokens": 1406,
+          "bytes": 5691
+        },
+        "d21": {
+          "chunks": 7,
+          "tokens": 1450,
+          "bytes": 5859
+        },
+        "d22": {
+          "chunks": 6,
+          "tokens": 1352,
+          "bytes": 5477
+        },
+        "d23": {
+          "chunks": 6,
+          "tokens": 1395,
+          "bytes": 5645
+        },
+        "d24": {
+          "chunks": 7,
+          "tokens": 1393,
+          "bytes": 5632
+        }
+      },
+      "accuracy": {
+        "recallAt1000Tok": 0.8333333333333334,
+        "recall1": 0.4114583333333333,
+        "recall5": 0.921875,
+        "mrr10": 0.6049520502645502,
+        "retriever": "dense:nomic-embed-text"
+      },
+      "chunks": 6291,
+      "embedTokens": 1390646,
+      "chunkStoreBytes": 5625011,
+      "embedUsd": {
+        "openai-text-embedding-3-small": 0.02781292,
+        "openai-text-embedding-3-large": 0.18078398,
+        "cohere-embed-v4": 0.16687752
+      },
+      "localEmbedSeconds": 31.5954575395458,
+      "reindex": {
+        "chunksPerEditedDoc": 7,
+        "tokensPerEditedDoc": 1461,
+        "tokensAllDocsEdited": 1461000,
+        "usd": {
+          "openai-text-embedding-3-small": 0.029220000000000003,
+          "openai-text-embedding-3-large": 0.18993000000000002,
+          "cohere-embed-v4": 0.17532
+        }
+      },
+      "query": {
+        "ctxTokensPerQuery": 1223.625,
+        "queries": 1000000,
+        "inputTokens": 1223625000.0,
+        "usd": {
+          "claude-sonnet-5": 2447.25,
+          "claude-haiku-4-5": 1223.625,
+          "claude-opus-5": 6118.125,
+          "openai-gpt-4o-mini": 183.54375
+        }
+      }
+    }
+  ]
+}
