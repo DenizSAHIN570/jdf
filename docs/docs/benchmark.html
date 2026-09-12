@@ -46,6 +46,10 @@ python rag_bench.py --verify             # re-run and compare with the published
         Each installed PDF parser (PyMuPDF, pdfplumber, pypdf, poppler's <code>pdftotext</code>) becomes a pipeline; missing ones are skipped. Nothing from the corpus leaves your machine.
       </div>
 
+      <h2>In 42 seconds</h2>
+      <video controls muted playsinline preload="metadata" src="../demos/rag-benchmark.mp4" style="width:100%;border-radius:12px;border:1px solid var(--border);background:#0b1220;display:block"></video>
+      <p style="font-size:13px;color:var(--muted);margin-top:8px">Every number on screen is read from <code>docs/bench.json</code>. Source: <a href="https://github.com/uurtech/jdf/tree/master/demos/rag-benchmark" target="_blank" rel="noopener">demos/rag-benchmark</a>.</p>
+
       <h2>Retrieval accuracy</h2>
       <p>PDF side: <code>pdf → text → LangChain-style fixed chunks (1000/200 and 2000/200 chars) → retriever</code>. JDF side: <code>jdf → jdf chunk --strategy section → retriever</code> — section-aware chunks, tables serialised as <code>Header: value</code> rows, the heading breadcrumb prefixed to the text that gets embedded. Same retrievers for both. A retrieved chunk is a hit when it comes from the right document and contains both the answer and its row/subject key.</p>
 <!-- bench:table:start -->

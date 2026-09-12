@@ -1388,3 +1388,7 @@ footer ul li a:hover { color: var(--brand); }
 .bench-table-title { font-size: 14px; margin: 22px 0 8px; color: var(--text-soft); font-weight: 600; }
 .bench-table th.is-jdf, .bench-table td.is-jdf { color: var(--brand-strong); background: var(--brand-soft); font-weight: 600; }
 .rag-bench-h3 { font-size: 17px; margin: 28px 0 6px; }
+
+.rag-video { margin: 22px 0 0; }
+.rag-video video { width: 100%; border-radius: var(--radius); border: 1px solid var(--border); background: #0b1220; box-shadow: var(--shadow-md); display: block; }
+.rag-video figcaption { font-size: 13px; color: var(--muted); margin-top: 8px; }
