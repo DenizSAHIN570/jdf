@@ -89,7 +89,7 @@ importers:
     dependencies:
       '@remotion/cli':
         specifier: 4.0.240
-        version: 4.0.240(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.0.240(postcss@8.5.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -114,7 +114,7 @@ importers:
     dependencies:
       '@remotion/cli':
         specifier: 4.0.240
-        version: 4.0.240(postcss@8.5.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.0.240(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -190,9 +190,15 @@ importers:
       '@jdf/core':
         specifier: workspace:*
         version: link:../jdf-core
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.19.20
       pdfjs-dist:
         specifier: ^4.10.38
         version: 4.10.38
+      tsx:
+        specifier: ^4.19.2
+        version: 4.22.4
       typescript:
         specifier: ^5.5.0
         version: 5.9.3
@@ -3079,7 +3085,7 @@ snapshots:
       remotion: 4.0.240(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       source-map: 0.7.3
       style-loader: 2.0.0(webpack@5.96.1(esbuild@0.24.0)(postcss@8.5.15))
-      webpack: 5.96.1(postcss@8.5.15)
+      webpack: 5.96.1(esbuild@0.24.0)(postcss@8.5.15)
     transitivePeerDependencies:
       - '@minify-html/node'
       - '@swc/core'
@@ -3786,7 +3792,7 @@ snapshots:
       postcss-value-parser: 4.2.0
       schema-utils: 3.3.0
       semver: 7.8.5
-      webpack: 5.96.1(postcss@8.5.15)
+      webpack: 5.96.1(esbuild@0.24.0)(postcss@8.5.15)
 
   css-loader@5.2.7(webpack@5.96.1(esbuild@0.24.0)):
     dependencies:
@@ -4481,7 +4487,7 @@ snapshots:
     dependencies:
       loader-utils: 2.0.4
       schema-utils: 3.3.0
-      webpack: 5.96.1(postcss@8.5.15)
+      webpack: 5.96.1(esbuild@0.24.0)(postcss@8.5.15)
 
   style-loader@2.0.0(webpack@5.96.1(esbuild@0.24.0)):
     dependencies:
@@ -4513,7 +4519,7 @@ snapshots:
       jest-worker: 27.5.1
       schema-utils: 4.4.0
       terser: 5.51.2
-      webpack: 5.96.1(postcss@8.5.15)
+      webpack: 5.96.1(esbuild@0.24.0)(postcss@8.5.15)
     optionalDependencies:
       esbuild: 0.24.0
       postcss: 8.5.15
@@ -4688,7 +4694,7 @@ snapshots:
       - postcss
       - uglify-js
 
-  webpack@5.96.1(postcss@8.5.15):
+  webpack@5.96.1(esbuild@0.24.0)(postcss@8.5.15):
     dependencies:
       '@types/eslint-scope': 3.7.7
       '@types/estree': 1.0.9

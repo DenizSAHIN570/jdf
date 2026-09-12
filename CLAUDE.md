@@ -95,6 +95,8 @@ The PDF→JDF algorithm lives in **`packages/jdf-pdf-import/src/core.ts`** — a
 
 The reader's `apps/reader/src/import/pdfToJdf.ts` is now a one-line re-export of the browser entry point — keep it that way.
 
+**Table detection** lives in `packages/jdf-pdf-import/src/tables.ts` (pure geometry: rows by baseline → column bands by x-overlap → drawn cell borders/backgrounds as header/alt/border hints). Its ground truth is the benchmark corpus: `pnpm --filter @jdf/pdf-import verify:tables` converts the 24 browser-printed PDFs in `bench/corpus/docs` and compares every cell with the JDF originals (currently 120/120 tables, 99.3% cells). Run it after any change to `core.ts` run-merging or `tables.ts`; don't accept a regression. Also re-check `spec/examples/sample.pdf` and the 1360-page `partnercentral-selling-api.pdf` (≈10 s) for false positives / speed.
+
 ### When you bump the JDF format version (`$jdf` field)
 
 1. Bump `version` in `packages/jdf-core/package.json`.

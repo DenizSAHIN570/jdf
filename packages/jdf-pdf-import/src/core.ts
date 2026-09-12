@@ -1,5 +1,6 @@
 import type { JdfDocument, Page, Element, TextElement, ImageResource, ShapeElement } from "@jdf/core";
 import type { PdfImportRuntime } from "./types";
+import { detectTables, calibrateGlyphWidth, hasStretchedSpaces, type TRun } from "./tables";
 
 const PT_TO_MM = 0.352778;
 
@@ -174,10 +175,29 @@ async function walkOps(page: any, OPS: any, viewport: any): Promise<ParsedOps> {
   }
   let pathSegments: { type: "M" | "L" | "C" | "Q" | "Z" | "RECT"; pts: number[] }[] = [];
   let pathRect: { x: number; y: number; w: number; h: number } | null = null;
+  // Rectangles packed inside constructPath (several per path is common: a
+  // table's cell borders are often one path of many `re`).
+  let pathRects: { x: number; y: number; w: number; h: number }[] = [];
   let pathStart: { x: number; y: number } | null = null;
   let pathLast: { x: number; y: number } | null = null;
 
   function flushPath(isFill: boolean, isStroke: boolean) {
+    for (const r of pathRects) {
+      const tl = toViewport(r.x, r.y + r.h);
+      const br = toViewport(r.x + r.w, r.y);
+      shapes.push({
+        kind: "rect",
+        x: Math.min(tl.x, br.x) * PT_TO_MM,
+        y: Math.min(tl.y, br.y) * PT_TO_MM,
+        width: Math.abs(br.x - tl.x) * PT_TO_MM,
+        height: Math.abs(br.y - tl.y) * PT_TO_MM,
+        fill: isFill ? gs.fill : undefined,
+        stroke: isStroke ? gs.stroke : undefined,
+        strokeWidth: isStroke ? gs.lineWidth * PT_TO_MM : undefined,
+        opacity: isFill ? gs.fillAlpha : gs.strokeAlpha,
+      });
+    }
+    pathRects = [];
     if (pathRect) {
       const tl = toViewport(pathRect.x, pathRect.y + pathRect.h);
       const br = toViewport(pathRect.x + pathRect.w, pathRect.y);
@@ -456,6 +476,15 @@ async function walkOps(page: any, OPS: any, viewport: any): Promise<ParsedOps> {
         } else if (op === OPS.closePath) {
           pathSegments.push({ type: "Z", pts: [] });
           if (pathStart) pathLast = { ...pathStart };
+        } else if (op === OPS.rectangle) {
+          // PDF.js 4.x packs `re` operators into constructPath. Without this
+          // arm every filled/stroked rectangle drawn that way (table cell
+          // backgrounds and borders in browser-printed PDFs, most boxes in
+          // modern generators) was silently dropped: 200+ fills, 0 shapes.
+          const x = pathArgs[ai], y = pathArgs[ai + 1], w = pathArgs[ai + 2], h = pathArgs[ai + 3]; ai += 4;
+          const p1 = tx(gs.ctm, x, y);
+          const p3 = tx(gs.ctm, x + w, y + h);
+          pathRects.push({ x: Math.min(p1.x, p3.x), y: Math.min(p1.y, p3.y), w: Math.abs(p3.x - p1.x), h: Math.abs(p3.y - p1.y) });
         }
       }
     } else if (
@@ -468,6 +497,7 @@ async function walkOps(page: any, OPS: any, viewport: any): Promise<ParsedOps> {
       flushPath(isFill, isStroke);
     } else if (fn === OPS.endPath || fn === OPS.clip || fn === OPS.eoClip) {
       pathSegments = [];
+      pathRects = [];
       pathRect = null;
       pathStart = null;
       pathLast = null;
@@ -840,6 +870,9 @@ function pdfDateToIso(v: unknown): string | undefined {
 }
 
 export interface ImportPdfOptions {
+  /** Rebuild tables from positioned text (+ drawn borders) into real `table`
+   *  elements. Default true; set false to keep every run as loose text. */
+  detectTables?: boolean;
   /** Optional pdfjs-dist module override (already initialised). */
   pdfjs?: any;
   /** Password for encrypted PDFs (tried first). */
@@ -1108,19 +1141,42 @@ export async function importPdfToJdf(
 
     const lines: TextRun[] = [];
     const Y_TOL = 0.6;
+    // Average glyph advance on this page (em), measured from runs PDF.js sizes exactly.
+    const kGlyph = calibrateGlyphWidth(runs);
+    const stretchedSpaces = hasStretchedSpaces(runs, kGlyph);
+    const fontKey = (name: string) => {
+      const c = fontMap.get(name) || classifyFont(name || "");
+      return `${c.family}|${c.weight || ""}|${c.style || ""}`;
+    };
     for (const r of runs) {
       if (!r.text.length) continue;
       const last = lines[lines.length - 1];
       if (!last) { lines.push({ ...r }); continue; }
       const sameLine = Math.abs(last.y - r.y) <= Y_TOL;
+      // Browser-printed PDFs subset one typeface into several font objects
+      // (g_d0_f1 / f2 / f3 …), so compare the classified face, not the name.
       const sameStyle =
         Math.abs(last.fontSize - r.fontSize) < 0.4 &&
-        last.fontName === r.fontName &&
+        (last.fontName === r.fontName || fontKey(last.fontName) === fontKey(r.fontName)) &&
         last.color === r.color &&
         Math.abs(last.opacity - r.opacity) < 0.05;
-      const gapMm = r.x - (last.x + last.width);
+      // PDF.js over-reports the width of a run that ends in a stretched
+      // space (browser-printed tables: "Region " spans to the next column).
+      // Cap the extent at a generous per-glyph estimate so the next run's
+      // gap is judged from where the glyphs really end; allow a little
+      // overlap for kerned per-glyph runs.
       const emMm = r.fontSize * PT_TO_MM;
-      const mergeOk = sameLine && sameStyle && gapMm >= -0.2 && gapMm <= emMm * 0.45;
+      const extent = (t: TextRun) => {
+        if (!/\s$/.test(t.text)) return t.width; // no trailing space → PDF.js width is the glyph advance, trust it
+        const em = t.fontSize * PT_TO_MM;
+        const est = Math.max(1, t.text.trim().length) * em * kGlyph + em * 0.25;
+        // Pages that stretch trailing spaces (browser-printed tables): cap at
+        // the glyph estimate. Elsewhere trust PDF.js unless implausibly wide.
+        if (stretchedSpaces) return Math.min(t.width, est);
+        return t.width > est * 1.4 ? est : t.width;
+      };
+      const gapMm = r.x - (last.x + extent(last));
+      const mergeOk = sameLine && sameStyle && gapMm >= -emMm * 0.5 && gapMm <= emMm * 0.45;
 
       if (mergeOk) {
         const lastEndsSpace = /\s$/.test(last.text);
@@ -1132,7 +1188,7 @@ export async function importPdfToJdf(
         // and could shrink when a 4+ run line had slight kerning, which then
         // overestimated the gap to the next run and broke merges early.
         const newExtent = (r.x - last.x) + r.width;
-        last.width = Math.max(last.width, newExtent);
+        last.width = Math.max(extent(last), newExtent);
       } else {
         lines.push({ ...r });
       }
@@ -1152,8 +1208,32 @@ export async function importPdfToJdf(
 
     const elements: Element[] = [];
 
-    for (const sh of ops.shapes) {
-      if (sh.width < 0.3 && sh.height < 0.3) continue;
+    // Tables: rebuild grids from line geometry (+ drawn cell borders /
+    // backgrounds as hints) and emit real `table` elements. The text lines
+    // and shapes they consume are skipped below so nothing is drawn twice.
+    const tRuns: TRun[] = lines.map((l) => {
+      const cls = fontMap.get(l.fontName) || classifyFont(l.fontName || "");
+      return { text: l.text, x: l.x, y: l.y, width: l.width, height: l.height, fontSize: l.fontSize, fontName: l.fontName, color: l.color, bold: cls.weight === "bold" };
+    });
+    const detected = options.detectTables === false ? [] : detectTables(tRuns, ops.shapes, pageW * PT_TO_MM);
+    const consumedLines = new Set<number>();
+    const consumedShapes = new Set<number>();
+    const tableAtLine = new Map<number, Element>();
+    for (const t of detected) {
+      for (const k of t.lineIdx) consumedLines.add(k);
+      for (const k of t.shapeIdx) consumedShapes.add(k);
+      tableAtLine.set(Math.min(...t.lineIdx), t.element);
+    }
+
+    const pageWmm = pageW * PT_TO_MM, pageHmm = pageH * PT_TO_MM;
+    ops.shapes.forEach((sh, shapeIdx) => {
+      if (consumedShapes.has(shapeIdx)) return;
+      if (sh.width < 0.3 && sh.height < 0.3) return;
+      // Page-background fills (browsers paint the whole page white first) and
+      // shapes entirely off the page are noise — and a full-page white rect
+      // would sit on top of nothing useful while doubling the element count.
+      if (sh.x + sh.width <= 0 || sh.y + sh.height <= 0 || sh.x >= pageWmm || sh.y >= pageHmm) return;
+      if (sh.kind === "rect" && sh.fill && !sh.stroke && sh.width * sh.height >= pageWmm * pageHmm * 0.9) return;
       const shapeType: "rect" | "line" | "path" = sh.kind;
       const shape: ShapeElement = {
         type: "shape",
@@ -1169,7 +1249,7 @@ export async function importPdfToJdf(
         (shape as any).style = { opacity: Math.round(sh.opacity * 100) / 100 };
       }
       elements.push(shape);
-    }
+    });
 
     const imgs = await extractImages(page, ops.imagePositions, runtime, dataUrlCache);
     for (const { pos, dataUrl } of imgs) {
@@ -1198,7 +1278,10 @@ export async function importPdfToJdf(
       });
     }
 
-    for (const l of lines) {
+    lines.forEach((l, lineIdx) => {
+      const tableEl = tableAtLine.get(lineIdx);
+      if (tableEl) elements.push(tableEl);
+      if (consumedLines.has(lineIdx)) return;
       const cls = fontMap.get(l.fontName) || classifyFont(l.fontName || "");
       const style: any = {
         fontSize: Math.round(l.fontSize * 10) / 10,
@@ -1211,7 +1294,6 @@ export async function importPdfToJdf(
 
       const link = findLinkForRun(l);
 
-      const pageWmm = pageW * PT_TO_MM;
       const measured = Math.max(l.width + l.fontSize * PT_TO_MM * 0.4, l.fontSize * PT_TO_MM);
       // If l.x is past the page edge (CropBox-offset PDFs sometimes do this
       // for trailing artifacts), `pageWmm - l.x` goes negative and clamps to
@@ -1241,7 +1323,7 @@ export async function importPdfToJdf(
         else if (link.destPage != null) text.link = { type: "internal", target: `#page-${link.destPage + 1}` };
       }
       elements.push(text);
-    }
+    });
 
     // Form widgets — emit on top of text/shape so the user can interact
     // with them in jdf.js / the reader. Skip pushbuttons (no form value

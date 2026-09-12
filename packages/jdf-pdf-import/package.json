@@ -1,7 +1,7 @@
 {
   "name": "@jdf/pdf-import",
   "version": "0.1.0",
-  "description": "PDF → JDF converter — single algorithm, two entry points (browser DOM canvas, node @napi-rs/canvas).",
+  "description": "PDF \u2192 JDF converter \u2014 single algorithm, two entry points (browser DOM canvas, node @napi-rs/canvas).",
   "license": "MIT",
   "author": "Ugur Kazdal",
   "homepage": "https://github.com/uurtech/jdf#readme",
@@ -28,7 +28,9 @@
     "./browser": "./src/browser.ts",
     "./node": "./src/node.ts"
   },
-  "files": ["src"],
+  "files": [
+    "src"
+  ],
   "peerDependencies": {
     "pdfjs-dist": "^4.0.0"
   },
@@ -39,6 +41,12 @@
   "devDependencies": {
     "@jdf/core": "workspace:*",
     "pdfjs-dist": "^4.10.38",
-    "typescript": "^5.5.0"
+    "typescript": "^5.5.0",
+    "tsx": "^4.19.2",
+    "@types/node": "^22.10.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "verify:tables": "tsx scripts/verify-tables.ts"
   }
 }

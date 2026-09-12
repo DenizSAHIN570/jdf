@@ -10,6 +10,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · semantic-ish
 - `demos/rag-benchmark/`: 50-second Remotion presentation of the benchmark (`rag-benchmark.mp4`), every number read from `docs/bench.json`.
 - Landing page hero: bun.com-style benchmark card (per-retriever tabs, metric switch, measured cost strip); RAG section, new `docs/benchmark.html` page and README carry the full tables. All generated from `bench/results/*.json`.
 
+### Added — PDF importer: real tables
+- `jdf convert file.pdf` (and the reader's drag-and-drop import) now rebuilds tables from page geometry and emits real `table` elements — headers, rows, column widths, right-aligned numeric columns, header background, alternating row colour, borders — instead of dozens of loose text runs. Pure geometry (row baselines → column bands, drawn cell borders/backgrounds as hints), no ML, same code in CLI and reader (`packages/jdf-pdf-import/src/tables.ts`). Verified against the benchmark corpus: 24 browser-printed PDFs, 120 tables, 3,432 cells → 120/120 tables found, 99.3% cells exact (`pnpm --filter @jdf/pdf-import verify:tables`). Opt out with `detectTables: false`.
+- Fixed: rectangles packed inside PDF.js `constructPath` (how PDF.js 4.x emits `re`) were never parsed — every filled/stroked box drawn that way (table borders/backgrounds in browser-printed PDFs, most boxes from modern generators) was silently dropped.
+- Fixed: text runs from browser-printed PDFs stayed one glyph per element ("R", "egi", "on"). Runs are now merged across font *subsets* of the same face, and the stretched trailing-space width PDF.js reports is no longer trusted (glyph advance calibrated per page).
+- Page-background fills and off-page shapes are no longer emitted.
+
 ### Changed — CLI chunking
 - `jdf chunk --strategy section` no longer emits heading-only chunks: a title directly followed by the first section heading (or an empty H2) is merged into the section that follows. Title-only fragments were a retrieval magnet with no content (found by the benchmark). Chunk ids of the first section change accordingly.
 - `jdf embed` embeds the heading breadcrumb + chunk text (`embeddingInput()`), so vectors carry document/section context; chunk hashes unchanged. New `--cache <path>` flag for `--incremental` (was accepted by the library but not wired into the CLI).
