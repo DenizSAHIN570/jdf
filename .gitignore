@@ -52,3 +52,4 @@ sow/
 *_pricing_calculator_inputs.md
 bench/.venv/
 __pycache__/
+demos/*/out/
