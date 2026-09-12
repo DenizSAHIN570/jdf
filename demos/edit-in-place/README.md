@@ -1,6 +1,6 @@
 # Edit-in-place demo
 
-**Video:** [`edit-in-place.mp4`](edit-in-place.mp4) — 1280×720, 30 fps, 17 s, H.264.
+**Video:** [`edit-in-place.mp4`](edit-in-place.mp4) — 1920×1080, 30 fps, 34 s, H.264. Calm pacing, large pointer — made for a sales/landing context.
 
 The reader opens `hello-world.jdf`, the user double-clicks the heading, types a new title and presses **Enter**; the toolbar flashes *Saving… → Saved*. A second edit is committed by clicking somewhere else. Outro card.
 
@@ -27,4 +27,4 @@ pnpm --filter @jdf/demo-edit-in-place studio   # Remotion studio — tweak the c
 pnpm --filter @jdf/demo-edit-in-place render   # → out/edit-in-place.mp4
 ```
 
-The composition (`src/EditInPlace.tsx`) is a faithful React mock of the reader UI (toolbar, insert bar, page sidebar, page) with an animated cursor, click ripples, typing caret, Enter keycap and captions. Timings live in the `T` table at the top of the file.
+The composition (`src/EditInPlace.tsx`) is laid out on a 1280×720 canvas and rendered 1.5× for 1080p (`src/Root.tsx`). It is a faithful React mock of the reader UI (toolbar, insert bar, page sidebar, page) with an animated cursor, click ripples, typing caret, Enter keycap and captions. Timings live in the `T` table at the top of the file.

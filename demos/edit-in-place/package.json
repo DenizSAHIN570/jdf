@@ -7,9 +7,9 @@
   "scripts": {
     "verify": "node verify/verify-edit.mjs",
     "studio": "remotion studio src/index.ts",
-    "render": "remotion render src/index.ts EditInPlace out/edit-in-place.mp4",
+    "render": "remotion render src/index.ts EditInPlace out/edit-in-place.mp4 --crf 16",
     "render:gif": "remotion render src/index.ts EditInPlace out/edit-in-place.gif --codec gif --every-nth-frame 2",
-    "stills": "for f in 60 105 180 250 300 380 470; do remotion still src/index.ts EditInPlace out/still-$f.png --frame=$f; done"
+    "stills": "for f in 120 210 360 500 760 900; do remotion still src/index.ts EditInPlace out/still-$f.png --frame=$f; done"
   },
   "dependencies": {
     "@remotion/cli": "4.0.240",

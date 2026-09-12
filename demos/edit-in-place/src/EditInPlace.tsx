@@ -2,24 +2,24 @@ import React from "react";
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig, Easing } from "remotion";
 
 export const FPS = 30;
-export const DURATION_FRAMES = FPS * 17;
+export const DURATION_FRAMES = FPS * 34;
 
 // ── timeline (seconds) ─────────────────────────────────────────────────────
 const T = {
-  open: 0.4,          // page fades in
-  cursorStart: 1.6,   // cursor starts moving toward the heading
-  dblclick: 3.0,      // double-click on "Hello, JDF"
-  typingStart: 3.9,   // characters start replacing the text
-  typingEnd: 7.2,
-  enter: 8.0,         // Enter key
-  saved: 8.35,        // "Saved" badge
-  cursor2Start: 9.6,  // second edit: paragraph, commit by clicking away
-  dblclick2: 10.8,
-  typing2Start: 11.5,
-  typing2End: 13.0,
-  clickAway: 13.7,
-  saved2: 14.05,
-  outro: 15.2,
+  open: 0.8,          // page fades in
+  cursorStart: 3.2,   // cursor starts moving toward the heading
+  dblclick: 6.2,      // double-click on "Hello, JDF"
+  typingStart: 8.0,   // characters start replacing the text
+  typingEnd: 14.0,
+  enter: 16.0,        // Enter key
+  saved: 16.5,        // "Saved" badge
+  cursor2Start: 19.5, // second edit: paragraph, commit by clicking away
+  dblclick2: 22.0,
+  typing2Start: 23.4,
+  typing2End: 27.0,
+  clickAway: 28.6,
+  saved2: 29.1,
+  outro: 31.2,
 };
 const s = (sec: number) => Math.round(sec * FPS);
 
@@ -40,7 +40,7 @@ function typed(frame: number, from: string, to: string, startSec: number, endSec
   const start = s(startSec), end = s(endSec);
   if (frame < start) return { text: from, editing: false, caret: false };
   // First frame: everything selected → replaced by typing.
-  const progress = interpolate(frame, [start, end], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.inOut(Easing.quad) });
+  const progress = interpolate(frame, [start, end], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.inOut(Easing.sin) });
   const n = Math.round(progress * to.length);
   return { text: to.slice(0, n), editing: true, caret: true };
 }
@@ -60,21 +60,21 @@ const Caption: React.FC<{ from: number; to: number; children: React.ReactNode }>
 };
 
 const Cursor: React.FC<{ x: number; y: number; pressed?: boolean }> = ({ x, y, pressed }) => (
-  <svg style={{ position: "absolute", left: x, top: y, filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.35))", transform: pressed ? "scale(0.9)" : "scale(1)", transformOrigin: "4px 4px" }} width="26" height="30" viewBox="0 0 26 30">
-    <path d="M3 2 L3 24 L9 18.5 L13.5 28 L17.5 26.2 L13 17 L21 17 Z" fill="#111827" stroke="white" strokeWidth="1.8" strokeLinejoin="round" />
+  <svg style={{ position: "absolute", left: x - 2, top: y - 2, filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.45))", transform: pressed ? "scale(0.88)" : "scale(1)", transformOrigin: "6px 6px" }} width="52" height="60" viewBox="0 0 26 30">
+    <path d="M3 2 L3 24 L9 18.5 L13.5 28 L17.5 26.2 L13 17 L21 17 Z" fill="#111827" stroke="white" strokeWidth="2.2" strokeLinejoin="round" />
   </svg>
 );
 
 const Ripple: React.FC<{ at: number; x: number; y: number }> = ({ at, x, y }) => {
   const frame = useCurrentFrame();
-  const rings = [0, 6]; // two clicks
+  const rings = [0, 9]; // two clicks
   return (
     <>
       {rings.map((off, i) => {
         const f = frame - s(at) - off;
-        if (f < 0 || f > 16) return null;
-        const r = interpolate(f, [0, 16], [6, 34]);
-        const o = interpolate(f, [0, 16], [0.55, 0]);
+        if (f < 0 || f > 26) return null;
+        const r = interpolate(f, [0, 26], [8, 46]);
+        const o = interpolate(f, [0, 26], [0.6, 0]);
         return <div key={i} style={{ position: "absolute", left: x - r, top: y - r, width: r * 2, height: r * 2, borderRadius: "50%", border: "3px solid #2563eb", opacity: o }} />;
       })}
     </>
@@ -85,10 +85,10 @@ const KeyCap: React.FC<{ at: number; label: string }> = ({ at, label }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const f = frame - s(at);
-  if (f < -4 || f > 40) return null;
+  if (f < -4 || f > 70) return null;
   const pop = spring({ frame: Math.max(0, f + 4), fps, config: { damping: 12, stiffness: 180 } });
-  const fade = interpolate(f, [26, 40], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const pressed = f >= 2 && f <= 8;
+  const fade = interpolate(f, [50, 70], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const pressed = f >= 2 && f <= 12;
   return (
     <div style={{ position: "absolute", right: 60, bottom: 120, opacity: fade, transform: `scale(${0.6 + 0.4 * pop}) translateY(${pressed ? 4 : 0}px)`, fontFamily: font }}>
       <div style={{ background: "#f8fafc", border: "1.5px solid #cbd5e1", borderBottomWidth: pressed ? 2 : 6, borderRadius: 12, padding: "14px 26px", fontSize: 26, fontWeight: 600, color: "#0f172a", boxShadow: "0 10px 30px rgba(0,0,0,0.18)" }}>
@@ -103,7 +103,7 @@ const SaveBadge: React.FC<{ at: number }> = ({ at }) => {
   const f = frame - s(at);
   if (f < -10) return null;
   const saving = f < 0;
-  const opacity = interpolate(f, [-10, -6, 50, 62], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const opacity = interpolate(f, [-14, -8, 80, 96], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   return (
     <div style={{ position: "absolute", left: 632, top: 15, display: "flex", alignItems: "center", gap: 6, fontFamily: font, fontSize: 12.5, fontWeight: 600, color: saving ? "#64748b" : "#15803d", opacity }}>
       {saving ? (
@@ -164,7 +164,7 @@ const Sidebar: React.FC = () => (
 
 const EditBox: React.FC<{ box: { x: number; y: number; w: number; h: number }; text: string; caret: boolean; big?: boolean; showBar?: boolean }> = ({ box, text, caret, big, showBar }) => {
   const frame = useCurrentFrame();
-  const blink = Math.floor(frame / 9) % 2 === 0;
+  const blink = Math.floor(frame / 15) % 2 === 0;
   return (
     <>
       {showBar && (
@@ -198,12 +198,15 @@ export const EditInPlace: React.FC = () => {
   const paraText = frame >= s(T.clickAway) + 2 ? PARA_AFTER : para.editing ? para.text : PARA_BEFORE;
 
   // Cursor path
-  const cx = interpolate(frame, [s(T.cursorStart), s(T.dblclick) - 2, s(T.cursor2Start), s(T.dblclick2) - 2, s(T.clickAway) - 14, s(T.clickAway) - 2], [980, HEAD.x + 150, HEAD.x + 150, PARA.x + 260, PARA.x + 260, 1180], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.inOut(Easing.cubic) });
-  const cy = interpolate(frame, [s(T.cursorStart), s(T.dblclick) - 2, s(T.cursor2Start), s(T.dblclick2) - 2, s(T.clickAway) - 14, s(T.clickAway) - 2], [560, HEAD.y + 30, HEAD.y + 30, PARA.y + 16, PARA.y + 16, 600], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.inOut(Easing.cubic) });
+  // After each double-click the pointer drifts out of the way so the typed
+  // text stays readable, then comes back for the next action.
+  const keys = [s(T.cursorStart), s(T.dblclick) - 6, s(T.dblclick) + 20, s(T.dblclick) + 50, s(T.cursor2Start), s(T.dblclick2) - 6, s(T.dblclick2) + 20, s(T.dblclick2) + 50, s(T.clickAway) - 32, s(T.clickAway) - 4];
+  const cx = interpolate(frame, keys, [980, HEAD.x + 150, HEAD.x + 150, HEAD.x + 560, HEAD.x + 560, PARA.x + 260, PARA.x + 260, PARA.x + 600, PARA.x + 600, 1180], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.inOut(Easing.cubic) });
+  const cy = interpolate(frame, keys, [560, HEAD.y + 30, HEAD.y + 30, HEAD.y + 120, HEAD.y + 120, PARA.y + 16, PARA.y + 16, PARA.y + 110, PARA.y + 110, 600], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.inOut(Easing.cubic) });
   const cursorVisible = frame >= s(T.cursorStart) - 6 && frame < s(T.outro);
-  const pressed = [T.dblclick, T.dblclick + 0.2, T.dblclick2, T.dblclick2 + 0.2, T.clickAway].some((t) => frame >= s(t) && frame < s(t) + 3);
+  const pressed = [T.dblclick, T.dblclick + 0.3, T.dblclick2, T.dblclick2 + 0.3, T.clickAway].some((t) => frame >= s(t) && frame < s(t) + 5);
 
-  const outro = interpolate(frame, [s(T.outro), s(T.outro) + 18], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const outro = interpolate(frame, [s(T.outro), s(T.outro) + 30], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
   return (
     <AbsoluteFill style={{ background: "#f3f4f6", overflow: "hidden" }}>
@@ -241,11 +244,11 @@ export const EditInPlace: React.FC = () => {
 
       <KeyCap at={T.enter} label="↵ Enter" />
 
-      <Caption from={0.6} to={2.9}>Open a <b>.jdf</b> — it renders like a PDF.</Caption>
-      <Caption from={3.1} to={7.6}>Double-click any line. It becomes editable — right on the page.</Caption>
-      <Caption from={7.8} to={9.6}>Press <b>Enter</b>. The change is saved to the file. Nothing else to do.</Caption>
-      <Caption from={10.2} to={13.4}>Or just click somewhere else — that saves too.</Caption>
-      <Caption from={13.8} to={15.1}>Your document stays plain JSON: diff it, grep it, feed it to AI.</Caption>
+      <Caption from={1.2} to={5.8}>Open a <b>.jdf</b> — it renders like a PDF.</Caption>
+      <Caption from={6.4} to={15.4}>Double-click any line. It becomes editable — right on the page.</Caption>
+      <Caption from={15.8} to={19.2}>Press <b>Enter</b>. The change is saved to the file. Nothing else to do.</Caption>
+      <Caption from={20.4} to={28.2}>Or just click somewhere else — that saves too.</Caption>
+      <Caption from={28.8} to={31.1}>Your document stays plain JSON: diff it, grep it, feed it to AI.</Caption>
 
       {/* Outro */}
       <AbsoluteFill style={{ background: "#0f172a", opacity: outro, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 18, fontFamily: font }}>
