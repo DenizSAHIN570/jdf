@@ -1,0 +1,25 @@
+{
+  "name": "@jdf/demo-edit-in-place",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Demo video of JDF Reader's edit-in-place flow (Remotion) + a Playwright check that the real app behaves the same way.",
+  "scripts": {
+    "verify": "node verify/verify-edit.mjs",
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts EditInPlace out/edit-in-place.mp4",
+    "render:gif": "remotion render src/index.ts EditInPlace out/edit-in-place.gif --codec gif --every-nth-frame 2",
+    "stills": "for f in 60 105 180 250 300 380 470; do remotion still src/index.ts EditInPlace out/still-$f.png --frame=$f; done"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.240",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.240"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "playwright": "^1.49.0",
+    "typescript": "^5.5.0"
+  }
+}
