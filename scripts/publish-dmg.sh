@@ -145,9 +145,14 @@ if [[ "$SIGN_AND_NOTARIZE" == "1" ]]; then
   if ! xcrun stapler validate "$DMG" >/dev/null 2>&1; then
     echo "→ Notarizing the dmg with Apple (notarytool, this can take a few minutes)..."
     NOTARY_LOG="$(mktemp)"
-    if xcrun notarytool submit "$DMG" \
-         --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_PASSWORD" \
-         --wait --timeout 30m 2>&1 | tee "$NOTARY_LOG" | grep -q "status: Accepted"; then
+    # Capture first, grep after. `… | tee | grep -q` under `pipefail` fails
+    # spuriously: grep -q exits on the first match, tee dies of SIGPIPE, and
+    # the pipeline reports failure even though Apple said "Accepted".
+    xcrun notarytool submit "$DMG" \
+      --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_PASSWORD" \
+      --wait --timeout 30m > "$NOTARY_LOG" 2>&1 || true
+    cat "$NOTARY_LOG"
+    if grep -q "status: Accepted" "$NOTARY_LOG"; then
       echo "  ✓ dmg notarization accepted"
     else
       echo "✗ dmg notarization failed or timed out — see log above."
