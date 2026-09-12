@@ -1,0 +1,24 @@
+{
+  "name": "@jdf/demo-web-form-fill",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Demo video: fill a JDF form in the jdf.js web embed, click Save, and the downloaded .jdf carries the value (Remotion) + a Playwright check against the real docs page.",
+  "scripts": {
+    "verify": "node verify/verify-form.mjs",
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts WebFormFill out/web-form-fill.mp4 --crf 16",
+    "stills": "for f in 150 330 520 640 800 940; do remotion still src/index.ts WebFormFill out/still-$f.png --frame=$f; done"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.240",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.240"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "playwright": "^1.49.0",
+    "typescript": "^5.5.0"
+  }
+}
