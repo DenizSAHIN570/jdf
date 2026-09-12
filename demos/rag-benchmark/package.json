@@ -1,0 +1,23 @@
+{
+  "name": "@jdf/demo-rag-benchmark",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Video presentation of the JDF-vs-PDF RAG benchmark (Remotion). Every number on screen comes from docs/bench.json, i.e. from bench/results/*.json.",
+  "scripts": {
+    "verify": "cd ../../bench && python3 rag_bench.py --verify --embedder none",
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts RagBenchmark out/rag-benchmark.mp4 --crf 16 && cp out/rag-benchmark.mp4 rag-benchmark.mp4",
+    "stills": "for f in 60 240 420 660 900 1080; do remotion still src/index.ts RagBenchmark out/still-$f.png --frame=$f; done"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.240",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.240"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "typescript": "^5.5.0"
+  }
+}
