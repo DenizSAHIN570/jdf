@@ -5,7 +5,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · semantic-ish
 
 ## [Unreleased]
 
-_Nothing yet._
+### Fixed — jdf.js
+- Zoom no longer leaves the page's unscaled footprint in layout: the page wrapper is sized to the rendered box and scaled from its corner, so pages stay centred and the pages column doesn't scroll sideways. In `fit="manual"` (the default) the zoom is capped so a page never renders wider than its container — an A4 page in a phone viewport used to be cut in half. Zooming by hand lifts the cap.
+
+### Fixed — website (mobile)
+- Landing: gradient headline wraps on phones, copy-command box and CLI/embed demo blocks scroll inside themselves instead of widening the page.
+- Docs: tables (element reference, forms field table, comparison table) scroll inside their own box; tighter gutters; next/prev cards stack.
+- Docs sub-pages loaded a pinned old CDN build (`@uurtech/jdf@0.1.11`); they now use the local bundle that `release.sh` refreshes, like the landing page.
 
 ## [0.1.26] — 2026-09-12
 

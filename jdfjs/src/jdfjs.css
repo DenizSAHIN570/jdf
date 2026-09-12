@@ -166,6 +166,8 @@
 .jdfjs-page-wrapper {
   display: block;
   scroll-margin-top: 16px;
+  flex-shrink: 0;
+  max-width: 100%;
 }
 
 .jdfjs-page {

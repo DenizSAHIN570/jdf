@@ -175,6 +175,13 @@ export class JDFViewer {
   // Window resize fallback for fit-width / fit-page when the host element's
   // own size doesn't change but the viewport's does (flex re-layout, etc).
   private windowResizeListener: (() => void) | null = null;
+  // Zoom the host asked for (option or toolbar). In "manual" fit mode the
+  // effective zoom is capped so a page never renders wider than its
+  // container — a 794 px A4 page inside a 390 px phone viewport used to be
+  // cut in half with a sideways scroll. Once the user zooms by hand we stop
+  // capping and let them scroll.
+  private requestedZoom = 1;
+  private userZoomed = false;
 
   constructor(container: HTMLElement, doc: JdfDocument, options: JDFViewerOptions = {}) {
     this.container = container;
@@ -189,6 +196,7 @@ export class JDFViewer {
       ...options,
     };
     this.zoom = this.options.zoom;
+    this.requestedZoom = this.options.zoom;
     this.currentPage = this.options.initialPage;
     this.applyContainerSize();
     this.mount();
@@ -293,9 +301,8 @@ export class JDFViewer {
     this.darkModeListener = listener;
   }
 
-  /** Auto-zoom for fit modes. */
+  /** Auto-zoom for fit modes (and the responsive cap in manual mode). */
   private applyFit() {
-    if (this.options.fit === "manual") return;
     const firstPage = this.pagesEl.querySelector<HTMLElement>(".jdfjs-page");
     if (!firstPage) return;
     // Read intrinsic page size from the inline width/min-height in px (set in renderPage)
@@ -304,6 +311,17 @@ export class JDFViewer {
     if (!pageWidth || !pageHeight) return;
     const containerWidth = this.pagesEl.clientWidth - 32; // margin
     const containerHeight = this.pagesEl.clientHeight - 32;
+    if (this.options.fit === "manual") {
+      if (containerWidth <= 0) return;
+      const maxFit = containerWidth / pageWidth;
+      const next = this.userZoomed ? this.zoom : Math.min(this.requestedZoom, maxFit);
+      if (Math.abs(next - this.zoom) > 0.001 || firstPage.style.transformOrigin !== "top left") {
+        this.zoom = Math.max(0.25, Math.min(3, next));
+        this.applyZoom();
+        this.updateIndicators();
+      }
+      return;
+    }
     if (this.options.fit === "fit-width") {
       this.zoom = Math.max(0.25, Math.min(3, containerWidth / pageWidth));
     } else if (this.options.fit === "fit-page") {
@@ -508,14 +526,26 @@ export class JDFViewer {
 
   private applyZoom() {
     this.pagesEl.style.setProperty("--jdfjs-zoom", String(this.zoom));
-    this.pagesEl.querySelectorAll<HTMLElement>(".jdfjs-page").forEach((el) => {
+    this.pagesEl.querySelectorAll<HTMLElement>(".jdfjs-page-wrapper").forEach((wrapper) => {
+      const el = wrapper.querySelector<HTMLElement>(".jdfjs-page");
+      if (!el) return;
+      // `transform: scale()` does not take part in layout, so the wrapper
+      // used to keep the page's unscaled 794 px footprint: on narrow hosts
+      // the pages column scrolled sideways and the page sat off-centre.
+      // Size the wrapper to the *rendered* box and scale from its corner.
+      const w = parseFloat(el.style.width || "0") || el.offsetWidth;
+      const h = el.offsetHeight;
       el.style.transform = `scale(${this.zoom})`;
-      el.style.transformOrigin = "top center";
+      el.style.transformOrigin = "top left";
+      wrapper.style.width = `${Math.round(w * this.zoom)}px`;
+      wrapper.style.height = `${Math.round(h * this.zoom)}px`;
     });
   }
 
   setZoom(z: number) {
     this.zoom = Math.max(0.25, Math.min(3, z));
+    this.requestedZoom = this.zoom;
+    this.userZoomed = true;
     this.applyZoom();
     this.updateIndicators();
   }
