@@ -72,6 +72,9 @@ pub fn run() {
             commands::import_markdown,
             commands::import_markdown_content,
             commands::export_pdf,
+            commands::read_text_file,
+            commands::read_binary_file,
+            commands::write_binary_file,
             open_in_new_window,
             consume_pending_file,
         ])

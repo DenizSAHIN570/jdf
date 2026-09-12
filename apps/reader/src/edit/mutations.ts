@@ -26,7 +26,9 @@ export function applyFieldUpdate(doc: JdfDocument, path: ElementPath, field: str
   let target: any = node;
   for (let i = 0; i < parts.length - 1; i++) {
     if (target[parts[i]] == null || typeof target[parts[i]] !== "object") {
-      target[parts[i]] = {};
+      // A numeric next segment means we're addressing into a list — create
+      // an array, not an object with "0" keys (which breaks schema + render).
+      target[parts[i]] = /^\d+$/.test(parts[i + 1]) ? [] : {};
     }
     target = target[parts[i]];
   }

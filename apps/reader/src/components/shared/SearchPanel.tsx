@@ -32,8 +32,12 @@ function elementText(el: Element): string {
     return walk((el as any).items || []);
   }
   if (el.type === "table") {
-    const cells = (el as any).rows?.flat().map((c: any) => typeof c === "string" ? c : c.content) || [];
-    return [...((el as any).headers || []), ...cells].join(" ");
+    const rows = (el as any).rows;
+    const cells: string[] = Array.isArray(rows)
+      ? rows.flat().map((c: any) => (c == null ? "" : typeof c === "object" ? String(c.content ?? "") : String(c)))
+      : [];
+    const headers = Array.isArray((el as any).headers) ? (el as any).headers : [];
+    return [...headers, ...cells].join(" ");
   }
   if (el.type === "collapsible") {
     return ((el as any).title || "") + " " + ((el as any).elements || []).map(elementText).join(" ");

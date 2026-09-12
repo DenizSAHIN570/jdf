@@ -10,6 +10,9 @@ interface EditableProps {
   class?: string;
   style?: JSX.CSSProperties | string;
   placeholder?: string;
+  /** Rich markup to show while NOT editing (links, styled runs). The plain
+   *  `value` is still what the inline editor works on. */
+  children?: JSX.Element;
 }
 
 export function Editable(props: EditableProps) {
@@ -70,7 +73,7 @@ export function Editable(props: EditableProps) {
           class={`${props.class || ""} ${props.enabled === false ? "" : "editable-target"}`}
           style={props.style as any}
         >
-          {props.value || (props.placeholder ? <span class="text-gray-400 italic">{props.placeholder}</span> : "")}
+          {props.children ?? (props.value || (props.placeholder ? <span class="text-gray-400 italic">{props.placeholder}</span> : ""))}
         </Dynamic>
       }
     >

@@ -242,6 +242,19 @@ jdf validate contract.jdf      # exit 1 on schema failure → CI fails the build
 
 Both the desktop reader and the CLI import `@jdf/pdf-import` from `packages/jdf-pdf-import/` — there's a single algorithm. Reader uses the browser entry point (DOM canvas, real Web Worker); the CLI uses the node entry point (`@napi-rs/canvas`, in-process). Output is bit-identical for the same PDF.
 
+What the importer understands (all built on Mozilla's PDF.js, the same engine behind Firefox's viewer):
+
+- **Text** with position, font family, size, bold/italic, colour and opacity. Colours are resolved by matching each text item to the operator that painted it, so PDFs where PDF.js merges runs keep the right colour per word.
+- **Form XObjects** (logos, headers, anything placed with `Do`) and their `/Matrix`, so nested content lands where the PDF put it.
+- **Images**: XObjects, repeated XObjects, inline images (`BI … EI`) and 1-bit stencil masks painted in the current fill colour. One shared resource per distinct image, however many pages reuse it.
+- **Vector shapes**: rects, lines, Bezier paths, fills, strokes, opacity. Gradient (axial/radial) fills become their average colour.
+- **Links**: external URLs and internal destinations (→ `#page-N`), matched to the text under them.
+- **Bookmarks/outline** → headings with `tocEntry`/`tocLevel`, so the reader sidebar, jdf.js TOC and `jdf chunk --strategy section` follow the author's structure.
+- **AcroForm widgets** → real `input` / `textarea` / `checkbox` / `select` / `signature` elements with their current values.
+- **Document info** → `meta.author`, `created`, `modified`, `keywords`, `language`.
+- **Encrypted PDFs** — `--password` on the CLI, a password prompt in the reader.
+- **Scanned PDFs** — the page image is kept, and the invisible OCR text layer is preserved with `opacity: 0` (searchable, chunkable, invisible), unless `--drop-invisible-text`.
+
 Per text run, the importer extracts:
 - **position** (mm) — via PDF.js `viewport.convertToViewportPoint`, accounting for rotation, CropBox, and MediaBox offset.
 - **font family** — looked up from PDF.js `commonObjs` cache, mapped to `Inter / Times New Roman / JetBrains Mono` based on the original font name.
@@ -522,6 +535,8 @@ jdf validate doc.jdf
 |---|---|---|
 | `-o, --output <path>` | all | Explicit output path. For `convert`, the extension picks `.jdf` vs `.jdfx`. |
 | `--json` | convert | Force pure-JSON `.jdf` output even when the document carries images. |
+| `--password <pw>` | convert (pdf) | Open an encrypted PDF. The desktop reader asks interactively instead. |
+| `--drop-invisible-text` | convert (pdf) | Omit the invisible OCR layer of scanned PDFs. By default it is kept with `opacity: 0` so search / `chunk` / `embed` still see the words. |
 | `--strategy <s>` | chunk, embed | `section` (default) · `element` · `fixed`. |
 | `--format <f>` | chunk | `jsonl` (default) · `json` · `inline` (write an `index` block into the `.jdf`). |
 | `--max-tokens <n>` | chunk, embed | Soft cap per chunk (default 512). |

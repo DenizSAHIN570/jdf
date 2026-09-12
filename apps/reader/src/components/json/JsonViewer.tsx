@@ -1,5 +1,6 @@
 import { createSignal, createEffect } from "solid-js";
 import type { JdfDocument } from "@jdf/core";
+import { normalizeDoc } from "../../lib/docGuard";
 
 interface JsonViewerProps {
   document: JdfDocument;
@@ -32,8 +33,9 @@ export function JsonViewer(props: JsonViewerProps) {
     if (!props.editable) return;
     if (!dirty()) return; // nothing to do — avoid no-op round-trip
     try {
-      const parsed = JSON.parse(text()) as JdfDocument;
-      if (!parsed.$jdf || !parsed.pages) throw new Error("Missing $jdf or pages field");
+      // Structural guard — a doc with `pages: 5` or a page without `elements`
+      // used to crash every viewer component and then get autosaved.
+      const parsed = normalizeDoc(JSON.parse(text()), props.document.meta?.title);
       setError(null);
       setDirty(false);
       baseSnapshot = JSON.stringify(parsed, null, 2);
@@ -58,6 +60,10 @@ export function JsonViewer(props: JsonViewerProps) {
         onInput={(e) => { setText(e.currentTarget.value); setDirty(true); }}
         onBlur={commit}
         onKeyDown={(e) => {
+          // Keep every Cmd/Ctrl combo inside the textarea: the global handler
+          // would otherwise treat Cmd+Z as a *document* undo (wiping the
+          // draft) and Cmd+S as Save As on top of our commit.
+          if (e.metaKey || e.ctrlKey) e.stopPropagation();
           if ((e.metaKey || e.ctrlKey) && e.key === "s") {
             e.preventDefault();
             commit();

@@ -63,7 +63,7 @@ function resolveTemplateVars(text: string, pageIndex: number, totalPages: number
     .replace(/\{\{author\}\}/g, document.meta?.author || "");
 }
 
-function HeaderFooterView(props: { hf: HeaderFooter; pageIndex: number; totalPages: number; document: JdfDocument; styles: Record<string, Style>; onNavigatePage?: (p: number) => void }) {
+function HeaderFooterView(props: { hf: HeaderFooter; basePath: (string | number)[]; pageIndex: number; totalPages: number; document: JdfDocument; styles: Record<string, Style>; onNavigatePage?: (p: number) => void }) {
   const css = () => resolveStyle(props.hf.style, props.styles);
   const hasElements = () => Array.isArray(props.hf.elements) && props.hf.elements!.length > 0;
   const hasContent = () => typeof props.hf.content === "string" && props.hf.content.length > 0;
@@ -75,7 +75,7 @@ function HeaderFooterView(props: { hf: HeaderFooter; pageIndex: number; totalPag
           {(el, i) => (
             <ElementRenderer
               element={el}
-              path={["__hf__", props.pageIndex, i()]}
+              path={[...props.basePath, "elements", i()]}
               styles={props.styles}
               resources={props.document.resources}
               document={props.document}
@@ -96,6 +96,11 @@ export function PageRenderer(props: PageRendererProps) {
   const margins = () => ({ ...DEFAULT_MARGINS, ...(props.document.meta.margins || {}), ...(props.page.margins || {}) });
   const header = () => props.page.header || props.document.header;
   const footer = () => props.page.footer || props.document.footer;
+  // Real document paths so inline edits / form input inside a header or
+  // footer land in the doc (the old synthetic ["__hf__", …] path resolved to
+  // nothing, so every edit there was silently dropped).
+  const headerPath = () => (props.page.header ? ["pages", props.pageIndex, "header"] : ["header"]);
+  const footerPath = () => (props.page.footer ? ["pages", props.pageIndex, "footer"] : ["footer"]);
   const headerHeight = () => header()?.height ?? 0;
   const footerHeight = () => footer()?.height ?? 0;
 
@@ -117,7 +122,7 @@ export function PageRenderer(props: PageRendererProps) {
             "padding-right": `${unitToPx(margins().right!)}px`,
           }}
         >
-          <HeaderFooterView hf={header()!} pageIndex={props.pageIndex} totalPages={props.totalPages} document={props.document} styles={props.styles} onNavigatePage={props.onNavigatePage} />
+          <HeaderFooterView hf={header()!} basePath={headerPath()} pageIndex={props.pageIndex} totalPages={props.totalPages} document={props.document} styles={props.styles} onNavigatePage={props.onNavigatePage} />
         </div>
       </Show>
 
@@ -161,7 +166,7 @@ export function PageRenderer(props: PageRendererProps) {
             "padding-right": `${unitToPx(margins().right!)}px`,
           }}
         >
-          <HeaderFooterView hf={footer()!} pageIndex={props.pageIndex} totalPages={props.totalPages} document={props.document} styles={props.styles} onNavigatePage={props.onNavigatePage} />
+          <HeaderFooterView hf={footer()!} basePath={footerPath()} pageIndex={props.pageIndex} totalPages={props.totalPages} document={props.document} styles={props.styles} onNavigatePage={props.onNavigatePage} />
         </div>
       </Show>
     </div>

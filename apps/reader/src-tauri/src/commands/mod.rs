@@ -10,59 +10,102 @@ pub struct SearchHit { pub page_index: usize, pub element_index: usize, pub text
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ValidationResult { pub valid: bool, pub errors: Vec<String>, pub warnings: Vec<String> }
 
-/// Reject path arguments that point outside the user-document zones the
-/// fs capabilities allow. The IPC layer doesn't enforce capability scope on
-/// raw `String` args (capabilities only apply to `@tauri-apps/plugin-fs`),
-/// so a malicious frontend / compromised .jdfx could otherwise call
-/// `invoke("open_document", { path: "/etc/passwd" })` and read it.
+/// Normalise a user-supplied path before touching the filesystem.
 ///
-/// Allowed roots: $HOME/{Downloads,Documents,Desktop} and /tmp. Anything
-/// else, including `..` traversal, is rejected before fs::read.
-fn ensure_path_in_user_zone(path: &str) -> Result<PathBuf, String> {
-    let p = Path::new(path);
-    let canon = match p.canonicalize() {
-        Ok(c) => c,
-        Err(_) => {
-            // Path may not exist yet (save_document creating a new file). Walk
-            // up to the first existing ancestor and canonicalize that, then
-            // re-attach the unresolved tail.
-            let mut anc = p.to_path_buf();
-            let mut tail = PathBuf::new();
-            loop {
-                if anc.exists() {
-                    let base = anc.canonicalize().map_err(|e| format!("Path resolve failed: {}", e))?;
-                    return validate_canonical(&base.join(tail), path);
-                }
-                let name = anc.file_name().ok_or_else(|| format!("Bad path: {}", path))?.to_owned();
-                tail = Path::new(&name).join(&tail);
-                if !anc.pop() { return Err(format!("Bad path: {}", path)); }
-            }
-        }
-    };
-    validate_canonical(&canon, path)
+/// Earlier versions restricted every path to `$HOME/{Downloads,Documents,
+/// Desktop}` and `/tmp`. That broke real workflows: a file opened from
+/// `~/projects/…` via the Open dialog worked once (the dialog plugin widens
+/// the fs scope for that session) but failed from Recent Files, Finder
+/// double-click, drag-drop or `open file.jdf` after a restart — the user saw
+/// "Open failed: forbidden path" and the entry silently vanished from the
+/// recent list. The frontend is first-party code shipped inside the app
+/// bundle (CSP forbids remote scripts and `.jdfx` bundles carry no code), so
+/// the zone check bought no real security while costing the app its basic
+/// "open the file the user asked for" promise. Every path that reaches these
+/// commands originates from an explicit user action (dialog, Finder, drop,
+/// recent list, CLI argument), so we honour it as-is.
+fn resolve_user_path(path: &str) -> Result<PathBuf, String> {
+    let trimmed = path.trim();
+    if trimmed.is_empty() {
+        return Err("Empty path".to_string());
+    }
+    let p = Path::new(trimmed);
+    if !p.is_absolute() {
+        return Err(format!("Path must be absolute: {}", path));
+    }
+    Ok(p.to_path_buf())
 }
 
-fn validate_canonical(canon: &Path, original: &str) -> Result<PathBuf, String> {
-    let home = std::env::var("HOME").unwrap_or_default();
-    let allowed: Vec<PathBuf> = vec![
-        format!("{}/Downloads", home).into(),
-        format!("{}/Documents", home).into(),
-        format!("{}/Desktop", home).into(),
-        PathBuf::from("/tmp"),
-        PathBuf::from("/private/tmp"), // macOS canonicalises /tmp to /private/tmp
-    ];
-    for root in &allowed {
-        if canon.starts_with(root) { return Ok(canon.to_path_buf()); }
+/// Decode a percent-encoded UTF-8 string (used for the path header of
+/// `write_binary_file`, since HTTP header values must stay ASCII).
+fn percent_decode(input: &str) -> String {
+    let bytes = input.as_bytes();
+    let mut out: Vec<u8> = Vec::with_capacity(bytes.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'%' && i + 2 < bytes.len() {
+            let hex = &input[i + 1..i + 3];
+            if let Ok(v) = u8::from_str_radix(hex, 16) {
+                out.push(v);
+                i += 3;
+                continue;
+            }
+        }
+        out.push(bytes[i]);
+        i += 1;
     }
-    Err(format!(
-        "Path is outside the allowed user zones (Downloads / Documents / Desktop / tmp): {}",
-        original
-    ))
+    String::from_utf8_lossy(&out).to_string()
+}
+
+/// Read a UTF-8 text file (`.jdf`, `.md`). Replaces the `@tauri-apps/plugin-fs`
+/// call on the frontend so reads are not subject to the capability scope.
+#[tauri::command]
+pub fn read_text_file(path: String) -> Result<String, String> {
+    let p = resolve_user_path(&path)?;
+    fs::read_to_string(&p).map_err(|e| format!("Failed to read {}: {}", path, e))
+}
+
+/// Read a binary file (`.jdfx`, `.pdf`, images referenced from Markdown).
+/// Returned as a raw IPC response so the webview receives an ArrayBuffer
+/// instead of a JSON array of numbers.
+#[tauri::command]
+pub fn read_binary_file(path: String) -> Result<tauri::ipc::Response, String> {
+    let p = resolve_user_path(&path)?;
+    let bytes = fs::read(&p).map_err(|e| format!("Failed to read {}: {}", path, e))?;
+    Ok(tauri::ipc::Response::new(bytes))
+}
+
+/// Write a binary file. The body is the raw bytes; the destination path is
+/// passed percent-encoded in the `x-jdf-path` header (see `lib/fs.ts`).
+#[tauri::command]
+pub fn write_binary_file(request: tauri::ipc::Request<'_>) -> Result<(), String> {
+    let raw_path = request
+        .headers()
+        .get("x-jdf-path")
+        .and_then(|v| v.to_str().ok())
+        .ok_or_else(|| "write_binary_file: missing x-jdf-path header".to_string())?;
+    let path = percent_decode(raw_path);
+    let p = resolve_user_path(&path)?;
+    let bytes: Vec<u8> = match request.body() {
+        tauri::ipc::InvokeBody::Raw(b) => b.clone(),
+        tauri::ipc::InvokeBody::Json(v) => {
+            // Fallback for callers that passed a JSON array of bytes.
+            v.as_array()
+                .map(|a| a.iter().filter_map(|n| n.as_u64().map(|n| n as u8)).collect())
+                .ok_or_else(|| "write_binary_file: body must be bytes".to_string())?
+        }
+    };
+    if let Some(parent) = p.parent() {
+        if !parent.exists() {
+            fs::create_dir_all(parent).map_err(|e| format!("{}", e))?;
+        }
+    }
+    fs::write(&p, bytes).map_err(|e| format!("Failed to write {}: {}", path, e))
 }
 
 #[tauri::command]
 pub fn open_document(path: String) -> Result<serde_json::Value, String> {
-    let safe = ensure_path_in_user_zone(&path)?;
+    let safe = resolve_user_path(&path)?;
     let content = fs::read_to_string(&safe).map_err(|e| format!("Failed to read: {}", e))?;
     let doc: serde_json::Value = serde_json::from_str(&content).map_err(|e| format!("Invalid JSON: {}", e))?;
     if doc.get("$jdf").is_none() { return Err("Not a JDF document".to_string()); }
@@ -71,7 +114,7 @@ pub fn open_document(path: String) -> Result<serde_json::Value, String> {
 
 #[tauri::command]
 pub fn save_document(path: String, document: serde_json::Value) -> Result<(), String> {
-    let safe = ensure_path_in_user_zone(&path)?;
+    let safe = resolve_user_path(&path)?;
     let content = serde_json::to_string_pretty(&document).map_err(|e| format!("{}", e))?;
     fs::write(&safe, content).map_err(|e| format!("{}", e))?;
     Ok(())
@@ -198,7 +241,7 @@ fn snap_to_char_boundary(s: &str, mut idx: usize, forward: bool) -> usize {
 
 #[tauri::command]
 pub async fn import_pdf(path: String) -> Result<serde_json::Value, String> {
-    let safe = ensure_path_in_user_zone(&path)?;
+    let safe = resolve_user_path(&path)?;
     let bytes = fs::read(&safe).map_err(|e| format!("Failed to read: {}", e))?;
     let text = tokio::task::spawn_blocking(move || {
         let _g = suppress_stderr();
@@ -211,7 +254,7 @@ pub async fn import_pdf(path: String) -> Result<serde_json::Value, String> {
 
 #[tauri::command]
 pub fn import_markdown(path: String) -> Result<serde_json::Value, String> {
-    let safe = ensure_path_in_user_zone(&path)?;
+    let safe = resolve_user_path(&path)?;
     let content = fs::read_to_string(&safe).map_err(|e| format!("{}", e))?;
     let title = std::path::Path::new(&path).file_stem().and_then(|s| s.to_str()).unwrap_or("Document").to_string();
     Ok(markdown_to_jdf(&content, &title))

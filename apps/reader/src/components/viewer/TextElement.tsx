@@ -38,7 +38,6 @@ export function TextElementView(props: TextElementViewProps) {
   const isLong = () => text().length > 60 || text().includes("\n");
 
   function handleInternalClick(e: MouseEvent) {
-    if (edit.enabled()) return;
     const l = link();
     if (l?.internal && props.onNavigatePage) {
       e.preventDefault();
@@ -58,6 +57,11 @@ export function TextElementView(props: TextElementViewProps) {
   // loading/closing a document) flips the renderer without remounting
   // the parent. A plain `if (edit.enabled()) return …` would freeze on
   // first render, which is the bug that broke double-click in view mode.
+  //
+  // `edit.enabled()` is true whenever a document is loaded, so the Editable
+  // branch is what users actually see. It must therefore render the same
+  // markup as the read-only fallback (links stay clickable) — the plain
+  // `value` is only what the inline editor operates on.
   return (
     <Show
       when={edit.enabled()}
@@ -74,7 +78,9 @@ export function TextElementView(props: TextElementViewProps) {
         onCommit={(v) => edit.updateField(props.path, "content", v)}
         class="m-0 whitespace-pre-wrap"
         style={css() as any}
-      />
+      >
+        {renderInner()}
+      </Editable>
     </Show>
   );
 }

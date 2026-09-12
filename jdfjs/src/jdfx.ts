@@ -22,12 +22,22 @@ function isSafeAssetPath(p: string): boolean {
   return p.startsWith(`${JDFX_ASSET_DIR}/`);
 }
 
+function uint8ToBase64(arr: Uint8Array): string {
+  let binary = "";
+  const CHUNK = 0x8000;
+  for (let i = 0; i < arr.length; i += CHUNK) {
+    binary += String.fromCharCode(...arr.subarray(i, i + CHUNK));
+  }
+  return btoa(binary);
+}
+
 /**
- * Open a `.jdfx` zip bundle and return the embedded JDF document with all
- * `image` element `resource` references rewritten to blob URLs that work as
- * `<img src>`. The blob URLs are leaked intentionally — they live for the
- * lifetime of the page; jdf.js does not (yet) support unmounting a viewer
- * and reclaiming them.
+ * Open a `.jdfx` zip bundle and return the embedded JDF document with every
+ * zip asset bound into `resources.images[id].data` as base64. The image
+ * renderer resolves `resource → resources.images[id]`, so no element needs
+ * rewriting — and `viewer.exportJdf()` therefore emits a self-contained
+ * document. (An earlier version rewrote `el.src` to `blob:` object URLs;
+ * those rendered, but exports carried dead URLs and lost every image.)
  */
 export async function unpackJdfxToDocument(bytes: ArrayBuffer | Uint8Array): Promise<JdfDocument> {
   const zip = await JSZip.loadAsync(bytes as ArrayBuffer);
@@ -46,8 +56,9 @@ export async function unpackJdfxToDocument(bytes: ArrayBuffer | Uint8Array): Pro
     }
   }
 
-  const idToBlobUrl = new Map<string, string>();
   if (manifest?.assets) {
+    if (!doc.resources) doc.resources = { images: {} };
+    if (!doc.resources.images) doc.resources.images = {};
     for (const entry of manifest.assets) {
       if (!isSafeAssetPath(entry.path)) {
         console.warn(`[jdfjs] dropping unsafe manifest asset path: ${entry.path}`);
@@ -56,23 +67,13 @@ export async function unpackJdfxToDocument(bytes: ArrayBuffer | Uint8Array): Pro
       const file = zip.file(entry.path);
       if (!file) continue;
       const data = await file.async("uint8array");
-      const blob = new Blob([data as BlobPart], { type: entry.mimeType });
-      idToBlobUrl.set(entry.id, URL.createObjectURL(blob));
+      doc.resources.images[entry.id] = {
+        src: "embedded",
+        mimeType: entry.mimeType || "image/png",
+        data: uint8ToBase64(data),
+      };
     }
   }
-
-  function rebind(els: any[] | undefined) {
-    if (!els) return;
-    for (const el of els) {
-      if (el?.type === "image" && el.resource) {
-        const url = idToBlobUrl.get(el.resource);
-        if (url) el.src = url;
-      }
-      if (el?.elements) rebind(el.elements);
-      if (el?.children) rebind(el.children);
-    }
-  }
-  for (const page of doc.pages || []) rebind(page.elements as any[]);
 
   return doc;
 }

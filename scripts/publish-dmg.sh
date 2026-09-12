@@ -135,18 +135,53 @@ SHA256=$(shasum -a 256 "$DMG" | awk '{print $1}')
 echo "→ DMG: $DMG_BASENAME"
 echo "→ sha256: $SHA256"
 
-# Verify the notarization ticket is stapled to the dmg so downloaded copies
-# pass Gatekeeper offline. Non-fatal (warn only) — a failed check here still
-# lets you ship, but brew users may see a warning.
+# Notarize + staple the DMG ITSELF. Tauri only notarizes the .app inside the
+# dmg; the dmg container stays "Unnotarized Developer ID" and Gatekeeper on
+# macOS 15+ greets a downloaded copy with "Apple could not verify … is free
+# of malware" / Move to Trash. Homebrew mounts the dmg with quarantine set,
+# so brew users hit it too. Submitting the dmg is a separate notarytool
+# call; stapling then embeds the ticket so it verifies offline.
 if [[ "$SIGN_AND_NOTARIZE" == "1" ]]; then
+  if ! xcrun stapler validate "$DMG" >/dev/null 2>&1; then
+    echo "→ Notarizing the dmg with Apple (notarytool, this can take a few minutes)..."
+    NOTARY_LOG="$(mktemp)"
+    if xcrun notarytool submit "$DMG" \
+         --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_PASSWORD" \
+         --wait --timeout 30m 2>&1 | tee "$NOTARY_LOG" | grep -q "status: Accepted"; then
+      echo "  ✓ dmg notarization accepted"
+    else
+      echo "✗ dmg notarization failed or timed out — see log above."
+      SUBMISSION_ID="$(grep -m1 -E '^\s*id: ' "$NOTARY_LOG" | awk '{print $2}')"
+      if [[ -n "$SUBMISSION_ID" ]]; then
+        xcrun notarytool log "$SUBMISSION_ID" \
+          --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_PASSWORD" || true
+      fi
+      rm -f "$NOTARY_LOG"
+      exit 1
+    fi
+    rm -f "$NOTARY_LOG"
+    echo "→ Stapling ticket to the dmg..."
+    xcrun stapler staple "$DMG"
+  fi
   echo "→ Verifying notarization staple..."
   if xcrun stapler validate "$DMG" >/dev/null 2>&1; then
     echo "  ✓ dmg is stapled and notarized"
   else
-    echo "  ⚠️  stapler validate failed on the dmg — Gatekeeper may still warn."
-    echo "     Check the tauri build log above for a notarization error."
+    echo "✗ stapler validate failed on the dmg — refusing to ship an artefact Gatekeeper will reject."
+    exit 1
+  fi
+  # Gatekeeper's own verdict on the container, exactly what a download sees.
+  if spctl -a -t open --context context:primary-signature -v "$DMG" 2>&1 | grep -q "accepted"; then
+    echo "  ✓ Gatekeeper accepts the dmg (source=Notarized Developer ID)"
+  else
+    echo "  ⚠️  spctl did not accept the dmg:"
+    spctl -a -t open --context context:primary-signature -v "$DMG" 2>&1 | sed 's/^/     /' || true
   fi
 fi
+
+# Stapling rewrites the dmg, so the hash the Cask pins must be taken now.
+SHA256=$(shasum -a 256 "$DMG" | awk '{print $1}')
+echo "→ sha256 (final): $SHA256"
 
 # ── Step 3: update local Casks/jdf.rb (canonical) and mirror to tap ────────
 # `Casks/jdf.rb` in this repo is the source of truth. We sed in the new

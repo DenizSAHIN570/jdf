@@ -22,16 +22,14 @@ import {
 } from "./edit/mutations";
 import { createHistory } from "./edit/history";
 import { importPdfToJdf } from "./import/pdfToJdf";
+import { readTextFile, readBinaryFile, writeBinaryFile } from "./lib/fs";
+import { normalizeDoc } from "./lib/docGuard";
+import { PasswordPrompt } from "./components/shared/PasswordPrompt";
 
 interface LoadedFile {
   path: string;
   type: "jdf" | "jdfx" | "md" | "pdf";
   rawMarkdown?: string;
-}
-
-let activeJdfx: { release: () => void } | null = null;
-function releaseActiveJdfx() {
-  if (activeJdfx) { activeJdfx.release(); activeJdfx = null; }
 }
 
 function basename(p: string): string {
@@ -58,6 +56,9 @@ export default function App() {
   const [savingState, setSavingState] = createSignal<"idle" | "saving" | "saved" | "error">("idle");
   const [mdSearchQuery, setMdSearchQuery] = createSignal("");
   const [dirty, setDirty] = createSignal(false);
+  // Encrypted PDF support: the importer asks for a password through this
+  // resolver; the modal below feeds the answer back (null = cancelled).
+  const [passwordRequest, setPasswordRequest] = createSignal<{ retry: boolean; resolve: (pw: string | null) => void } | null>(null);
 
   let saveTimer: number | undefined;
 
@@ -95,9 +96,8 @@ export default function App() {
     try {
       if (cur.type === "jdfx") {
         const { packJdfx } = await import("./jdfx");
-        const { writeFile } = await import("@tauri-apps/plugin-fs");
         const { bytes } = await packJdfx(d);
-        await writeFile(cur.path, bytes);
+        await writeBinaryFile(cur.path, bytes);
       } else {
         const { invoke } = await import("@tauri-apps/api/core");
         await invoke("save_document", { path: cur.path, document: d });
@@ -123,6 +123,10 @@ export default function App() {
   }
 
   function commit(next: JdfDocument) {
+    // Mutations return the *same* object when they had nothing to do (move
+    // up on the first element, edits addressed to a path that doesn't exist).
+    // Pushing that would light up Undo and fire an autosave for a no-op.
+    if (next === doc()) return;
     history.push(next);
     if (isEditableFile()) scheduleAutoSave();
     else setDirty(true);
@@ -165,21 +169,23 @@ export default function App() {
   }
 
   function performUndo() {
-    const r = history.undo();
-    if (r) maybeAutoSaveAfterHistoryStep();
+    // `history.undo()` returns the unchanged present when the stack is empty
+    // — checking truthiness alone marked imported documents dirty on a stray
+    // Cmd+Z and then nagged about "unsaved edits" on close.
+    if (!history.canUndo()) return;
+    history.undo();
+    maybeAutoSaveAfterHistoryStep();
   }
   function performRedo() {
-    const r = history.redo();
-    if (r) maybeAutoSaveAfterHistoryStep();
+    if (!history.canRedo()) return;
+    history.redo();
+    maybeAutoSaveAfterHistoryStep();
   }
 
   async function loadJdf(path: string) {
     try {
-      const { readTextFile } = await import("@tauri-apps/plugin-fs");
       const content = await readTextFile(path);
-      const parsed = JSON.parse(content) as JdfDocument;
-      if (!parsed.$jdf) throw new Error("Not a JDF document");
-      releaseActiveJdfx();
+      const parsed = normalizeDoc(JSON.parse(content), basename(path).replace(/\.jdf$/i, ""));
       setLoaded({ path, type: "jdf" });
       history.reset(parsed);
       setViewMode("jdf");
@@ -195,32 +201,24 @@ export default function App() {
 
   async function loadJdfx(path: string) {
     try {
-      const { readFile } = await import("@tauri-apps/plugin-fs");
       const { unpackJdfx } = await import("./jdfx");
-      const bytes = await readFile(path);
+      const bytes = await readBinaryFile(path);
       const unpacked = await unpackJdfx(bytes);
 
-      // Inline asset URLs into the document so the existing image renderer
-      // (which reads `src` / `resources.images.<key>.data`) just works without
-      // any awareness of the zip.
-      const doc = unpacked.document;
+      // Bind every zip asset back into `resources.images[id].data` (base64).
+      // The image renderer resolves `resource → resources.images[id]`, and —
+      // crucially — `packJdfx()` on autosave re-extracts exactly those
+      // entries into the bundle. The earlier approach rewrote `el.src` to a
+      // `blob:` object URL: it rendered fine, but the first edit re-packed a
+      // zip with zero assets and `document.json` full of dead blob URLs, so
+      // every image was gone on reopen.
+      const doc = normalizeDoc(unpacked.document, basename(path).replace(/\.jdfx$/i, ""));
       if (!doc.resources) doc.resources = { images: {} };
       if (!doc.resources.images) doc.resources.images = {};
-      function rebind(els: any[] | undefined) {
-        if (!els) return;
-        for (const el of els) {
-          if (el?.type === "image" && el.resource) {
-            const url = unpacked.assetUrls.get(el.resource);
-            if (url) el.src = url;
-          }
-          if (el?.elements) rebind(el.elements);
-          if (el?.children) rebind(el.children);
-        }
+      for (const [id, asset] of unpacked.assets) {
+        doc.resources.images[id] = { src: "embedded", mimeType: asset.mimeType, data: asset.base64 };
       }
-      for (const page of doc.pages || []) rebind(page.elements as any[]);
 
-      releaseActiveJdfx();
-      activeJdfx = { release: unpacked.release };
       setLoaded({ path, type: "jdfx" });
       history.reset(doc);
       setViewMode("jdf");
@@ -238,7 +236,12 @@ export default function App() {
     setImporting(true);
     try {
       const fileName = basename(pdfPath).replace(/\.pdf$/i, "");
-      const parsed = await importPdfToJdf(pdfPath, fileName);
+      // Read through our Rust command (no capability-scope surprises) and
+      // hand bytes to the shared importer — same core as the CLI.
+      const bytes = await readBinaryFile(pdfPath);
+      const parsed = await importPdfToJdf(bytes, fileName, {
+        onPassword: (retry) => new Promise<string | null>((resolve) => setPasswordRequest({ retry, resolve })),
+      });
       if (parsed?.pages?.length) {
         setLoaded({ path: pdfPath, type: "pdf" });
         history.reset(parsed);
@@ -260,7 +263,6 @@ export default function App() {
   async function importMarkdownFile(path: string) {
     setImporting(true);
     try {
-      const { readTextFile } = await import("@tauri-apps/plugin-fs");
       const { preprocessMarkdownImages } = await import("./import/markdownImages");
       const rawOriginal = await readTextFile(path);
       const raw = await preprocessMarkdownImages(rawOriginal, path);
@@ -295,7 +297,11 @@ export default function App() {
     return out;
   }
 
-  function openByExtension(filePath: string) {
+  async function openByExtension(filePath: string) {
+    // Write out any edit still sitting in the autosave debounce before the
+    // loaded file changes underneath it — otherwise the timer fires with the
+    // *new* file as `loaded()` and the last edit to the old one is lost.
+    await flushPendingSave();
     const norm = normaliseDroppedPath(filePath);
     const lower = norm.toLowerCase();
     if (lower.endsWith(".jdfx")) loadJdfx(norm);
@@ -417,13 +423,19 @@ export default function App() {
   function handleKeyDown(e: KeyboardEvent) {
     const meta = e.metaKey || e.ctrlKey;
     const target = e.target as HTMLElement;
-    const inField = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+    const inField = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT" || target.isContentEditable);
 
     if (e.key === "Escape") {
       if (showHelp()) { setShowHelp(false); return; }
       if (showSearch()) { setShowSearch(false); return; }
     }
     if (!inField && !meta && e.key === "?") { e.preventDefault(); setShowHelp((v) => !v); return; }
+    // While typing in a field (JSON view, form inputs, inline editors) the
+    // browser owns Cmd+Z / Cmd+S / Cmd+F etc. — hijacking them undid the
+    // *document* while the user meant their text, and Cmd+S in the JSON view
+    // opened a Save As dialog on top of the commit. Only window-level
+    // shortcuts stay active inside fields.
+    if (inField && meta && !["o", "n", "w", "p", "d", "b", "=", "+", "-", "0"].includes(e.key)) return;
 
     if (meta && e.key === "z" && !e.shiftKey) { e.preventDefault(); performUndo(); }
     else if (meta && (e.key === "Z" || (e.shiftKey && e.key.toLowerCase() === "z") || e.key === "y")) { e.preventDefault(); performRedo(); }
@@ -491,9 +503,8 @@ export default function App() {
       const out = String(path);
       const lower = out.toLowerCase();
       if (lower.endsWith(".jdfx")) {
-        const { writeFile } = await import("@tauri-apps/plugin-fs");
         const { bytes } = await packJdfx(d);
-        await writeFile(out, bytes);
+        await writeBinaryFile(out, bytes);
         setLoaded({ ...cur, path: out, type: "jdfx" });
       } else {
         const { invoke } = await import("@tauri-apps/api/core");
@@ -623,6 +634,14 @@ export default function App() {
 
         <Show when={showHelp()}>
           <HelpOverlay onClose={() => setShowHelp(false)} />
+        </Show>
+
+        <Show when={passwordRequest()}>
+          <PasswordPrompt
+            retry={passwordRequest()!.retry}
+            onSubmit={(pw) => { const r = passwordRequest(); setPasswordRequest(null); r?.resolve(pw); }}
+            onCancel={() => { const r = passwordRequest(); setPasswordRequest(null); r?.resolve(null); }}
+          />
         </Show>
 
         <Show when={importing()}>

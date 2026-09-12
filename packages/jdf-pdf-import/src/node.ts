@@ -6,6 +6,7 @@ import type { PdfImportRuntime } from "./types";
 
 let pdfjsModule: any | null = null;
 let pdfjsLoadPromise: Promise<any> | null = null;
+let pdfjsAssetDirs: { standardFontDataUrl: string; cMapUrl: string } | null = null;
 
 /**
  * Load pdfjs-dist's modern ESM build — same one the desktop reader uses, so
@@ -23,26 +24,31 @@ async function loadNodePdfJs() {
   pdfjsLoadPromise = (async () => {
     const { createRequire } = await import("node:module");
     const require_ = createRequire(import.meta.url);
-    // pdfjs prints a "Please use the legacy build in Node.js" warning when we
-    // use the modern build on node. The output is identical, so suppress it
-    // for a single import via try/finally — losing this warning permanently
-    // because of a thrown import was the previous bug.
-    const origWarn = console.warn;
-    console.warn = (...args: any[]) => {
-      if (typeof args[0] === "string" && args[0].includes("legacy")) return;
-      origWarn.apply(console, args);
+    // pdfjs prints "Please use the `legacy` build in Node.js environments."
+    // at module load when we use the modern build on node. The output is
+    // identical, so suppress that one line for the duration of the import.
+    // PDF.js's `warn()` writes through console.log (not console.warn), which
+    // is why the earlier console.warn shim never caught it.
+    const origLog = console.log;
+    console.log = (...args: any[]) => {
+      if (typeof args[0] === "string" && args[0].includes("`legacy` build")) return;
+      origLog.apply(console, args);
     };
     let lib: any;
     try {
       // @ts-ignore — pdfjs-dist subpath
       lib = await import("pdfjs-dist/build/pdf.mjs");
     } finally {
-      console.warn = origWarn;
+      console.log = origLog;
     }
     const workerPath = require_.resolve("pdfjs-dist/build/pdf.worker.mjs");
     if (lib.GlobalWorkerOptions) {
       lib.GlobalWorkerOptions.workerSrc = workerPath;
     }
+    // Sibling asset directories shipped in the pdfjs-dist package.
+    const { dirname, join } = await import("node:path");
+    const pkgDir = dirname(dirname(workerPath));
+    pdfjsAssetDirs = { standardFontDataUrl: join(pkgDir, "standard_fonts") + "/", cMapUrl: join(pkgDir, "cmaps") + "/" };
     pdfjsModule = lib;
     return lib;
   })();
@@ -55,6 +61,17 @@ async function loadCanvas() {
   try {
     // @ts-ignore — optional peer dep, resolved at runtime
     canvasModule = await import("@napi-rs/canvas");
+    // PDF.js's canvas renderer reaches for browser globals (DOMMatrix for
+    // pattern transforms, Path2D for clipping / glyph paths, ImageData).
+    // Without them `page.render()` throws on any page with a clip or a
+    // gradient — the throw was swallowed, but a page that never finished
+    // rendering never materialised its image XObjects either, so those
+    // images were silently missing from CLI output. @napi-rs/canvas ships
+    // compatible implementations; install them once if the host has none.
+    const g = globalThis as any;
+    if (typeof g.DOMMatrix === "undefined" && canvasModule.DOMMatrix) g.DOMMatrix = canvasModule.DOMMatrix;
+    if (typeof g.Path2D === "undefined" && canvasModule.Path2D) g.Path2D = canvasModule.Path2D;
+    if (typeof g.ImageData === "undefined" && canvasModule.ImageData) g.ImageData = canvasModule.ImageData;
     return canvasModule;
   } catch (err) {
     throw new Error(
@@ -115,6 +132,7 @@ export async function importPdfToJdf(
   const runtime: PdfImportRuntime = {
     pdfjs,
     disableWorker: true,
+    ...(pdfjsAssetDirs ?? {}),
     createCanvas(width: number, height: number) {
       const canvas = canvasMod.createCanvas(width, height);
       const context = canvas.getContext("2d");

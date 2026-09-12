@@ -51,38 +51,46 @@ export function RichTextElementView(props: RichTextElementViewProps) {
     edit.updateField(props.path, "runs", [{ text: next }]);
   }
 
+  // Styled runs (bold / italic / colour / links) — rendered in BOTH branches.
+  // `edit.enabled()` is true whenever a document is loaded, so the Editable
+  // branch is the one users see; flattening runs to plain text there meant
+  // rich text never showed its formatting in the desktop app (jdf.js did).
+  const renderRuns = () => (
+    <For each={props.element.runs || []}>
+      {(run) => {
+        const css = runCss(run, props.styles);
+        const link = linkInfo(run.link);
+        if (link) {
+          return (
+            <a
+              href={link.href}
+              class="text-blue-600 hover:text-blue-800 underline"
+              target={link.internal ? undefined : "_blank"}
+              rel={link.internal ? undefined : "noopener noreferrer"}
+              onClick={(e) => {
+                if (link.internal && props.onNavigatePage) {
+                  e.preventDefault();
+                  const m = link.href.replace(/^#/, "").match(/^page-(\d+)$/i);
+                  if (m) props.onNavigatePage(Number(m[1]) - 1);
+                }
+              }}
+              style={css}
+            >
+              {run.text}
+            </a>
+          );
+        }
+        return <span style={css}>{run.text}</span>;
+      }}
+    </For>
+  );
+
   return (
     <Show
       when={edit.enabled()}
       fallback={
-        <p class="m-0" style={containerCss()}>
-          <For each={props.element.runs || []}>
-            {(run) => {
-              const css = runCss(run, props.styles);
-              const link = linkInfo(run.link);
-              if (link) {
-                return (
-                  <a
-                    href={link.href}
-                    class="text-blue-600 hover:text-blue-800 underline"
-                    target={link.internal ? undefined : "_blank"}
-                    rel={link.internal ? undefined : "noopener noreferrer"}
-                    onClick={(e) => {
-                      if (link.internal && props.onNavigatePage) {
-                        e.preventDefault();
-                        const m = link.href.replace(/^#/, "").match(/^page-(\d+)$/i);
-                        if (m) props.onNavigatePage(Number(m[1]) - 1);
-                      }
-                    }}
-                    style={css}
-                  >
-                    {run.text}
-                  </a>
-                );
-              }
-              return <span style={css}>{run.text}</span>;
-            }}
-          </For>
+        <p class="m-0 whitespace-pre-wrap" style={containerCss()}>
+          {renderRuns()}
         </p>
       }
     >
@@ -93,7 +101,9 @@ export function RichTextElementView(props: RichTextElementViewProps) {
         onCommit={commitWholeParagraph}
         class="m-0 whitespace-pre-wrap"
         style={containerCss() as any}
-      />
+      >
+        {renderRuns()}
+      </Editable>
     </Show>
   );
 }

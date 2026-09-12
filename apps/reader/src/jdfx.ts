@@ -12,13 +12,28 @@ import {
 
 const GENERATOR = "JDF Reader 0.1.14";
 
+export interface UnpackedAsset {
+  mimeType: string;
+  /** Raw base64 (no `data:` prefix) — drops straight into `resources.images[id].data`. */
+  base64: string;
+  size: number;
+}
+
 export interface UnpackedJdfx {
   document: JdfDocument;
   manifest: JdfxManifest;
-  /** Asset id → object URL the renderer can use as `<img src>`. */
-  assetUrls: Map<string, string>;
-  /** Frees every object URL allocated for this bundle. */
-  release: () => void;
+  /** Asset id → bytes. The caller binds these into `resources.images` so the
+   *  renderer and the re-packer (`packJdfx`) see one consistent document. */
+  assets: Map<string, UnpackedAsset>;
+}
+
+function uint8ToBase64(arr: Uint8Array): string {
+  let binary = "";
+  const CHUNK = 0x8000;
+  for (let i = 0; i < arr.length; i += CHUNK) {
+    binary += String.fromCharCode(...arr.subarray(i, i + CHUNK));
+  }
+  return btoa(binary);
 }
 
 function ts(): string {
@@ -46,7 +61,7 @@ export async function unpackJdfx(bytes: Uint8Array | ArrayBuffer): Promise<Unpac
     };
   }
 
-  const assetUrls = new Map<string, string>();
+  const assets = new Map<string, UnpackedAsset>();
   const assetPrefix = `${JDFX_ASSET_DIR}/`;
   for (const entry of manifest.assets) {
     // Path-traversal guard — manifest paths are user-controlled (a hostile
@@ -59,16 +74,11 @@ export async function unpackJdfx(bytes: Uint8Array | ArrayBuffer): Promise<Unpac
     }
     const file = zip.file(entry.path);
     if (!file) continue;
-    const blob = new Blob([await file.async("uint8array") as BlobPart], { type: entry.mimeType });
-    assetUrls.set(entry.id, URL.createObjectURL(blob));
+    const bytes = await file.async("uint8array");
+    assets.set(entry.id, { mimeType: entry.mimeType || mimeOf(entry.path), base64: uint8ToBase64(bytes), size: bytes.length });
   }
 
-  const release = () => {
-    for (const url of assetUrls.values()) URL.revokeObjectURL(url);
-    assetUrls.clear();
-  };
-
-  return { document, manifest, assetUrls, release };
+  return { document, manifest, assets };
 }
 
 export interface PackedJdfx {

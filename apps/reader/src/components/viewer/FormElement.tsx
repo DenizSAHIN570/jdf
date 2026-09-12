@@ -148,19 +148,25 @@ export function FormSignatureElementView(props: FormProps<FormSignatureElement>)
     }
   });
 
+  // Map pointer position (CSS px, affected by zoom / CSS sizing) into the
+  // canvas backing store so strokes land under the cursor at any zoom.
+  const toCanvas = (e: PointerEvent) => {
+    const c = canvasRef!;
+    const r = c.getBoundingClientRect();
+    const sx = r.width ? c.width / r.width : 1;
+    const sy = r.height ? c.height / r.height : 1;
+    return { x: (e.clientX - r.left) * sx, y: (e.clientY - r.top) * sy };
+  };
   const onPointerDown = (e: PointerEvent) => {
     if (props.element.readonly) return;
     drawing = true;
-    const r = canvasRef!.getBoundingClientRect();
-    last = { x: e.clientX - r.left, y: e.clientY - r.top };
+    last = toCanvas(e);
   };
   const onPointerMove = (e: PointerEvent) => {
     if (!drawing || !last || !canvasRef) return;
     const ctx = canvasRef.getContext("2d");
     if (!ctx) return;
-    const r = canvasRef.getBoundingClientRect();
-    const x = e.clientX - r.left;
-    const y = e.clientY - r.top;
+    const { x, y } = toCanvas(e);
     ctx.strokeStyle = "#0f172a";
     ctx.lineWidth = 1.6;
     ctx.lineCap = "round";

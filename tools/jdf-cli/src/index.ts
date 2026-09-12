@@ -17,7 +17,7 @@ The CLI exists for these workflows:
 
 Usage:
   jdf validate <file.jdf>
-  jdf convert  <file.{pdf,json,md}> [-o output.{jdf,jdfx}] [--json]
+  jdf convert  <file.{pdf,json,md}> [-o output.{jdf,jdfx}] [--json] [--password PW] [--drop-invisible-text]
   jdf chunk    <file.{jdf,jdfx}> [--strategy section|element|fixed] [--format jsonl|json|inline] [--max-tokens N] [-o out]
   jdf embed    <file.{jdf,jdfx}> [--provider ollama|openai] [--model NAME] [--strategy …] [--incremental] [-o out]
   jdf --help
@@ -32,6 +32,11 @@ Flags:
   -o, --output <path>   Explicit output path
       --json            convert: force pure JSON .jdf output (inline base64
                         instead of a .jdfx zip bundle)
+      --password <pw>   convert(pdf): password for an encrypted PDF
+      --drop-invisible-text
+                        convert(pdf): omit invisible (OCR-layer) text; by
+                        default it is kept with opacity 0 so RAG / search
+                        still see the words of a scanned PDF
       --strategy <s>    chunk/embed: section (default) | element | fixed
       --format <f>      chunk: jsonl (default) | json | inline
       --max-tokens <n>  chunk/embed: soft cap per chunk (default 512)
@@ -57,7 +62,7 @@ Examples:
 // Flags that NEVER take a value, so the parser knows not to swallow the next
 // token (otherwise `--json -o foo.jdf` would attach `-o` as the json value
 // and mean the wrong thing).
-const BOOLEAN_FLAGS = new Set(["help", "h", "json", "verbose", "skip-validate", "incremental", "no-auto-start"]);
+const BOOLEAN_FLAGS = new Set(["help", "h", "json", "verbose", "skip-validate", "incremental", "no-auto-start", "drop-invisible-text"]);
 
 function parseArgs(argv: string[]): { command?: string; positional: string[]; flags: Record<string, string | boolean> } {
   const positional: string[] = [];
@@ -126,7 +131,11 @@ async function main() {
           await importMarkdown(input, output);
           process.exit(0);
         } else if (lower.endsWith(".pdf")) {
-          await importPdf(input, output, { forceJson });
+          await importPdf(input, output, {
+            forceJson,
+            password: typeof flags.password === "string" ? flags.password : undefined,
+            dropInvisibleText: flags["drop-invisible-text"] === true,
+          });
           // PDF.js leaves worker timers / fake-worker tasks on the loop after
           // import resolves. Force a clean exit so the CLI returns control
           // immediately instead of hanging on idle handles.

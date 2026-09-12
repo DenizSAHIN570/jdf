@@ -201,6 +201,10 @@ html, body {
 @media print {
   header, aside, .no-print { display: none !important; }
   body, html { background: white !important; }
+  /* The app shell is a fixed-height, overflow-hidden flex column so only the
+     visible viewport used to reach the printer. Let everything flow. */
+  .h-screen, .overflow-hidden, .overflow-auto, .flex-1 { height: auto !important; overflow: visible !important; }
+  .jdf-page { transform: none !important; }
   .page-shadow { box-shadow: none !important; margin: 0 !important; }
   .jdf-page { page-break-after: always; box-shadow: none !important; }
   .markdown-body { box-shadow: none !important; padding: 0 !important; }

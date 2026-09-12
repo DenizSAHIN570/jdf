@@ -10,6 +10,10 @@ export interface ImportPdfOptions {
    * pipelines that prefer pure JSON should pass `forceJson: true`.
    */
   forceJson?: boolean;
+  /** Password for encrypted PDFs (`--password`). */
+  password?: string;
+  /** Drop invisible (OCR-layer) text instead of keeping it with opacity 0. */
+  dropInvisibleText?: boolean;
 }
 
 export async function importPdf(
@@ -26,7 +30,10 @@ export async function importPdf(
   console.log(`Importing: ${input}`);
   const title = path.basename(input, path.extname(input));
   const t0 = Date.now();
-  const doc = await importPdfToJdf(input, title);
+  const doc = await importPdfToJdf(input, title, {
+    password: options.password,
+    invisibleText: options.dropInvisibleText ? "drop" : "keep",
+  });
   console.log(`Parsed in ${((Date.now() - t0) / 1000).toFixed(1)}s — ${doc.pages.length} page(s)`);
 
   let output: string;

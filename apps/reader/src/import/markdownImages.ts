@@ -1,4 +1,4 @@
-import { readFile } from "@tauri-apps/plugin-fs";
+import { readBinaryFile as readFile } from "../lib/fs";
 
 const IMAGE_REF_RE = /(!\[[^\]]*\])\(\s*([^)\s]+)([^)]*)\)/g;
 

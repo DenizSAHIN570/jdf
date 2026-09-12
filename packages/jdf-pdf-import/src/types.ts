@@ -40,4 +40,11 @@ export interface PdfImportRuntime {
    * spawn a real worker against the .mjs path and fail.
    */
   disableWorker?: boolean;
+
+  /** URL/path of pdfjs-dist's `standard_fonts/` directory (trailing slash). */
+  standardFontDataUrl?: string;
+
+  /** URL/path of pdfjs-dist's `cmaps/` directory (trailing slash) — needed to
+   *  decode CJK / Type0 fonts that reference predefined CMaps. */
+  cMapUrl?: string;
 }

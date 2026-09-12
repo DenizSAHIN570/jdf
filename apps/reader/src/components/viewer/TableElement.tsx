@@ -74,7 +74,20 @@ export function TableElementView(props: TableElementViewProps) {
     return { outer: true, inner: true, color: "#e2e8f0", width: 1, ...b };
   };
 
-  const headers = () => props.element.headers ?? props.element.columns?.map((c) => c.header || "").filter((h) => h !== "");
+  // Keep header indices aligned with columns: filtering out empty headers
+  // shifted every later index, so editing header 2 wrote to column 1.
+  const headers = () => {
+    if (props.element.headers) return props.element.headers;
+    const fromCols = props.element.columns?.map((c) => c.header || "");
+    return fromCols && fromCols.some((h) => h !== "") ? fromCols : undefined;
+  };
+
+  function commitHeader(i: number, value: string) {
+    // `headers` may be derived from `columns[*].header`; write back to where
+    // the value actually lives instead of conjuring a `headers` *object*.
+    if (props.element.headers) edit.updateField(props.path, `headers.${i}`, value);
+    else edit.updateField(props.path, `columns.${i}.header`, value);
+  }
 
   const hasColWidths = () => props.element.columns?.some((c) => c.width != null) ?? false;
 
@@ -129,7 +142,7 @@ export function TableElementView(props: TableElementViewProps) {
                     {edit.enabled() ? (
                       <Editable
                         value={h}
-                        onCommit={(v) => edit.updateField(props.path, `headers.${i()}`, v)}
+                        onCommit={(v) => commitHeader(i(), v)}
                       />
                     ) : (
                       h

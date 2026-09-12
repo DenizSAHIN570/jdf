@@ -30,7 +30,26 @@ function rgbToHex(r: number, g: number, b: number): string {
   return `#${h(r)}${h(g)}${h(b)}`;
 }
 
-interface ImagePos { name: string; x: number; y: number; w: number; h: number }
+/**
+ * A painted image. `name` is the PDF.js object id for XObjects; inline images
+ * and image masks arrive as ready objects (`inline`) — masks are 1-bit
+ * stencils painted with the fill colour active at paint time (`maskFill`).
+ */
+interface ImagePos {
+  name: string;
+  x: number; y: number; w: number; h: number;
+  inline?: any;
+  maskFill?: string;
+}
+
+/**
+ * One `showText` operator with its resolved start position (viewport pt) and
+ * the graphics state active at that moment. Text items from `getTextContent`
+ * are matched to these by position — PDF.js merges adjacent operators into a
+ * single item, so an index-based zip of operators ↔ items drifted as soon as
+ * the first merge happened (every word after that got the wrong colour).
+ */
+interface TextOp { x: number; y: number; fontSize: number; fill: string; alpha: number; mode: number }
 
 interface ShapeOp {
   kind: "rect" | "line" | "path";
@@ -43,11 +62,44 @@ interface ShapeOp {
 }
 
 interface ParsedOps {
-  textColors: string[];
-  textOpacities: number[];
-  textRenderingModes: number[];
+  textOps: TextOp[];
   shapes: ShapeOp[];
   imagePositions: ImagePos[];
+}
+
+/** Average of a PDF.js RadialAxial gradient's colour stops — a flat stand-in
+ *  for gradient fills (backgrounds, banners) that used to inherit whatever
+ *  solid colour was set before the pattern. */
+function averageStops(stops: any): string | null {
+  if (!Array.isArray(stops) || stops.length === 0) return null;
+  let r = 0, g = 0, b = 0, n = 0;
+  for (const st of stops) {
+    const css = Array.isArray(st) ? st[1] : null;
+    const m = typeof css === "string" && css.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+    if (!m) continue;
+    r += parseInt(m[1], 16); g += parseInt(m[2], 16); b += parseInt(m[3], 16); n++;
+  }
+  return n ? rgbToHex(r / n, g / n, b / n) : null;
+}
+
+/** Resolve a pattern operand (`["Shading", objId, matrix]` / `["TilingPattern", color, …]`)
+ *  to a representative solid colour, or null when nothing sensible exists. */
+function patternToColor(page: any, arg: any): string | null {
+  if (!Array.isArray(arg)) return null;
+  if (arg[0] === "TilingPattern") {
+    const c = arg[1];
+    return Array.isArray(c) && c.length >= 3 ? rgbToHex(c[0], c[1], c[2]) : null;
+  }
+  if (arg[0] === "Shading") {
+    const id = arg[1];
+    try {
+      const store = typeof id === "string" && id.startsWith("g_") ? page.commonObjs : page.objs;
+      if (typeof store?.has === "function" && !store.has(id)) return null;
+      const ir = store.get(id);
+      if (Array.isArray(ir) && ir[0] === "RadialAxial") return averageStops(ir[3]);
+    } catch { /* unresolved — keep previous colour */ }
+  }
+  return null;
 }
 
 function multiplyCtm(a: number[], b: number[]): number[] {
@@ -69,7 +121,11 @@ async function walkOps(page: any, OPS: any, viewport: any): Promise<ParsedOps> {
     const [vx, vy] = viewport.convertToViewportPoint(x, y) as [number, number];
     return { x: vx, y: vy };
   };
-  const opList = await page.getOperatorList();
+  // Annotation appearance streams are excluded on purpose: form widgets are
+  // emitted as real form elements from `getAnnotations()`, and
+  // `getTextContent()` never includes annotation text — so leaving them in
+  // both duplicated widget borders and threw text↔operator matching off.
+  const opList = await page.getOperatorList({ annotationMode: annotationModeDisable });
   const fnArr: number[] = opList.fnArray;
   const argsArr: any[][] = opList.argsArray;
 
@@ -81,16 +137,41 @@ async function walkOps(page: any, OPS: any, viewport: any): Promise<ParsedOps> {
     fillAlpha: 1,
     strokeAlpha: 1,
     textRenderingMode: 0,
+    // Text state (PDF 9.3) — needed to know where each showText lands.
+    fontSize: 0,
+    charSpacing: 0,
+    wordSpacing: 0,
+    hscale: 1,
+    leading: 0,
+    rise: 0,
   };
-  const stack: typeof gs[] = [];
+  const snapshot = () => ({ ...gs, ctm: [...gs.ctm] });
+  const stack: ReturnType<typeof snapshot>[] = [];
 
-  const textColors: string[] = [];
-  const textOpacities: number[] = [];
-  const textRenderingModes: number[] = [];
+  const textOps: TextOp[] = [];
   const shapes: ShapeOp[] = [];
   const imagePositions: ImagePos[] = [];
 
-  let textIdx = 0;
+  // Text matrix / line matrix (reset by BT).
+  let tm: number[] = [1, 0, 0, 1, 0, 0];
+  let tlm: number[] = [1, 0, 0, 1, 0, 0];
+
+  function pushImage(name: string, ctm: number[], inline?: any, maskFill?: string) {
+    const corners = [tx(ctm, 0, 0), tx(ctm, 1, 0), tx(ctm, 1, 1), tx(ctm, 0, 1)];
+    const vpCorners = corners.map((p) => toViewport(p.x, p.y));
+    const xs = vpCorners.map((p) => p.x), ys = vpCorners.map((p) => p.y);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    imagePositions.push({
+      name,
+      x: minX * PT_TO_MM,
+      y: minY * PT_TO_MM,
+      w: (maxX - minX) * PT_TO_MM,
+      h: (maxY - minY) * PT_TO_MM,
+      inline,
+      maskFill,
+    });
+  }
   let pathSegments: { type: "M" | "L" | "C" | "Q" | "Z" | "RECT"; pts: number[] }[] = [];
   let pathRect: { x: number; y: number; w: number; h: number } | null = null;
   let pathStart: { x: number; y: number } | null = null;
@@ -220,10 +301,55 @@ async function walkOps(page: any, OPS: any, viewport: any): Promise<ParsedOps> {
     const args = argsArr[i] || [];
 
     if (fn === OPS.save) {
-      stack.push({ ctm: [...gs.ctm], fill: gs.fill, stroke: gs.stroke, lineWidth: gs.lineWidth, fillAlpha: gs.fillAlpha, strokeAlpha: gs.strokeAlpha, textRenderingMode: gs.textRenderingMode });
+      stack.push(snapshot());
     } else if (fn === OPS.restore) {
       const s = stack.pop();
       if (s) Object.assign(gs, s);
+    } else if (fn === OPS.paintFormXObjectBegin) {
+      // Form XObjects (logos, headers, anything placed with `Do`) carry their
+      // own /Matrix. PDF.js inlines their content between Begin/End and
+      // expects the consumer to apply that matrix — ignoring it put every
+      // nested drawing at the wrong place (or off-page) for Word/InDesign PDFs.
+      stack.push(snapshot());
+      const matrix = args[0];
+      if (Array.isArray(matrix) && matrix.length === 6) gs.ctm = multiplyCtm(matrix as number[], gs.ctm);
+    } else if (fn === OPS.paintFormXObjectEnd) {
+      const s = stack.pop();
+      if (s) Object.assign(gs, s);
+    } else if (fn === OPS.beginText) {
+      tm = [1, 0, 0, 1, 0, 0];
+      tlm = [1, 0, 0, 1, 0, 0];
+    } else if (fn === OPS.setTextMatrix) {
+      tm = [...(args as number[])];
+      tlm = [...tm];
+    } else if (fn === OPS.moveText) {
+      tlm = multiplyCtm([1, 0, 0, 1, args[0], args[1]], tlm);
+      tm = [...tlm];
+    } else if (fn === OPS.setLeadingMoveText) {
+      gs.leading = -args[1];
+      tlm = multiplyCtm([1, 0, 0, 1, args[0], args[1]], tlm);
+      tm = [...tlm];
+    } else if (fn === OPS.nextLine) {
+      tlm = multiplyCtm([1, 0, 0, 1, 0, -gs.leading], tlm);
+      tm = [...tlm];
+    } else if (fn === OPS.setLeading) {
+      gs.leading = args[0];
+    } else if (fn === OPS.setFont) {
+      gs.fontSize = typeof args[1] === "number" ? args[1] : gs.fontSize;
+    } else if (fn === OPS.setCharSpacing) {
+      gs.charSpacing = args[0];
+    } else if (fn === OPS.setWordSpacing) {
+      gs.wordSpacing = args[0];
+    } else if (fn === OPS.setHScale) {
+      gs.hscale = (args[0] ?? 100) / 100;
+    } else if (fn === OPS.setTextRise) {
+      gs.rise = args[0];
+    } else if (fn === OPS.setFillColorN) {
+      const c = patternToColor(page, args[0]);
+      if (c) gs.fill = c;
+    } else if (fn === OPS.setStrokeColorN) {
+      const c = patternToColor(page, args[0]);
+      if (c) gs.stroke = c;
     } else if (fn === OPS.transform) {
       // PDF `cm` prepends: the new coordinate system is the operand applied
       // FIRST, then the existing CTM (effectiveCTM = oldCTM ∘ M). That is
@@ -265,14 +391,28 @@ async function walkOps(page: any, OPS: any, viewport: any): Promise<ParsedOps> {
           else if (key === "CA") gs.strokeAlpha = val;
         }
       }
-    } else if (
-      fn === OPS.showText || fn === OPS.showSpacedText ||
-      fn === OPS.nextLineShowText || fn === OPS.nextLineSetSpacingShowText
-    ) {
-      textColors[textIdx] = gs.fill;
-      textOpacities[textIdx] = gs.fillAlpha;
-      textRenderingModes[textIdx] = gs.textRenderingMode;
-      textIdx++;
+    } else if (fn === OPS.showText) {
+      // PDF.js has already folded TJ / ' / " into plain showText ops (with
+      // kerning numbers inline), so this is the only text-painting operator.
+      const trm = multiplyCtm(tm, gs.ctm);
+      const origin = tx(trm, 0, gs.rise);
+      const vp = toViewport(origin.x, origin.y);
+      // |Tm scale| × Tf gives the rendered size, matching textContent's transform.
+      const scale = Math.hypot(trm[2], trm[3]) || 1;
+      textOps.push({ x: vp.x, y: vp.y, fontSize: gs.fontSize * scale, fill: gs.fill, alpha: gs.fillAlpha, mode: gs.textRenderingMode });
+      // Advance the text matrix past the glyphs so a following showText
+      // (font switch mid-line) starts where PDF.js's next item will start.
+      let advance = 0;
+      const glyphs = Array.isArray(args[0]) ? args[0] : [];
+      for (const g of glyphs) {
+        if (typeof g === "number") {
+          advance += (-g / 1000) * gs.fontSize * gs.hscale;
+        } else if (g && typeof g === "object") {
+          const w = typeof g.width === "number" ? g.width : 0;
+          advance += ((w / 1000) * gs.fontSize + gs.charSpacing + (g.isSpace ? gs.wordSpacing : 0)) * gs.hscale;
+        }
+      }
+      tm = multiplyCtm([1, 0, 0, 1, advance, 0], tm);
     } else if (fn === OPS.rectangle) {
       const [x, y, w, h] = args as number[];
       const p1 = tx(gs.ctm, x, y);
@@ -331,25 +471,47 @@ async function walkOps(page: any, OPS: any, viewport: any): Promise<ParsedOps> {
       pathRect = null;
       pathStart = null;
       pathLast = null;
-    } else if (fn === OPS.paintImageXObject || fn === OPS.paintImageMaskXObject || fn === OPS.paintInlineImageXObject) {
-      const name = args[0];
-      const c = gs.ctm;
-      const corners = [tx(c, 0, 0), tx(c, 1, 0), tx(c, 1, 1), tx(c, 0, 1)];
-      const vpCorners = corners.map((p) => toViewport(p.x, p.y));
-      const xs = vpCorners.map((p) => p.x), ys = vpCorners.map((p) => p.y);
-      const minX = Math.min(...xs), maxX = Math.max(...xs);
-      const minY = Math.min(...ys), maxY = Math.max(...ys);
-      imagePositions.push({
-        name,
-        x: minX * PT_TO_MM,
-        y: minY * PT_TO_MM,
-        w: (maxX - minX) * PT_TO_MM,
-        h: (maxY - minY) * PT_TO_MM,
-      });
+    } else if (fn === OPS.paintImageXObject) {
+      pushImage(String(args[0]), gs.ctm);
+    } else if (fn === OPS.paintImageXObjectRepeat) {
+      // Same XObject stamped at several positions (tiled backgrounds, repeated
+      // icons): [objId, scaleX, scaleY, [x0, y0, x1, y1, …]].
+      const [name, scaleX, scaleY, positions] = args as [string, number, number, number[]];
+      if (Array.isArray(positions)) {
+        for (let k = 0; k + 1 < positions.length; k += 2) {
+          pushImage(String(name), multiplyCtm([scaleX, 0, 0, scaleY, positions[k], positions[k + 1]], gs.ctm));
+        }
+      }
+    } else if (fn === OPS.paintInlineImageXObject) {
+      // Inline images (BI … ID … EI) never enter the object store — PDF.js
+      // hands us the decoded pixels directly.
+      const img = args[0];
+      if (img && typeof img === "object") pushImage(`inline-${imagePositions.length}`, gs.ctm, img);
+    } else if (fn === OPS.paintImageMaskXObject) {
+      // 1-bit stencil mask painted in the current fill colour (scanned
+      // signatures, icons in monochrome PDFs, Type3-ish artwork).
+      const img = args[0];
+      if (img && typeof img === "object") pushImage(`mask-${imagePositions.length}`, gs.ctm, img, gs.fill);
+    } else if (fn === OPS.paintImageMaskXObjectRepeat) {
+      const [img, scaleX, skewX, skewY, scaleY, positions] = args as [any, number, number, number, number, number[]];
+      if (img && typeof img === "object" && Array.isArray(positions)) {
+        for (let k = 0; k + 1 < positions.length; k += 2) {
+          pushImage(`mask-${imagePositions.length}`, multiplyCtm([scaleX, skewX, skewY, scaleY, positions[k], positions[k + 1]], gs.ctm), img, gs.fill);
+        }
+      }
+    } else if (fn === OPS.paintImageMaskXObjectGroup) {
+      const group = args[0];
+      if (Array.isArray(group)) {
+        for (const img of group) {
+          if (img && typeof img === "object" && Array.isArray(img.transform)) {
+            pushImage(`mask-${imagePositions.length}`, multiplyCtm(img.transform, gs.ctm), img, gs.fill);
+          }
+        }
+      }
     }
   }
 
-  return { textColors, textOpacities, textRenderingModes, shapes, imagePositions };
+  return { textOps, shapes, imagePositions };
 }
 
 async function extractImages(
@@ -365,36 +527,91 @@ async function extractImages(
   // multi-second wait per page. Each lookup still races a 250ms fallback in
   // case the PDF.js callback never fires; the timer is cleared as soon as
   // the real callback resolves so it doesn't pile up timers across pages.
+  const resolveObj = (id: string) => new Promise<any>((resolve) => {
+    let settled = false;
+    const timer = setTimeout(() => done(null), 250);
+    const done = (v: any) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(v);
+    };
+    try {
+      const store = id.startsWith("g_") ? page.commonObjs : page.objs;
+      store.get(id, (img: any) => done(img));
+    } catch {
+      try {
+        page.objs.get(id, (img: any) => done(img));
+      } catch {
+        done(null);
+      }
+    }
+  });
+
+  /** Expand a 1-bit stencil mask (bit 0 = paint, PDF.js convention) into an
+   *  RGBA buffer filled with the stencil's paint colour. */
+  const maskToRgba = (data: Uint8Array, width: number, height: number, fill: string): Uint8ClampedArray => {
+    const m = fill.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+    const r = m ? parseInt(m[1], 16) : 0, g = m ? parseInt(m[2], 16) : 0, b = m ? parseInt(m[3], 16) : 0;
+    const out = new Uint8ClampedArray(width * height * 4);
+    const rowBytes = (width + 7) >> 3;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const byte = data[y * rowBytes + (x >> 3)] ?? 0xff;
+        const bit = (byte >> (7 - (x & 7))) & 1;
+        const o = (y * width + x) * 4;
+        out[o] = r; out[o + 1] = g; out[o + 2] = b; out[o + 3] = bit ? 0 : 255;
+      }
+    }
+    return out;
+  };
+
+  const encode = async (imgObj: any, maskFill?: string): Promise<string | null> => {
+    if (!imgObj || !imgObj.width || !imgObj.height) return null;
+    let data: any = imgObj.data;
+    // Large masks / images keep their pixels in the object store and pass an id.
+    if (typeof data === "string") data = (await resolveObj(data))?.data ?? null;
+    if (maskFill) {
+      if (!data) return null;
+      return runtime.encodePng(imgObj.width, imgObj.height, 3, maskToRgba(data, imgObj.width, imgObj.height, maskFill));
+    }
+    if (data) {
+      let kind = imgObj.kind || 0;
+      if (!kind) {
+        // Infer from the buffer length when PDF.js omitted the kind.
+        const px = imgObj.width * imgObj.height;
+        if (data.length === px * 4) kind = 3;
+        else if (data.length === px * 3) kind = 2;
+        else if (data.length === ((imgObj.width + 7) >> 3) * imgObj.height) kind = 1;
+      }
+      return runtime.encodePng(imgObj.width, imgObj.height, kind, data);
+    }
+    if (imgObj.bitmap) {
+      // ImageBitmap path (OffscreenCanvas-capable hosts). Paint it onto a
+      // runtime canvas and read the PNG back.
+      try {
+        const { canvas, context } = runtime.createCanvas(imgObj.width, imgObj.height);
+        context.drawImage(imgObj.bitmap, 0, 0);
+        if (typeof canvas.toDataURL === "function") return canvas.toDataURL("image/png");
+        if (typeof canvas.toBuffer === "function") return `data:image/png;base64,${canvas.toBuffer("image/png").toString("base64")}`;
+      } catch { /* fall through */ }
+    }
+    return null;
+  };
+
   const tasks = positions.map(async (pos) => {
+    if (pos.inline) {
+      // Inline images and stencil masks are page-local objects; the same
+      // stencil painted in two colours must not share a cache entry.
+      const dataUrl = await encode(pos.inline, pos.maskFill);
+      return dataUrl ? { pos, dataUrl } : null;
+    }
     if (dataUrlCache.has(pos.name)) {
       return { pos, dataUrl: dataUrlCache.get(pos.name)! };
     }
     let imgObj: any = null;
-    try {
-      imgObj = await new Promise<any>((resolve) => {
-        let settled = false;
-        const timer = setTimeout(() => done(null), 250);
-        const done = (v: any) => {
-          if (settled) return;
-          settled = true;
-          clearTimeout(timer);
-          resolve(v);
-        };
-        try {
-          page.objs.get(pos.name, (img: any) => done(img));
-        } catch {
-          try {
-            page.commonObjs.get(pos.name, (img: any) => done(img));
-          } catch {
-            done(null);
-          }
-        }
-      });
-    } catch {
-      imgObj = null;
-    }
-    if (!imgObj || !imgObj.data || !imgObj.width || !imgObj.height) return null;
-    const dataUrl = runtime.encodePng(imgObj.width, imgObj.height, imgObj.kind || 0, imgObj.data);
+    try { imgObj = await resolveObj(pos.name); } catch { imgObj = null; }
+    const dataUrl = await encode(imgObj);
     if (!dataUrl) return null;
     dataUrlCache.set(pos.name, dataUrl);
     return { pos, dataUrl };
@@ -421,7 +638,20 @@ interface LinkAnnot {
   destPage?: number;
 }
 
-async function extractLinks(page: any, viewport: any): Promise<LinkAnnot[]> {
+async function resolveDestPage(doc: any, dest: any): Promise<number | undefined> {
+  try {
+    let d = dest;
+    if (typeof d === "string") d = await doc.getDestination(d);
+    if (Array.isArray(d) && d[0] != null) {
+      if (typeof d[0] === "number") return d[0]; // some producers store the index directly
+      const idx = await doc.getPageIndex(d[0]);
+      if (typeof idx === "number") return idx;
+    }
+  } catch { /* unresolvable destination */ }
+  return undefined;
+}
+
+async function extractLinks(doc: any, page: any, viewport: any): Promise<LinkAnnot[]> {
   const out: LinkAnnot[] = [];
   let annots: any[] = [];
   try {
@@ -450,7 +680,11 @@ async function extractLinks(page: any, viewport: any): Promise<LinkAnnot[]> {
       h: (yMax - yMin) * PT_TO_MM,
     };
     const url = a.url || a.unsafeUrl;
-    out.push({ rectMm, url });
+    // Internal links (TOC entries, "see page 12") carry a destination instead
+    // of a URL; resolve it to a page index so the JDF gets `#page-N`.
+    const destPage = url ? undefined : await resolveDestPage(doc, a.dest);
+    if (!url && destPage == null) continue;
+    out.push({ rectMm, url, destPage });
   }
   return out;
 }
@@ -534,33 +768,99 @@ async function extractFormWidgets(page: any, viewport: any): Promise<FormWidget[
   return out;
 }
 
-async function flattenOutline(doc: any, outline: any[] | null): Promise<{ title: string; pageIndex: number }[]> {
+interface OutlineEntry { title: string; pageIndex: number; depth: number }
+
+async function flattenOutline(doc: any, outline: any[] | null): Promise<OutlineEntry[]> {
   if (!outline) return [];
-  const out: { title: string; pageIndex: number }[] = [];
-  async function walk(items: any[]) {
+  const out: OutlineEntry[] = [];
+  async function walk(items: any[], depth: number) {
     for (const item of items) {
-      try {
-        let dest = item.dest;
-        if (typeof dest === "string") {
-          dest = await doc.getDestination(dest);
-        }
-        if (Array.isArray(dest) && dest[0]) {
-          const ref = dest[0];
-          const idx = await doc.getPageIndex(ref);
-          if (typeof idx === "number") out.push({ title: item.title, pageIndex: idx });
-        }
-      } catch { /* ignore */ }
-      if (item.items?.length) await walk(item.items);
+      const idx = await resolveDestPage(doc, item.dest);
+      if (idx != null && typeof item.title === "string" && item.title.trim()) {
+        out.push({ title: item.title.trim(), pageIndex: idx, depth });
+      }
+      if (item.items?.length) await walk(item.items, depth + 1);
     }
   }
-  await walk(outline);
+  await walk(outline, 1);
   return out;
+}
+
+const normTitle = (s: string) => s.toLowerCase().replace(/[\s\u00a0]+/g, " ").replace(/[^\p{L}\p{N} ]/gu, "").trim();
+
+/**
+ * Tag text elements with the PDF's own bookmark (outline) structure. A
+ * bookmark titled "3. Results" pointing at page 7 promotes the matching text
+ * on that page to a heading with `tocEntry`, so the reader sidebar, jdf.js
+ * TOC and `jdf chunk --strategy section` follow the author's structure
+ * instead of font-size guesses alone.
+ */
+function applyOutline(pages: Page[], outline: OutlineEntry[]) {
+  for (const entry of outline) {
+    const page = pages[entry.pageIndex];
+    if (!page) continue;
+    const want = normTitle(entry.title);
+    if (!want) continue;
+    let best: TextElement | null = null;
+    let bestScore = 0;
+    for (const el of page.elements) {
+      if (el.type !== "text") continue;
+      const have = normTitle(el.content || "");
+      if (!have) continue;
+      let score = 0;
+      if (have === want) score = 3;
+      else if (have.startsWith(want) || want.startsWith(have)) score = 2;
+      else if (have.length >= 6 && want.includes(have)) score = 1;
+      if (score > bestScore || (score === bestScore && best && score > 0 && (el.position?.y ?? 0) < (best.position?.y ?? 0))) {
+        best = el; bestScore = score;
+      }
+    }
+    if (best && bestScore > 0) {
+      const level = Math.min(6, Math.max(1, entry.depth)) as 1 | 2 | 3 | 4 | 5 | 6;
+      if (!best.heading) best.heading = level;
+      best.tocEntry = entry.title;
+      best.tocLevel = level;
+    }
+  }
+}
+
+/** PDF date string (`D:YYYYMMDDHHmmSSOHH'mm'`) → ISO-8601, or undefined. */
+function pdfDateToIso(v: unknown): string | undefined {
+  if (typeof v !== "string") return undefined;
+  const m = v.match(/^D:(\d{4})(\d{2})?(\d{2})?(\d{2})?(\d{2})?(\d{2})?([Zz+-])?(\d{2})?'?(\d{2})?/);
+  if (!m) {
+    const t = Date.parse(v);
+    return Number.isFinite(t) ? new Date(t).toISOString() : undefined;
+  }
+  const [, Y, Mo = "01", D = "01", h = "00", mi = "00", s = "00", sign, oh = "00", om = "00"] = m;
+  const tz = !sign || sign === "Z" || sign === "z" ? "Z" : `${sign}${oh}:${om}`;
+  const iso = `${Y}-${Mo}-${D}T${h}:${mi}:${s}${tz}`;
+  const t = Date.parse(iso);
+  return Number.isFinite(t) ? new Date(t).toISOString() : undefined;
 }
 
 export interface ImportPdfOptions {
   /** Optional pdfjs-dist module override (already initialised). */
   pdfjs?: any;
+  /** Password for encrypted PDFs (tried first). */
+  password?: string;
+  /**
+   * Interactive password source. Called when the PDF is encrypted and
+   * `password` is missing or wrong; `retry` is true after a rejected attempt.
+   * Resolve with `null` to cancel the import.
+   */
+  onPassword?: (retry: boolean) => Promise<string | null>;
+  /**
+   * What to do with text drawn in rendering mode 3 (invisible) — the OCR
+   * layer of scanned PDFs. `keep` (default) emits it with `opacity: 0` so
+   * search, `jdf chunk` and RAG see the words while the page still looks
+   * like the scan; `drop` omits it.
+   */
+  invisibleText?: "keep" | "drop";
 }
+
+// pdfjs.AnnotationMode.DISABLE — literal so a runtime without the enum still works.
+const annotationModeDisable = 0;
 
 /**
  * Convert a PDF (bytes / ArrayBuffer / file path) into a JdfDocument.
@@ -597,7 +897,7 @@ export async function importPdfToJdf(
     data = source;
   }
 
-  const doc = await pdfjs.getDocument({
+  const loadingTask = pdfjs.getDocument({
     data,
     // The runtime adapter declares whether it supports a real Web Worker.
     // We don't sniff `typeof Worker` here because Node 22+ exposes a global
@@ -607,7 +907,46 @@ export async function importPdfToJdf(
     // via GlobalWorkerOptions.workerSrc); node entry sets `true`.
     disableWorker: runtime.disableWorker === true,
     isEvalSupported: false,
-  }).promise;
+    // Keep going past malformed content streams instead of failing the page.
+    stopAtErrors: false,
+    // Force the classic pixel-array image path on every host so the reader
+    // (WKWebView has OffscreenCanvas) and the CLI produce identical PNGs.
+    isOffscreenCanvasSupported: false,
+    password: options.password,
+    // Standard-14 font metrics + CJK CMaps: without these PDF.js falls back
+    // to guesses for non-embedded fonts and logs a warning per page.
+    ...(runtime.standardFontDataUrl ? { standardFontDataUrl: runtime.standardFontDataUrl } : {}),
+    ...(runtime.cMapUrl ? { cMapUrl: runtime.cMapUrl, cMapPacked: true } : {}),
+  });
+  // Encrypted PDFs: PDF.js asks through onPassword; `updatePassword(Error)`
+  // aborts the load with that error.
+  let passwordTried = typeof options.password === "string";
+  loadingTask.onPassword = (updatePassword: (pw: string | Error) => void, reason: number) => {
+    const retry = reason === 2 || passwordTried; // 2 = INCORRECT_PASSWORD
+    if (!options.onPassword) {
+      updatePassword(new Error(retry
+        ? "[@jdf/pdf-import] Wrong password for encrypted PDF"
+        : "[@jdf/pdf-import] PDF is password-protected — pass `password`"));
+      return;
+    }
+    passwordTried = true;
+    options.onPassword(retry).then((pw) => {
+      if (pw == null) updatePassword(new Error("[@jdf/pdf-import] Password entry cancelled"));
+      else updatePassword(pw);
+    }).catch((e) => updatePassword(e instanceof Error ? e : new Error(String(e))));
+  };
+  let doc: any;
+  try {
+    doc = await loadingTask.promise;
+  } catch (e: any) {
+    if (e?.name === "PasswordException") {
+      const msg = /no password/i.test(e.message || "")
+        ? "PDF is password-protected — pass a password (CLI: --password)"
+        : (e.message || "PDF is password-protected");
+      throw new Error(`[@jdf/pdf-import] ${msg}`);
+    }
+    throw e;
+  }
   const pages: Page[] = [];
   const imageResources: Record<string, ImageResource> = {};
   let imgCounter = 0;
@@ -618,8 +957,14 @@ export async function importPdfToJdf(
   const dataUrlCache = new Map<string, string>();
   const resourceKeyByName = new Map<string, string>();
 
-  const outline = await doc.getOutline().catch(() => null);
-  await flattenOutline(doc, outline); // currently informational
+  const outline = await flattenOutline(doc, await doc.getOutline().catch(() => null));
+  let pdfInfo: any = null;
+  let pdfMetadata: any = null;
+  try {
+    const md = await doc.getMetadata();
+    pdfInfo = md?.info ?? null;
+    pdfMetadata = md?.metadata ?? null;
+  } catch { /* no metadata */ }
 
   for (let pi = 1; pi <= doc.numPages; pi++) {
     const page = await doc.getPage(pi);
@@ -633,7 +978,7 @@ export async function importPdfToJdf(
     } catch { /* swallow */ }
 
     const ops = await walkOps(page, OPS, viewport);
-    const links = await extractLinks(page, viewport);
+    const links = await extractLinks(doc, page, viewport);
     const formWidgets = await extractFormWidgets(page, viewport);
     const textContent = await page.getTextContent({ disableCombineTextItems: false });
     const items: any[] = textContent.items;
@@ -684,9 +1029,49 @@ export async function importPdfToJdf(
       return Number.isFinite(n) ? n : fallback;
     };
 
-    items.forEach((it, idx) => {
+    // Spatial index of showText operators (1 pt bins) for item → op matching.
+    const opBins = new Map<string, TextOp[]>();
+    for (const op of ops.textOps) {
+      const key = `${Math.round(op.x)},${Math.round(op.y)}`;
+      const arr = opBins.get(key);
+      if (arr) arr.push(op); else opBins.set(key, [op]);
+    }
+    const findOp = (x: number, y: number, fontSize: number): TextOp | null => {
+      let best: TextOp | null = null;
+      let bestD = Infinity;
+      const bx = Math.round(x), by = Math.round(y);
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const arr = opBins.get(`${bx + dx},${by + dy}`);
+          if (!arr) continue;
+          for (const op of arr) {
+            const d = Math.hypot(op.x - x, op.y - y);
+            if (d < bestD) { bestD = d; best = op; }
+          }
+        }
+      }
+      if (best) return best;
+      // Item start didn't line up with any operator start (glyph-advance
+      // estimate drifted, Type3 font, vertical text). Fall back to the nearest
+      // operator on the same baseline, then to the nearest anywhere.
+      const tol = Math.max(2, fontSize * 0.6);
+      for (const op of ops.textOps) {
+        if (Math.abs(op.y - y) > tol) continue;
+        const d = Math.abs(op.x - x) + Math.abs(op.y - y) * 4;
+        if (d < bestD) { bestD = d; best = op; }
+      }
+      if (best) return best;
+      for (const op of ops.textOps) {
+        const d = Math.hypot(op.x - x, op.y - y);
+        if (d < bestD) { bestD = d; best = op; }
+      }
+      return bestD < 40 ? best : null;
+    };
+
+    const keepInvisible = options.invisibleText !== "drop";
+
+    items.forEach((it) => {
       if (!it.str || !it.str.length) return;
-      if ((ops.textRenderingModes[idx] ?? 0) === 3) return;
       const tr = it.transform as number[];
       const fontSize = safeNum(Math.hypot(safeNum(tr?.[2], 0), safeNum(tr?.[3], 0)), 0)
         || safeNum(it.height, 0)
@@ -696,6 +1081,13 @@ export async function importPdfToJdf(
       const conv = viewport.convertToViewportPoint(baseX, baseY) as [number, number];
       const vx = safeNum(conv?.[0], 0);
       const vy = safeNum(conv?.[1], 0);
+      const op = findOp(vx, vy, fontSize);
+      const mode = op?.mode ?? 0;
+      // Mode 7 adds to the clip path only — nothing is painted, and it is
+      // not an OCR layer either.
+      if (mode === 7) return;
+      const invisible = mode === 3;
+      if (invisible && !keepInvisible) return;
       const ascent = it.height ? safeNum(it.height, fontSize) * 0.78 : fontSize * 0.78;
       const yTop = vy - ascent;
       const w = safeNum(it.width, 0);
@@ -707,8 +1099,8 @@ export async function importPdfToJdf(
         fontName: it.fontName,
         width: safeNum(w * PT_TO_MM, 0),
         height: safeNum((it.height || fontSize) * PT_TO_MM, fontSize * PT_TO_MM),
-        color: ops.textColors[idx] || "#000000",
-        opacity: safeNum(ops.textOpacities[idx], 1),
+        color: op?.fill || "#000000",
+        opacity: invisible ? 0 : safeNum(op?.alpha, 1),
       });
     });
 
@@ -898,14 +1290,39 @@ export async function importPdfToJdf(
     });
   }
 
+  applyOutline(pages, outline);
+
+  const meta: JdfDocument["meta"] = {
+    title,
+    pageSize: pages[0]?.pageSize || "A4",
+    unit: "mm",
+    margins: { top: 0, right: 0, bottom: 0, left: 0 },
+  };
+  // Carry the PDF's own document info through — authorship and dates matter
+  // for RAG provenance and for `{{author}}` header/footer templates.
+  if (pdfInfo) {
+    if (typeof pdfInfo.Author === "string" && pdfInfo.Author.trim()) meta.author = pdfInfo.Author.trim();
+    const created = pdfDateToIso(pdfInfo.CreationDate);
+    const modified = pdfDateToIso(pdfInfo.ModDate);
+    if (created) meta.created = created;
+    if (modified) meta.modified = modified;
+    if (typeof pdfInfo.Keywords === "string") {
+      const kws = pdfInfo.Keywords.split(/[,;]+/).map((k: string) => k.trim()).filter(Boolean);
+      if (kws.length) meta.keywords = kws;
+    }
+    if (typeof pdfInfo.Language === "string" && pdfInfo.Language.trim()) meta.language = pdfInfo.Language.trim();
+  }
+  if (!meta.language && pdfMetadata && typeof pdfMetadata.get === "function") {
+    try {
+      const lang = pdfMetadata.get("dc:language");
+      const first = Array.isArray(lang) ? lang[0] : lang;
+      if (typeof first === "string" && first.trim()) meta.language = first.trim();
+    } catch { /* ignore */ }
+  }
+
   const result: JdfDocument = {
     $jdf: "1.0.0",
-    meta: {
-      title,
-      pageSize: pages[0]?.pageSize || "A4",
-      unit: "mm",
-      margins: { top: 0, right: 0, bottom: 0, left: 0 },
-    },
+    meta,
     pages,
   };
   if (Object.keys(imageResources).length > 0) {
