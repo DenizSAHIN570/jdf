@@ -57,9 +57,10 @@ const heroData = {
   }))])),
 };
 const firstRows = heroData.rows[acc.headline];
+const STATIC_METRIC = "ctxTokensTop5"; // what the card shows before JS runs (and by default): fewer tokens to the LLM
 const heroStatic = firstRows.map((r) => {
-  const max = Math.max(...firstRows.map((x) => x.values[HEADLINE_METRIC]));
-  return `          <li class="bench-row${r.jdf ? " is-jdf" : ""}" style="--w:${((r.values[HEADLINE_METRIC] / max) * 100).toFixed(1)}%"><div class="bench-name">${esc(r.name)}<span class="bench-ver">${esc(r.version)}</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">${esc(r.display[HEADLINE_METRIC])}</div></li>`;
+  const max = Math.max(...firstRows.map((x) => x.values[STATIC_METRIC]));
+  return `          <li class="bench-row${r.jdf ? " is-jdf" : ""}" style="--w:${((r.values[STATIC_METRIC] / max) * 100).toFixed(1)}%"><div class="bench-name">${esc(r.name)}<span class="bench-ver">${esc(r.version)}</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">${esc(r.display[STATIC_METRIC])}</div></li>`;
 }).join("\n");
 const heroTabs = retrievers.map((r) => `          <button class="bench-tab${r === acc.headline ? " is-active" : ""}" role="tab" data-bench-retriever="${esc(r)}">${esc(retrieverLabel(r))}</button>`).join("\n");
 

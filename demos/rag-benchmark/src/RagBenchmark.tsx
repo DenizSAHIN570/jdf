@@ -3,12 +3,12 @@ import { AbsoluteFill, interpolate, spring, useCurrentFrame, Easing } from "remo
 import bench from "../../../docs/bench.json";
 
 export const FPS = 30;
-export const DURATION_FRAMES = FPS * 42;
+export const DURATION_FRAMES = FPS * 50;
 const s = (sec: number) => Math.round(sec * FPS);
 
 // ── timeline (seconds) ──────────────────────────────────────────────────────
 const T = {
-  title: 0, setup: 4, accuracy: 10, cost: 25, reindex: 33.5, outro: 38, end: 42,
+  title: 0, setup: 4, accuracy: 10, cost: 24, savings: 33, reindex: 41.5, outro: 46, end: 50,
 };
 
 const font = "Inter, -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif";
@@ -211,7 +211,55 @@ const Cost: React.FC = () => {
           })}
         </div>
       </div>
-      <Caption from={T.cost + 0.6} to={T.reindex}>Tokens are counted from the chunks each pipeline produces; dollars are public list prices from bench/prices.json. The benchmark never calls a paid API.</Caption>
+      <Caption from={T.cost + 0.6} to={T.savings}>Tokens are counted from the chunks each pipeline produces; dollars are public list prices from bench/prices.json. The benchmark never calls a paid API.</Caption>
+    </AbsoluteFill>
+  );
+};
+
+
+const Counter: React.FC<{ from: number; value: number; fmt: (v: number) => string; delay?: number }> = ({ from, value, fmt, delay = 0 }) => {
+  const frame = useCurrentFrame();
+  const p = interpolate(frame, [s(from) + delay, s(from) + delay + 40], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.out(Easing.cubic) });
+  return <>{fmt(value * p)}</>;
+};
+
+const Savings: React.FC = () => {
+  const frame = useCurrentFrame();
+  const j = cost.sides.find((x) => x.id === "jdf")!, p = cost.sides.find((x) => x.id !== "jdf")!;
+  const ek = Object.keys(cost.prices.embedding)[0], lk = Object.keys(cost.prices.llm_input)[0];
+  const jq = (j.query!.usd as any)[lk] as number, pq = (p.query!.usd as any)[lk] as number;
+  const saved = pq - jq, cut = 1 - jq / pq;
+  const jr = (j.reindex.usd as any)[ek] as number, pr = (p.reindex.usd as any)[ek] as number;
+  const reindexX = pr / jr;
+  const accPts = (j.accuracy!.recallAt1000Tok - p.accuracy!.recallAt1000Tok) * 100;
+  const tile = (i: number) => spring({ frame: frame - s(T.savings) - 8 - i * 10, fps: FPS, config: { damping: 16, stiffness: 100 } });
+  const Tile: React.FC<{ i: number; big: React.ReactNode; label: string; sub: string }> = ({ i, big, label, sub }) => {
+    const q = tile(i);
+    return (
+      <div style={{ flex: 1, background: "linear-gradient(180deg, rgba(96,165,250,0.16), rgba(96,165,250,0.05))", border: "1px solid rgba(96,165,250,0.35)", borderRadius: 20, padding: "30px 28px", opacity: q, transform: `translateY(${(1 - q) * 30}px) scale(${0.96 + 0.04 * q})` }}>
+        <div style={{ fontFamily: mono, fontSize: 66, fontWeight: 700, color: C.jdf, letterSpacing: -2, lineHeight: 1 }}>{big}</div>
+        <div style={{ fontSize: 22, fontWeight: 700, marginTop: 12 }}>{label}</div>
+        <div style={{ fontSize: 15, color: C.soft, marginTop: 8, lineHeight: 1.4 }}>{sub}</div>
+      </div>
+    );
+  };
+  const money = (v: number) => `$${Math.round(v).toLocaleString("en-US")}`;
+  return (
+    <AbsoluteFill style={{ fontFamily: font, color: C.text, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Brand />
+      <div style={{ width: 1100 }}>
+        <div style={{ fontSize: 34, fontWeight: 800, textAlign: "center", marginBottom: 6 }}>What JDF saves you</div>
+        <div style={{ fontSize: 17, color: C.soft, textAlign: "center", marginBottom: 26 }}>{int(cost.files)} documents · same pipeline · only the input format differs</div>
+        <div style={{ display: "flex", gap: 20 }}>
+          <Tile i={0} big={<>−<Counter from={T.savings} delay={8} value={cut * 100} fmt={(v) => v.toFixed(0)} />%</>} label="LLM spend per query" sub={`${money(jq)} instead of ${money(pq)} per 1M queries on ${(cost.prices.llm_input as any)[lk].label.replace(" input", "")} — top-5 context is ${int(j.query!.ctxTokensPerQuery)} tokens vs ${int(p.query!.ctxTokensPerQuery)}`} />
+          <Tile i={1} big={<><Counter from={T.savings} delay={18} value={reindexX} fmt={(v) => (reindexX >= 10 ? v.toFixed(0) : v.toFixed(1))} />×</>} label="cheaper re-indexing" sub={`edit one paragraph in every document: ${int(j.reindex.tokensAllDocsEdited)} tokens re-embedded instead of ${int(p.reindex.tokensAllDocsEdited)}`} />
+          <Tile i={2} big={<>+<Counter from={T.savings} delay={28} value={accPts} fmt={(v) => v.toFixed(0)} /> pts</>} label="retrieval accuracy" sub={`${pc(j.accuracy!.recallAt1000Tok)} vs ${pc(p.accuracy!.recallAt1000Tok)} of answers inside the first 1,000 tokens of context`} />
+        </div>
+        <div style={{ marginTop: 28, textAlign: "center", fontSize: 30, fontWeight: 800, opacity: interpolate(frame, [s(T.savings) + 55, s(T.savings) + 75], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) }}>
+          <span style={{ color: C.good }}><Counter from={T.savings} delay={55} value={saved} fmt={money} /></span> saved per million questions — and the answer is found more often.
+        </div>
+      </div>
+      <Caption from={T.savings + 0.5} to={T.reindex}>Every figure is counted, not estimated: tokens from the chunks each pipeline produces, prices from bench/prices.json (as-of date and source per entry). Swap in your own prices — the ratio is what matters.</Caption>
     </AbsoluteFill>
   );
 };
@@ -272,7 +320,8 @@ export const RagBenchmark: React.FC = () => (
     <Scene from={T.title} to={T.setup}><Title /></Scene>
     <Scene from={T.setup} to={T.accuracy}><Setup /></Scene>
     <Scene from={T.accuracy} to={T.cost}><Accuracy /></Scene>
-    <Scene from={T.cost} to={T.reindex}><Cost /></Scene>
+    <Scene from={T.cost} to={T.savings}><Cost /></Scene>
+    <Scene from={T.savings} to={T.reindex}><Savings /></Scene>
     <Scene from={T.reindex} to={T.outro}><Reindex /></Scene>
     <Scene from={T.outro} to={T.end}><Outro /></Scene>
   </AbsoluteFill>

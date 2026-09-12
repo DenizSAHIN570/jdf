@@ -108,7 +108,7 @@ brew install jdf">
         <div class="bench-head">
           <div>
             <div class="bench-title">RAG retrieval — same reports as <span class="bench-pdf">PDF</span> vs <span class="bench-jdf">JDF</span></div>
-            <div class="bench-sub" data-bench-sub>answer inside the first 1,000 tokens of retrieved context · higher is better</div>
+            <div class="bench-sub" data-bench-sub>tokens handed to the LLM for the top-5 chunks · lower is better</div>
           </div>
           <button class="bench-replay" type="button" data-bench-replay>replay</button>
         </div>
@@ -123,20 +123,20 @@ brew install jdf">
         </div>
         <ol class="bench-rows" data-bench-rows>
 <!-- bench:hero:start -->
-          <li class="bench-row is-jdf" style="--w:100.0%"><div class="bench-name">JDF<span class="bench-ver">jdf-cli v0.1.26 · jdf chunk · section</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">99.0%</div></li>
-          <li class="bench-row" style="--w:84.2%"><div class="bench-name">PDF · pypdf<span class="bench-ver">v6.18.1 · fixed 1000/200 chars</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">83.3%</div></li>
-          <li class="bench-row" style="--w:82.6%"><div class="bench-name">PDF · PyMuPDF<span class="bench-ver">v1.28.2 · fixed 1000/200 chars</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">81.8%</div></li>
-          <li class="bench-row" style="--w:81.6%"><div class="bench-name">PDF · pdfplumber<span class="bench-ver">v0.11.10 · fixed 1000/200 chars</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">80.7%</div></li>
-          <li class="bench-row" style="--w:72.6%"><div class="bench-name">PDF · pdftotext<span class="bench-ver">v26.06.0 · fixed 1000/200 chars</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">71.9%</div></li>
+          <li class="bench-row is-jdf" style="--w:61.5%"><div class="bench-name">JDF<span class="bench-ver">jdf-cli v0.1.26 · jdf chunk · section</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">753</div></li>
+          <li class="bench-row" style="--w:99.8%"><div class="bench-name">PDF · pypdf<span class="bench-ver">v6.18.1 · fixed 1000/200 chars</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">1,224</div></li>
+          <li class="bench-row" style="--w:100.0%"><div class="bench-name">PDF · PyMuPDF<span class="bench-ver">v1.28.2 · fixed 1000/200 chars</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">1,226</div></li>
+          <li class="bench-row" style="--w:99.4%"><div class="bench-name">PDF · pdfplumber<span class="bench-ver">v0.11.10 · fixed 1000/200 chars</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">1,219</div></li>
+          <li class="bench-row" style="--w:84.8%"><div class="bench-name">PDF · pdftotext<span class="bench-ver">v26.06.0 · fixed 1000/200 chars</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">1,040</div></li>
 <!-- bench:hero:end -->
         </ol>
         <div class="bench-metric-row">
           <span class="bench-metric-label">metric</span>
           <select class="bench-metric" data-bench-metric aria-label="metric">
+            <option value="ctxTokensTop5" selected>LLM context tokens (lower is better)</option>
             <option value="recallAt1000Tok">answer in first 1k tokens</option>
             <option value="recall1">top-1 hit</option>
             <option value="recall5">top-5 hit</option>
-            <option value="ctxTokensTop5">LLM context tokens (lower is better)</option>
           </select>
         </div>
         <div class="bench-cost-strip" data-bench-cost></div>
@@ -790,7 +790,8 @@ pnpm tauri build</code></pre>
       const rowsEl = card.querySelector("[data-bench-rows]");
       const subEl = card.querySelector("[data-bench-sub]");
       const metricSel = card.querySelector("[data-bench-metric]");
-      let retriever = data.headline, metric = "recallAt1000Tok";
+      let retriever = data.headline, metric = "ctxTokensTop5";
+      if (metricSel) metricSel.value = metric;
 
       const render = () => {
         const m = data.metrics[metric];
@@ -798,9 +799,17 @@ pnpm tauri build</code></pre>
         const vals = rows.map((r) => r.values[metric] ?? 0);
         const max = Math.max(...vals) || 1;
         rowsEl.classList.remove("is-ready");
+        const pdfVals = rows.filter((r) => !r.jdf).map((r) => r.values[metric]).filter((v) => v != null);
+        const bestPdf = pdfVals.length ? (m.higher ? Math.max(...pdfVals) : Math.min(...pdfVals)) : null;
+        const delta = (r) => {
+          if (!r.jdf || bestPdf == null) return "";
+          const v = r.values[metric];
+          const txt = m.higher ? `+${((v - bestPdf) * 100).toFixed(1)} pts` : `−${Math.round((1 - v / bestPdf) * 100)}% tokens`;
+          return `<span class="bench-delta">${txt} vs best PDF</span>`;
+        };
         rowsEl.innerHTML = rows.map((r) => {
           const v = r.values[metric] ?? 0;
-          return `<li class="bench-row${r.jdf ? " is-jdf" : ""}" style="--w:${((v / max) * 100).toFixed(1)}%"><div class="bench-name">${r.name}<span class="bench-ver">${r.version}</span></div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">${r.display[metric]}</div></li>`;
+          return `<li class="bench-row${r.jdf ? " is-jdf" : ""}" style="--w:${((v / max) * 100).toFixed(1)}%"><div class="bench-name">${r.name}<span class="bench-ver">${r.version}</span></div><div class="bench-track"><div class="bench-bar"></div>${delta(r)}</div><div class="bench-time">${r.display[metric]}</div></li>`;
         }).join("");
         subEl.textContent = m.label;
         requestAnimationFrame(() => requestAnimationFrame(() => rowsEl.classList.add("is-ready")));
