@@ -31,15 +31,15 @@ const jq = (cj.query!.usd as any)[lk] as number, pq = (cp.query!.usd as any)[lk]
 const cut = 1 - jq / pq, saved = pq - jq;
 const reindexX = ((cp.reindex.usd as any)[ek] as number) / ((cj.reindex.usd as any)[ek] as number);
 const accPts = (cj.accuracy!.recallAt1000Tok - cp.accuracy!.recallAt1000Tok) * 100;
-const retrievers = [acc.headline, ...Object.keys(jdf.retrievers).filter((r) => r !== acc.headline && r !== "bm25"), "bm25"].filter((r, i, a) => a.indexOf(r) === i).slice(0, 3);
+const retrievers = [acc.headline, "bm25"].filter((r, i, a) => a.indexOf(r) === i);
 
 // ── fx ───────────────────────────────────────────────────────────────────────
 const clamp = { extrapolateLeft: "clamp" as const, extrapolateRight: "clamp" as const };
 const slam = (frame: number, at: number) => {
   const f = frame - s(at);
-  const p = spring({ frame: f, fps: FPS, config: { damping: 14, stiffness: 260, mass: 0.7 } });
-  const shake = f >= 0 && f < 9 ? Math.sin(f * 2.7) * (9 - f) * 1.6 : 0;
-  return { scale: 1.7 - 0.7 * p, opacity: f < 0 ? 0 : Math.min(1, f / 2), shake, glitch: f >= 0 && f < 5 };
+  const p = spring({ frame: f, fps: FPS, config: { damping: 16, stiffness: 180, mass: 0.9 } });
+  const shake = f >= 0 && f < 12 ? Math.sin(f * 2.2) * (12 - f) * 1.2 : 0;
+  return { scale: 1.6 - 0.6 * p, opacity: f < 0 ? 0 : Math.min(1, f / 3), shake, glitch: f >= 0 && f < 6 };
 };
 const flash = (frame: number, at: number) => interpolate(frame - s(at), [0, 1, 4], [0, 0.55, 0], clamp);
 const Cut: React.FC<{ from: number; to: number; children: React.ReactNode }> = ({ from, to, children }) => {
@@ -126,10 +126,10 @@ const Race: React.FC = () => {
   return (
     <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
       <Tag>answer inside the first 1,000 tokens · higher is better</Tag>
-      <div style={{ position: "absolute", right: 48, top: 30, fontFamily: mono, fontSize: 30, fontWeight: 700, color: C.jdf, border: `2px solid ${C.jdf}`, borderRadius: 10, padding: "6px 18px", transform: `scale(${1 + 0.25 * Math.max(0, 1 - (frame - start) / 6)})` }}>{label(r)}</div>
+      <div style={{ position: "absolute", right: 48, top: 30, fontFamily: mono, fontSize: 30, fontWeight: 700, color: C.jdf, border: `2px solid ${C.jdf}`, borderRadius: 10, padding: "6px 18px", transform: `scale(${1 + 0.25 * Math.max(0, 1 - (frame - start) / 12)})` }}>{label(r)}</div>
       <div style={{ position: "absolute", left: 48, right: 48, top: 150, display: "grid", gap: 26 }}>
         {rows.map((row, i) => {
-          const p = interpolate(frame - start - i * 2, [0, 14], [0, 1], { ...clamp, easing: Easing.out(Easing.exp) });
+          const p = interpolate(frame - start - i * 4, [0, 30], [0, 1], { ...clamp, easing: Easing.out(Easing.exp) });
           return (
             <div key={row.name} style={{ display: "grid", gridTemplateColumns: "300px 1fr 190px", alignItems: "center", gap: 24 }}>
               <div style={{ fontSize: 40, fontWeight: 800, color: i === 0 ? C.jdf : i === 1 && conv ? C.conv : C.text }}>{row.name}</div>
@@ -151,7 +151,7 @@ const Race: React.FC = () => {
 const Tokens: React.FC = () => {
   const frame = useCurrentFrame();
   const f = frame - s(T.tokens);
-  const p = interpolate(f, [0, s(BEAT) - 6], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
+  const p = interpolate(f, [0, s(1.5)], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
   const t1 = cj.query!.ctxTokensPerQuery, t2 = cp.query!.ctxTokensPerQuery;
   const punch = f >= s(BEAT);
   return (
@@ -175,7 +175,7 @@ const Reindex: React.FC = () => {
   const frame = useCurrentFrame();
   const n = acc.jdfOnly.corpusChunks, cols = 32, size = 30, gap = 7;
   const f = frame - s(T.reindex);
-  const flood = interpolate(f, [8, s(BEAT) - 4], [0, 1], clamp);
+  const flood = interpolate(f, [s(0.4), s(1.6)], [0, 1], clamp);
   const punch = f >= s(BEAT);
   return (
     <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
@@ -206,9 +206,9 @@ const Reindex: React.FC = () => {
 const Money: React.FC = () => {
   const frame = useCurrentFrame();
   const f = frame - s(T.money);
-  const p = interpolate(f, [2, s(BEAT)], [0, 1], { ...clamp, easing: Easing.out(Easing.exp) });
+  const p = interpolate(f, [2, s(1.5)], [0, 1], { ...clamp, easing: Easing.out(Easing.exp) });
   const a = slam(frame, T.money);
-  const sub = interpolate(f, [s(BEAT) + 2, s(BEAT) + 10], [0, 1], clamp);
+  const sub = interpolate(f, [s(1.2), s(1.8)], [0, 1], clamp);
   const SCALE = 10;
   return (
     <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
@@ -232,7 +232,7 @@ const Money: React.FC = () => {
 const Convert: React.FC = () => {
   const frame = useCurrentFrame();
   const f = frame - s(T.convert);
-  const typed = "$ jdf convert report.pdf".slice(0, Math.min(24, Math.floor((f / (s(BEAT) - 4)) * 24)));
+  const typed = "$ jdf convert report.pdf".slice(0, Math.min(24, Math.floor((f / s(1.5)) * 24)));
   const punch = f >= s(BEAT);
   const r = acc.headline;
   return (
@@ -256,7 +256,7 @@ const Outro: React.FC = () => {
   const frame = useCurrentFrame();
   const f = frame - s(T.outro);
   const a = slam(frame, T.outro);
-  const cmd = "python rag_bench.py --verify".slice(0, Math.max(0, Math.floor((f - 8) * 1.4)));
+  const cmd = "python rag_bench.py --verify".slice(0, Math.max(0, Math.floor((f - s(0.6)) * 0.7)));
   return (
     <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", opacity: a.opacity, transform: `translate(${a.shake}px,0) scale(${a.scale})` }}>
