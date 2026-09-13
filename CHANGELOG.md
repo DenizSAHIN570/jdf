@@ -5,6 +5,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · semantic-ish
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.2.0] — 2026-09-13
+
 ### Added — RAG benchmark (JDF vs PDF)
 - `bench/`: reproducible, Python-only benchmark. 24 generated reports as JDF and as browser-printed PDF, 192 questions with ground truth. Accuracy (`rag_bench.py`): PyMuPDF / pdfplumber / pypdf / pdftotext + LangChain-style chunking vs `jdf chunk`, BM25 + any sentence-transformers or Ollama embedding model, Recall@k / MRR / R@1k-tokens, per-question ranks, `--verify`. Cost (`cost_bench.py`): 1,000 PDF vs 1,000 JDF files through the same RAG pipeline — chunks, embedding tokens/$, measured embedding time, vector-store payload, re-index cost after edits, per-query LLM context cost, with accuracy alongside; prices from `prices.json`.
 - `demos/rag-benchmark/`: 25-second Remotion presentation of the benchmark (`rag-benchmark.mp4`), every number read from `docs/bench.json`.
