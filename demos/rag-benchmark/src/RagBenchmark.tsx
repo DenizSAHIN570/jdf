@@ -31,10 +31,14 @@ const jq = (cj.query!.usd as any)[lk] as number, pq = (cp.query!.usd as any)[lk]
 const cut = 1 - jq / pq, saved = pq - jq;
 const reindexX = ((cp.reindex.usd as any)[ek] as number) / ((cj.reindex.usd as any)[ek] as number);
 const accPts = (cj.accuracy!.recallAt1000Tok - cp.accuracy!.recallAt1000Tok) * 100;
-const retrievers = [acc.headline, "bm25"].filter((r, i, a) => a.indexOf(r) === i);
+// Two retrievers for the race: the headline model, then the one where the JDF-vs-best-PDF gap is widest (a near-tie is a wasted scene).
+const gap = (r: string) => R(jdf, r).recallAt1000Tok - R(bestPdf(r, "recallAt1000Tok"), r).recallAt1000Tok;
+const retrievers = [acc.headline, ...Object.keys(jdf.retrievers).filter((r) => r !== acc.headline).sort((a, b) => gap(b) - gap(a)).slice(0, 1)];
 
 // ── fx ───────────────────────────────────────────────────────────────────────
 const clamp = { extrapolateLeft: "clamp" as const, extrapolateRight: "clamp" as const };
+/** Ease-out that really reaches 1: Remotion's Easing.exp tops out at 1 − 2⁻¹⁰, which left counters at $9,396 instead of $9,405. */
+const easeOut = (f: number, from: number, to: number) => (f >= to ? 1 : interpolate(f, [from, to], [0, 1], { ...clamp, easing: Easing.out(Easing.exp) }));
 const slam = (frame: number, at: number) => {
   const f = frame - s(at);
   const p = spring({ frame: f, fps: FPS, config: { damping: 16, stiffness: 180, mass: 0.9 } });
@@ -129,9 +133,9 @@ const Race: React.FC = () => {
       <div style={{ position: "absolute", right: 48, top: 30, fontFamily: mono, fontSize: 30, fontWeight: 700, color: C.jdf, border: `2px solid ${C.jdf}`, borderRadius: 10, padding: "6px 18px", transform: `scale(${1 + 0.25 * Math.max(0, 1 - (frame - start) / 12)})` }}>{label(r)}</div>
       <div style={{ position: "absolute", left: 48, right: 48, top: 150, display: "grid", gap: 26 }}>
         {rows.map((row, i) => {
-          const p = interpolate(frame - start - i * 4, [0, 30], [0, 1], { ...clamp, easing: Easing.out(Easing.exp) });
+          const p = easeOut(frame - start - i * 4, 0, 30);
           return (
-            <div key={row.name} style={{ display: "grid", gridTemplateColumns: "300px 1fr 190px", alignItems: "center", gap: 24 }}>
+            <div key={row.name} style={{ display: "grid", gridTemplateColumns: "380px 1fr 190px", alignItems: "center", gap: 24 }}>
               <div style={{ fontSize: 40, fontWeight: 800, color: i === 0 ? C.jdf : i === 1 && conv ? C.conv : C.text }}>{row.name}</div>
               <div style={{ height: 64, background: "rgba(148,163,184,0.1)", borderRadius: 10, overflow: "hidden" }}>
                 <div style={{ height: "100%", width: `${row.v * 100 * p}%`, background: `linear-gradient(90deg, ${row.c[0]}, ${row.c[1]})`, boxShadow: i === 0 ? `0 0 40px ${C.jdf}88` : "none" }} />
@@ -206,13 +210,13 @@ const Reindex: React.FC = () => {
 const Money: React.FC = () => {
   const frame = useCurrentFrame();
   const f = frame - s(T.money);
-  const p = interpolate(f, [2, s(1.5)], [0, 1], { ...clamp, easing: Easing.out(Easing.exp) });
+  const p = easeOut(f, 2, s(1.5));
   const a = slam(frame, T.money);
   const sub = interpolate(f, [s(1.2), s(1.8)], [0, 1], clamp);
   const SCALE = 10;
   return (
     <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
-      <Tag>per {int(cost.queries * SCALE)} questions · the saving scales with questions asked, not with document count</Tag>
+      <Tag>per {int(cost.queries * SCALE)} questions · scales with questions asked</Tag>
       <div style={{ position: "absolute", right: 48, top: 30, fontFamily: mono, fontSize: 22, fontWeight: 700, color: C.bad, border: `2px solid ${C.bad}`, borderRadius: 10, padding: "6px 16px", letterSpacing: 2 }}>ESTIMATED</div>
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", opacity: a.opacity, transform: `translate(${a.shake}px, 0) scale(${a.scale})` }}>
         <Glitch on={a.glitch}><div style={{ fontFamily: mono, fontSize: 210, fontWeight: 700, color: C.good, letterSpacing: -8, lineHeight: 1 }}>{money(saved * SCALE * p)}</div></Glitch>

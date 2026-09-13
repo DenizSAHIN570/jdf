@@ -25363,8 +25363,8 @@
       "version": "sentence-transformers 6.0.1",
       "measuredOn": "first 2000 unique chunks per pipeline",
       "tokensPerSecond": {
-        "jdf": 35748.59518888549,
-        "pypdf": 44141.664578883894
+        "jdf": 29793.324811681367,
+        "pypdf": 42936.99088500124
       }
     },
     "prices": {
@@ -25559,7 +25559,7 @@
           "openai-text-embedding-3-large": 0.1697566,
           "cohere-embed-v4": 0.1566984
         },
-        "localEmbedSeconds": 36.52786894423167,
+        "localEmbedSeconds": 43.829280828973275,
         "reindex": {
           "chunksPerEditedDoc": 1,
           "tokensPerEditedDoc": 91,
@@ -25724,7 +25724,7 @@
           "openai-text-embedding-3-large": 0.18078398,
           "cohere-embed-v4": 0.16687752
         },
-        "localEmbedSeconds": 31.504158560102084,
+        "localEmbedSeconds": 32.38806379619352,
         "reindex": {
           "chunksPerEditedDoc": 7,
           "tokensPerEditedDoc": 1461,

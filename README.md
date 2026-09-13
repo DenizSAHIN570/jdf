@@ -373,7 +373,7 @@ R@1k tok = answer found within the first 1,000 tokens of retrieved context (chun
 | Chunks | **8,000** | 6,291 |
 | Embedding tokens, initial index | **1,305,820** | 1,390,646 |
 | Embedding cost · OpenAI text-embedding-3-small | **$0.0261** | $0.0278 |
-| Local embedding time · bge-small-en-v1.5 (measured throughput) | **36.5 s** | 31.5 s |
+| Local embedding time · bge-small-en-v1.5 (measured throughput) | **43.8 s** | 32.4 s |
 | Vector-store payload | **5.8 MB** | 5.6 MB |
 | Re-embed tokens when one paragraph changes in every document | **91,000** | 1,461,000 |
 | Re-index cost · OpenAI text-embedding-3-small | **$0.0018** | $0.0292 |
