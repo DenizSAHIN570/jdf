@@ -138,7 +138,7 @@ pub fn validate_document(document: serde_json::Value) -> Result<ValidationResult
     }
 
     let valid_types = [
-        "text","richtext","image","table","list","shape","collapsible","toc",
+        "text","richtext","image","video","table","list","shape","collapsible","toc",
         // JDF Forms — fillable elements that carry their own user input.
         "input","textarea","checkbox","select","signature",
     ];
@@ -536,7 +536,7 @@ fn measure_element(el: &serde_json::Value, document: &serde_json::Value) -> f32 
             }
             total + 2.0
         }
-        "image" | "signature" => el.get("height").and_then(|v| v.as_f64()).unwrap_or(40.0) as f32 + 2.0,
+        "image" | "video" | "signature" => el.get("height").and_then(|v| v.as_f64()).unwrap_or(40.0) as f32 + 2.0,
         "shape" => el.get("height").and_then(|v| v.as_f64()).unwrap_or(1.0) as f32 + 2.0,
         "input" | "select" => line_mm * 2.5,
         "textarea" => {
@@ -878,6 +878,47 @@ fn draw_element(
                 let label = el.get("alt").and_then(|a| a.as_str()).unwrap_or("image");
                 layer.use_text(format!("[{}]", label), fs, Mm(margin_left + px), to_pdf_y(py, 0.0), font_italic);
             }
+        }
+        // ── Video — PDF cannot play it, so export a poster-style placeholder:
+        // a dark box with a play glyph and the title, the way slide exports do.
+        // The reader and jdf.js render the real <video>.
+        "video" => {
+            let h_mm = el.get("height").and_then(|v| v.as_f64()).unwrap_or(40.0) as f32;
+            let xa = margin_left + px;
+            let ya = page_h - margin_top - py;
+            let xb = xa + width;
+            let yb = ya - h_mm;
+            layer.set_fill_color(printpdf::Color::Rgb(printpdf::Rgb::new(0.06, 0.09, 0.16, None)));
+            layer.add_polygon(printpdf::Polygon {
+                rings: vec![vec![
+                    (printpdf::Point::new(Mm(xa), Mm(ya)), false),
+                    (printpdf::Point::new(Mm(xb), Mm(ya)), false),
+                    (printpdf::Point::new(Mm(xb), Mm(yb)), false),
+                    (printpdf::Point::new(Mm(xa), Mm(yb)), false),
+                ]],
+                mode: printpdf::path::PaintMode::Fill,
+                winding_order: printpdf::path::WindingOrder::NonZero,
+            });
+            // Play triangle centred in the box.
+            let cx = (xa + xb) / 2.0;
+            let cy = (ya + yb) / 2.0;
+            let r = (h_mm.min(width) * 0.14).max(2.0);
+            layer.set_fill_color(printpdf::Color::Rgb(printpdf::Rgb::new(0.96, 0.98, 0.99, None)));
+            layer.add_polygon(printpdf::Polygon {
+                rings: vec![vec![
+                    (printpdf::Point::new(Mm(cx - r * 0.8), Mm(cy + r)), false),
+                    (printpdf::Point::new(Mm(cx + r * 1.1), Mm(cy)), false),
+                    (printpdf::Point::new(Mm(cx - r * 0.8), Mm(cy - r)), false),
+                ]],
+                mode: printpdf::path::PaintMode::Fill,
+                winding_order: printpdf::path::WindingOrder::NonZero,
+            });
+            let title = el.get("title").and_then(|t| t.as_str()).unwrap_or("video");
+            // Builtin Helvetica is WinAnsi — keep the label ASCII (the play glyph is the polygon above).
+            let label = format!("Video: {}", title);
+            layer.set_fill_color(printpdf::Color::Rgb(printpdf::Rgb::new(0.2, 0.25, 0.33, None)));
+            layer.use_text(label, fs, Mm(xa), Mm(yb - fs * 0.45), font_italic);
+            layer.set_fill_color(printpdf::Color::Rgb(printpdf::Rgb::new(0.0, 0.0, 0.0, None)));
         }
         // ── Form elements — printed as filled-in text + an underline so the
         // exported PDF reflects what the user typed in the reader / jdf.js
@@ -1808,4 +1849,36 @@ fn suppress_stderr() -> StderrGuard {
 }
 impl Drop for StderrGuard {
     fn drop(&mut self) { #[cfg(unix)] if let Some(old) = self.old { unsafe { libc::dup2(old, 2); libc::close(old); } } }
+}
+
+#[cfg(test)]
+mod video_export_tests {
+    /// PDF cannot play video: the exporter must still produce a page with a
+    /// poster-style placeholder that carries the title, and the validator must
+    /// accept the element type. Guards the three-surface rule for `video`.
+    #[test]
+    fn export_pdf_draws_video_placeholder_and_validator_accepts_it() {
+        let doc = serde_json::json!({
+            "$jdf": "1.0.0",
+            "meta": { "title": "Video test", "pageSize": "A4", "unit": "mm" },
+            "pages": [{ "elements": [
+                { "type": "text", "content": "Above the clip", "position": { "x": 0, "y": 0 }, "width": 160 },
+                { "type": "video", "src": "https://example.com/clip.mp4", "title": "Quarterly review clip", "position": { "x": 0, "y": 20 }, "width": 160, "height": 90 }
+            ] }]
+        });
+        let path = std::env::temp_dir().join("jdf-video-export-test.pdf");
+        tauri::async_runtime::block_on(super::export_pdf(doc.clone(), path.to_string_lossy().to_string())).expect("export ok");
+        let with_video = std::fs::read(&path).expect("pdf written").len();
+        assert!(with_video > 800, "pdf too small: {} bytes", with_video);
+        // Content streams are deflated, so compare against the same document
+        // without the clip: the placeholder (box + play glyph + title) must add bytes.
+        let mut without = doc.clone();
+        without["pages"][0]["elements"].as_array_mut().unwrap().pop();
+        tauri::async_runtime::block_on(super::export_pdf(without, path.to_string_lossy().to_string())).expect("export ok");
+        let without_video = std::fs::read(&path).expect("pdf written").len();
+        assert!(with_video > without_video + 60, "video placeholder drew nothing ({} vs {} bytes)", with_video, without_video);
+        let report = super::validate_document(doc).expect("validate ok");
+        assert!(!report.warnings.iter().any(|w| w.contains("\"video\" is not a known")), "validator flagged video: {:?}", report.warnings);
+        let _ = std::fs::remove_file(&path);
+    }
 }

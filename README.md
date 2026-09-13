@@ -158,6 +158,7 @@ All three renderers walk the same JSON. The desktop Reader and jdf.js are kept a
 | `text` element (heading 1-6, align, link, tocEntry, style) | ✓ | ✓ | — |
 | `richtext` element (per-run bold/italic/underline/strikethrough/color/font/link) | ✓ | ✓ | — |
 | `image` element (base64 resource OR src URL/path; `fit` modes) | ✓ | ✓ | — |
+| `video` element (bundled `.jdfx` asset OR src URL; poster, controls, autoplay/loop/muted; PDF export draws a poster placeholder) | ✓ | ✓ | — |
 | `table` element (headers, colspan/rowspan, alternating rows, borders, column align) | ✓ | ✓ | — |
 | `list` element (ordered/unordered, nested with per-item type override) | ✓ | ✓ | — |
 | `shape` element (rect, circle, ellipse, line, SVG path; fill/stroke/opacity) | ✓ | ✓ | — |

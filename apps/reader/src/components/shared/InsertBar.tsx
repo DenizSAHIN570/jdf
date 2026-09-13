@@ -13,6 +13,7 @@ const ITEMS: { type: Element["type"]; label: string; icon: string }[] = [
   { type: "table", label: "Table", icon: "⊞" },
   { type: "shape", label: "Shape", icon: "▢" },
   { type: "image", label: "Image", icon: "🖼" },
+  { type: "video", label: "Video", icon: "▶" },
   { type: "collapsible", label: "Section", icon: "▶" },
   { type: "toc", label: "TOC", icon: "≣" },
 ];

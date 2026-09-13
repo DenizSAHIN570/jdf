@@ -216,7 +216,14 @@ export default function App() {
       if (!doc.resources) doc.resources = { images: {} };
       if (!doc.resources.images) doc.resources.images = {};
       for (const [id, asset] of unpacked.assets) {
-        doc.resources.images[id] = { src: "embedded", mimeType: asset.mimeType, data: asset.base64 };
+        const res = { src: "embedded" as const, mimeType: asset.mimeType, data: asset.base64 };
+        // Clips bind into resources.videos, everything else into resources.images.
+        if (/^video\//i.test(asset.mimeType)) {
+          if (!doc.resources.videos) doc.resources.videos = {};
+          doc.resources.videos[id] = res;
+        } else {
+          doc.resources.images[id] = res;
+        }
       }
 
       setLoaded({ path, type: "jdfx" });

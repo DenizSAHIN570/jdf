@@ -84,7 +84,7 @@ function extractAssets(doc: JdfDocument): { doc: JdfDocument; assets: ExtractedA
   function walk(els: any[] | undefined) {
     if (!els) return;
     for (const el of els) {
-      if (el?.type === "image" && typeof el.src === "string" && el.src.startsWith("data:")) {
+      if ((el?.type === "image" || el?.type === "video") && typeof el.src === "string" && el.src.startsWith("data:")) {
         const m = el.src.match(/^data:([^;]+);base64,(.*)$/);
         if (m) {
           const mimeType = m[1];
@@ -110,14 +110,17 @@ function extractAssets(doc: JdfDocument): { doc: JdfDocument; assets: ExtractedA
   // other (or with the inline-image walk above) collapse to one zipped
   // file. The original key is preserved for backwards compatibility — the
   // zip's asset path is named after the content hash, not the key.
-  if (cloned.resources?.images) {
-    for (const [key, res] of Object.entries(cloned.resources.images)) {
+  // Same drain for resources.videos — a bundled clip is just a bigger asset.
+  for (const bucket of ["images", "videos"] as const) {
+    const store = (cloned.resources as any)?.[bucket] as Record<string, any> | undefined;
+    if (!store) continue;
+    for (const [key, res] of Object.entries(store)) {
       if (!res || typeof res !== "object" || !("data" in res) || !res.data) continue;
       const data = String(res.data);
       const m = data.match(/^data:([^;]+);base64,(.*)$/);
       const b64 = m ? m[2] : data;
-      const mimeType = m ? m[1] : (res as any).mimeType || "image/png";
-      const ext = mimeType.split("/")[1]?.replace("jpeg", "jpg") || "bin";
+      const mimeType = m ? m[1] : (res as any).mimeType || (bucket === "videos" ? "video/mp4" : "image/png");
+      const ext = mimeType.split("/")[1]?.replace("jpeg", "jpg").replace("quicktime", "mov") || "bin";
       const bytes = decodeBase64(b64);
       const h = hashBytes(bytes);
       let canonicalId = hashToId.get(h);
@@ -136,10 +139,10 @@ function extractAssets(doc: JdfDocument): { doc: JdfDocument; assets: ExtractedA
       updated.src = "embedded";
       if (canonicalId !== key) {
         // Drop the duplicate key and rewrite element references.
-        delete (cloned.resources.images as any)[key];
+        delete store[key];
         rewriteResourceRefs(cloned, key, canonicalId);
       } else {
-        (cloned.resources.images as any)[key] = updated;
+        store[key] = updated;
       }
     }
   }
@@ -175,14 +178,15 @@ export async function packJdfx(doc: JdfDocument): Promise<{ bytes: Buffer; manif
 }
 
 export function shouldUseJdfx(doc: JdfDocument): boolean {
-  const images = doc.resources?.images ?? {};
-  for (const v of Object.values(images)) {
-    if (v && typeof v === "object" && "data" in v && (v as any).data) return true;
+  for (const store of [doc.resources?.images ?? {}, doc.resources?.videos ?? {}]) {
+    for (const v of Object.values(store)) {
+      if (v && typeof v === "object" && "data" in v && (v as any).data) return true;
+    }
   }
   function walk(els: any[] | undefined): boolean {
     if (!els) return false;
     for (const el of els) {
-      if (el?.type === "image" && typeof el.src === "string" && el.src.startsWith("data:")) return true;
+      if ((el?.type === "image" || el?.type === "video") && typeof el.src === "string" && el.src.startsWith("data:")) return true;
       if (el?.elements && walk(el.elements)) return true;
       if (el?.children && walk(el.children)) return true;
     }

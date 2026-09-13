@@ -122,6 +122,8 @@ export function serializeElement(el: Element): string {
       return `${e.checked ? "[x]" : "[ ]"} ${e.label ?? ""}`.trim();
     case "image":
       return e.alt ? `[image: ${e.alt}]` : "";
+    case "video":
+      return e.title ? `[video: ${e.title}]` : "";
     case "toc":
     case "shape":
     case "signature":

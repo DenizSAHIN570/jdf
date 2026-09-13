@@ -130,9 +130,10 @@
       "type": "object",
       "properties": {
         "fonts": { "type": "array", "items": { "$ref": "#/definitions/FontResource" } },
-        "images": { "type": "object", "additionalProperties": { "$ref": "#/definitions/ImageResource" } }
+        "images": { "type": "object", "additionalProperties": { "$ref": "#/definitions/ImageResource" } },
+        "videos": { "type": "object", "additionalProperties": { "$ref": "#/definitions/ImageResource" } }
       },
-      "additionalProperties": { "$ref": "#/definitions/ImageResource" }
+      "additionalProperties": true
     },
     "FontResource": {
       "type": "object",
@@ -184,6 +185,7 @@
         { "$ref": "#/definitions/TextElement" },
         { "$ref": "#/definitions/RichTextElement" },
         { "$ref": "#/definitions/ImageElement" },
+        { "$ref": "#/definitions/VideoElement" },
         { "$ref": "#/definitions/TableElement" },
         { "$ref": "#/definitions/ListElement" },
         { "$ref": "#/definitions/ShapeElement" },
@@ -346,6 +348,23 @@
         "width": { "type": "number" }, "height": { "type": "number" },
         "fit": { "type": "string", "enum": ["contain","cover","fill","none"] },
         "link": { "$ref": "#/definitions/Link" },
+        "style": { "$ref": "#/definitions/StyleRef" }
+      }
+    },
+    "VideoElement": {
+      "type": "object",
+      "required": ["type"],
+      "anyOf": [{ "required": ["resource"] }, { "required": ["src"] }],
+      "properties": {
+        "type": { "const": "video" },
+        "resource": { "type": "string", "description": "Id in resources.videos (a .jdfx stores the file under assets/)" },
+        "src": { "type": "string", "description": "URL, relative path or data: URL" },
+        "poster": { "type": "string", "description": "Still frame: URL, data URL or image resource id" },
+        "title": { "type": "string" },
+        "position": { "$ref": "#/definitions/Position" },
+        "width": { "type": "number" }, "height": { "type": "number" },
+        "fit": { "type": "string", "enum": ["contain","cover","fill","none"] },
+        "controls": { "type": "boolean" }, "autoplay": { "type": "boolean" }, "loop": { "type": "boolean" }, "muted": { "type": "boolean" },
         "style": { "$ref": "#/definitions/StyleRef" }
       }
     },

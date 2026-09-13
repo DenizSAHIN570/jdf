@@ -90,6 +90,27 @@
 
       <p><strong>When to use which:</strong> the desktop reader, jdf.js, and the CLI all open both <code>.jdf</code> and <code>.jdfx</code>. Use the bundle form whenever the document carries embedded image / font payloads — it keeps the JSON small and gives RAG ingesters a clean separation between text content and binary assets. The reader's save flow picks <code>.jdfx</code> automatically when needed.</p>
 
+      <h2><code>video</code></h2>
+      <p>Plays inline in jdf.js and the desktop reader (an HTML5 <code>&lt;video&gt;</code> filling the element box). PDF export draws a poster-style placeholder with the title, since PDF cannot play video. <code>jdf chunk</code> indexes the title as <code>[video: …]</code>.</p>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"video"</code></td></tr>
+          <tr><td><code>resource</code></td><td>string — id in <code>resources.videos</code>. In a <code>.jdfx</code> bundle the clip is stored under <code>assets/</code> and bound back on open.</td></tr>
+          <tr><td><code>src</code></td><td>string — <code>https://</code> URL, relative URL or <code>data:</code> URI (a data URI is moved into the bundle on save).</td></tr>
+          <tr><td><code>poster</code></td><td>string — still frame: URL, <code>data:</code> URI, or an image resource id.</td></tr>
+          <tr><td><code>title</code></td><td>string — caption / accessible name; what search and RAG chunking see.</td></tr>
+          <tr><td><code>controls</code> · <code>autoplay</code> · <code>loop</code> · <code>muted</code></td><td>boolean — controls default to on; autoplay implies muted (browsers block unmuted autoplay).</td></tr>
+          <tr><td><code>fit</code></td><td><code>"contain"</code> · <code>"cover"</code> · <code>"fill"</code> · <code>"none"</code></td></tr>
+        </tbody>
+      </table>
+<pre><code><span class="com">// .jdfx bundle — clip lives in assets/clip.mp4, poster in assets/poster.png</span>
+<span class="punc">{</span> <span class="key">"type"</span><span class="punc">:</span> <span class="str">"video"</span><span class="punc">,</span> <span class="key">"resource"</span><span class="punc">:</span> <span class="str">"clip"</span><span class="punc">,</span> <span class="key">"poster"</span><span class="punc">:</span> <span class="str">"poster"</span><span class="punc">,</span> <span class="key">"title"</span><span class="punc">:</span> <span class="str">"Quarterly review"</span><span class="punc">,</span> <span class="key">"width"</span><span class="punc">:</span> <span class="num">166</span><span class="punc">,</span> <span class="key">"height"</span><span class="punc">:</span> <span class="num">93</span> <span class="punc">}</span>
+
+<span class="com">// Plain .jdf with a hosted file</span>
+<span class="punc">{</span> <span class="key">"type"</span><span class="punc">:</span> <span class="str">"video"</span><span class="punc">,</span> <span class="key">"src"</span><span class="punc">:</span> <span class="str">"https://cdn.example.com/review.mp4"</span><span class="punc">,</span> <span class="key">"controls"</span><span class="punc">:</span> <span class="const">true</span> <span class="punc">}</span></code></pre>
+      <p>Examples: <a href="https://github.com/uurtech/jdf/blob/master/spec/examples/video.jdfx">spec/examples/video.jdfx</a> (bundled clip) and <a href="https://github.com/uurtech/jdf/blob/master/docs/examples/video.jdf">docs/examples/video.jdf</a> (hosted <code>src</code>).</p>
+
       <h2><code>table</code></h2>
       <table>
         <thead><tr><th>Field</th><th>Type</th></tr></thead>

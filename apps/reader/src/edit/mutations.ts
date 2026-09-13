@@ -113,6 +113,8 @@ export function makeBlankElement(type: Element["type"], y: number = 5): Element 
       return { type: "shape", shape: "rect", position: { x: 0, y }, width: 60, height: 30, fill: "#3b82f6" } as Element;
     case "image":
       return { type: "image", src: "", alt: "Image", position: { x: 0, y }, width: 80, height: 60, fit: "contain" } as Element;
+    case "video":
+      return { type: "video", src: "", title: "Video", controls: true, position: { x: 0, y }, width: 160, height: 90, fit: "contain" } as Element;
     case "collapsible":
       return { type: "collapsible", title: "Section", expanded: true, elements: [], position: { x: 0, y }, width: 166 } as Element;
     case "toc":

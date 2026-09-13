@@ -54,6 +54,10 @@ export const MIME_BY_EXT: Readonly<Record<string, string>> = Object.freeze({
   webp: "image/webp",
   svg: "image/svg+xml",
   bmp: "image/bmp",
+  mp4: "video/mp4",
+  m4v: "video/mp4",
+  webm: "video/webm",
+  mov: "video/quicktime",
   woff: "font/woff",
   woff2: "font/woff2",
   ttf: "font/ttf",
@@ -67,4 +71,9 @@ export function extOf(pathOrName: string): string {
 
 export function mimeOf(pathOrName: string): string {
   return MIME_BY_EXT[extOf(pathOrName)] || "application/octet-stream";
+}
+
+/** True for `video/*` MIME types — decides whether a bundle asset binds into `resources.videos` or `resources.images`. */
+export function isVideoMime(mime: string | undefined): boolean {
+  return typeof mime === "string" && /^video\//i.test(mime);
 }

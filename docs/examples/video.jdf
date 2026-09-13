@@ -1,0 +1,103 @@
+{
+  "$jdf": "1.0.0",
+  "meta": {
+    "title": "Video in a JDF document",
+    "author": "JDF",
+    "pageSize": "A4",
+    "unit": "mm",
+    "margins": {
+      "top": 22,
+      "right": 22,
+      "bottom": 22,
+      "left": 22
+    }
+  },
+  "styles": {
+    "h1": {
+      "fontFamily": "Inter",
+      "fontSize": 24,
+      "fontWeight": "bold",
+      "color": "#0f172a"
+    },
+    "body": {
+      "fontFamily": "Inter",
+      "fontSize": 11,
+      "lineHeight": 1.6,
+      "color": "#334155"
+    },
+    "cap": {
+      "fontFamily": "Inter",
+      "fontSize": 9,
+      "color": "#64748b"
+    }
+  },
+  "pages": [
+    {
+      "id": "page-1",
+      "elements": [
+        {
+          "id": "title",
+          "type": "text",
+          "content": "Video in a JDF document",
+          "heading": 1,
+          "style": "h1",
+          "tocEntry": "Video in a JDF document",
+          "tocLevel": 1,
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "width": 166
+        },
+        {
+          "id": "intro",
+          "type": "text",
+          "content": "A video element plays inline in jdf.js and the desktop reader. This one points at a hosted file with src; the same element can carry the clip inside a .jdfx bundle instead (see examples/video.jdfx).",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 16
+          },
+          "width": 166
+        },
+        {
+          "id": "clip",
+          "type": "video",
+          "poster": "logo-256.png",
+          "title": "JDF vs PDF for RAG — the benchmark video (hosted file)",
+          "controls": true,
+          "position": {
+            "x": 0,
+            "y": 44
+          },
+          "width": 166,
+          "height": 93.4,
+          "fit": "contain",
+          "src": "demos/rag-benchmark.mp4"
+        },
+        {
+          "id": "cap",
+          "type": "text",
+          "content": "Figure 1 — hosted video via src (relative URL), poster from the site.",
+          "style": "cap",
+          "position": {
+            "x": 0,
+            "y": 146
+          },
+          "width": 166
+        },
+        {
+          "id": "how",
+          "type": "text",
+          "content": "Authoring: { \"type\": \"video\", \"resource\": \"clip\", \"poster\": \"poster\", \"title\": \"…\" } with the bytes in resources.videos.clip — or { \"type\": \"video\", \"src\": \"https://…/clip.mp4\" } for a hosted file. jdf chunk indexes the title as [video: …].",
+          "style": "body",
+          "position": {
+            "x": 0,
+            "y": 156
+          },
+          "width": 166
+        }
+      ]
+    }
+  ]
+}

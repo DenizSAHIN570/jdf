@@ -3,6 +3,8 @@ import {
   JDFX_DOCUMENT_PATH,
   JDFX_MANIFEST_PATH,
   JDFX_ASSET_DIR,
+  isVideoMime,
+  mimeOf,
   type JdfDocument,
   type JdfxManifest,
 } from "@jdf/core";
@@ -67,11 +69,16 @@ export async function unpackJdfxToDocument(bytes: ArrayBuffer | Uint8Array): Pro
       const file = zip.file(entry.path);
       if (!file) continue;
       const data = await file.async("uint8array");
-      doc.resources.images[entry.id] = {
-        src: "embedded",
-        mimeType: entry.mimeType || "image/png",
-        data: uint8ToBase64(data),
-      };
+      const mimeType = entry.mimeType || mimeOf(entry.path);
+      const res = { src: "embedded" as const, mimeType, data: uint8ToBase64(data) };
+      // Videos bind into resources.videos, everything else into resources.images
+      // — the renderers look up `resource` ids in both.
+      if (isVideoMime(mimeType)) {
+        if (!doc.resources.videos) doc.resources.videos = {};
+        doc.resources.videos[entry.id] = res;
+      } else {
+        doc.resources.images[entry.id] = res;
+      }
     }
   }
 

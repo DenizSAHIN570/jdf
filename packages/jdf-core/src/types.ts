@@ -28,10 +28,14 @@ export type Link = string | { type: LinkType; target: string };
 
 export interface FontResource { family: string; src: "embedded" | "file" | "system"; data?: string; path?: string; weight?: string; style?: string; }
 export interface ImageResource { src?: "embedded" | "file"; mimeType?: string; data?: string; path?: string; }
+/** A binary asset: embedded base64 (`data`) or a file path. Same shape for images and videos. */
+export type VideoResource = ImageResource;
 export type Resources = {
   fonts?: FontResource[];
   images?: Record<string, ImageResource>;
-} & Record<string, ImageResource | undefined>;
+  /** Video assets (`video/mp4`, `video/webm`). In a `.jdfx` they live under `assets/` like images. */
+  videos?: Record<string, VideoResource>;
+} & Record<string, ImageResource | Record<string, ImageResource> | FontResource[] | undefined>;
 
 export interface HeaderFooter {
   height?: number;
@@ -86,6 +90,32 @@ export interface ImageElement {
   height?: number;
   fit?: ImageFit;
   link?: Link;
+  style?: StyleRef;
+}
+
+/**
+ * Video — plays inline in jdf.js and the desktop reader (HTML5 `<video>`).
+ * Source is either a bundled asset (`resource` → `resources.videos[id]`, which a
+ * `.jdfx` stores under `assets/`) or a `src` URL / data URL. PDF export draws a
+ * poster-style placeholder with the title, since PDF cannot play video.
+ */
+export interface VideoElement {
+  type: "video";
+  resource?: string;
+  src?: string;
+  /** Still frame shown before playback: URL, data URL, or an image resource id. */
+  poster?: string;
+  /** Caption / accessible name. Also what `jdf chunk` and search index. */
+  title?: string;
+  position?: Position;
+  width?: number;
+  height?: number;
+  fit?: ImageFit;
+  /** Show the browser's playback controls (default true). */
+  controls?: boolean;
+  autoplay?: boolean;
+  loop?: boolean;
+  muted?: boolean;
   style?: StyleRef;
 }
 
@@ -274,6 +304,7 @@ export type Element =
   | TextElement
   | RichTextElement
   | ImageElement
+  | VideoElement
   | TableElement
   | ListElement
   | ShapeElement

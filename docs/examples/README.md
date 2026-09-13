@@ -8,6 +8,8 @@ Sample files used by the documentation site for live `<jdf>` embeds and by the d
 | `invoice.jdf` | JDF | Real-world layout — multi-column, styled table, totals box. |
 | `article.jdf` | JDF | Multi-page article with footer template, headings, code block. |
 | `sample.pdf` | PDF | A real PDF for testing the desktop reader's PDF import. ~85 KB. |
+| `video.jdf` | JDF | `video` element pointing at a hosted file (`src`), poster from the site. |
+| `video.jdfx` | JDFX | Same document with the 3-second clip and its poster bundled under `assets/`. |
 
 ## Embed any of these in your own page
 

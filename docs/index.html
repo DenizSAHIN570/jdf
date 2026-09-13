@@ -700,13 +700,13 @@ $ jdf embed report.jdf <span class="cli-flag">--incremental</span></code></pre>
           <tr><td><code>$jdf</code></td><td>yes</td><td>Format version (semver)</td></tr>
           <tr><td><code>meta</code></td><td>yes</td><td>title, author, page size, margins, language</td></tr>
           <tr><td><code>styles</code></td><td>no</td><td>Reusable named style definitions</td></tr>
-          <tr><td><code>resources</code></td><td>no</td><td>Embedded fonts and base64 images</td></tr>
+          <tr><td><code>resources</code></td><td>no</td><td>Embedded fonts, base64 images and videos (a <code>.jdfx</code> keeps them as files under <code>assets/</code>)</td></tr>
           <tr><td><code>header</code> · <code>footer</code></td><td>no</td><td>Repeating header/footer with template vars or full element trees</td></tr>
           <tr><td><code>pages</code></td><td>yes</td><td>Array of pages, each with its own elements</td></tr>
         </tbody>
       </table>
       <p class="spec-link">
-        Element types: <code>text</code> (with heading 1-6), <code>richtext</code>, <code>image</code>, <code>table</code>, <code>list</code>, <code>shape</code>, <code>collapsible</code>, <code>toc</code>.
+        Element types: <code>text</code> (with heading 1-6), <code>richtext</code>, <code>image</code>, <code>video</code>, <code>table</code>, <code>list</code>, <code>shape</code>, <code>collapsible</code>, <code>toc</code>, plus the five form fields.
         Full schema: <a href="https://github.com/uurtech/jdf/blob/master/spec/jdf-schema.json">spec/jdf-schema.json</a> ·
         Working example: <a href="https://github.com/uurtech/jdf/blob/master/spec/examples/hello-world.jdf">hello-world.jdf</a>.
       </p>

@@ -4,6 +4,7 @@ import type {
   ShapeElement, CollapsibleElement, TocElement, RichTextRun, ListItem, TableCellValue, ImageResource,
   FormInputElement, FormTextareaElement, FormCheckboxElement, FormSelectElement, FormSignatureElement,
   TextAlign,
+  VideoElement,
 } from "@jdf/core";
 import { unitToPx } from "@jdf/core";
 import { resolveStyle, styleToCss, applyStyle } from "../utils/style";
@@ -35,6 +36,7 @@ export function renderElement(el: Element, ctx: RenderContext): HTMLElement | nu
     case "text": inner = renderText(el, ctx); break;
     case "richtext": inner = renderRichText(el, ctx); break;
     case "image": inner = renderImage(el, ctx); break;
+    case "video": inner = renderVideo(el, ctx); break;
     case "table": inner = renderTable(el, ctx); break;
     case "list": inner = renderList(el, ctx); break;
     case "shape": inner = renderShape(el); break;
@@ -141,7 +143,60 @@ function lookupResource(resources: Resources | undefined, key: string): ImageRes
   if (direct && typeof direct === "object" && "data" in direct) return direct as ImageResource;
   const inImages = resources.images?.[key];
   if (inImages) return inImages;
+  // Videos live in resources.videos; a .jdfx unpacker binds by MIME type.
+  const inVideos = resources.videos?.[key];
+  if (inVideos) return inVideos;
   return undefined;
+}
+
+function mediaSrc(el: { src?: string; resource?: string }, resources: Resources | undefined, fallbackMime: string): string {
+  if (el.src?.startsWith("data:") || el.src?.startsWith("http")) return el.src;
+  if (el.resource) {
+    const res = lookupResource(resources, el.resource);
+    if (res?.data) {
+      const mime = res.mimeType || fallbackMime;
+      if (res.data.startsWith("data:")) return res.data;
+      return `data:${mime};base64,${res.data}`;
+    }
+    if (res?.path) return res.path;
+  }
+  return el.src || "";
+}
+
+// ── video ───────────────────────────────────────────────────────────────────
+function renderVideo(el: VideoElement, ctx: RenderContext): HTMLElement {
+  const wrap = document.createElement("div");
+  wrap.className = "jdfjs-video";
+  wrap.style.width = "100%";
+  wrap.style.height = "100%";
+  const video = document.createElement("video");
+  video.src = mediaSrc(el, ctx.resources, "video/mp4");
+  if (el.poster) {
+    // Poster may be an image resource id or a URL / data URL.
+    const res = lookupResource(ctx.resources, el.poster);
+    video.poster = res?.data ? (res.data.startsWith("data:") ? res.data : `data:${res.mimeType || "image/png"};base64,${res.data}`) : el.poster;
+  }
+  if (el.title) { video.title = el.title; video.setAttribute("aria-label", el.title); }
+  video.controls = el.controls !== false;
+  video.autoplay = !!el.autoplay;
+  video.loop = !!el.loop;
+  // Browsers only allow autoplay when muted.
+  video.muted = !!el.muted || !!el.autoplay;
+  video.playsInline = true;
+  video.preload = "metadata";
+  video.style.display = "block";
+  video.style.width = "100%";
+  video.style.height = "100%";
+  video.style.background = "#000";
+  switch (el.fit) {
+    case "cover": video.style.objectFit = "cover"; break;
+    case "fill": video.style.objectFit = "fill"; break;
+    case "none": video.style.objectFit = "none"; break;
+    default: video.style.objectFit = "contain";
+  }
+  applyStyle(video, resolveStyle(el.style, ctx.styles));
+  wrap.appendChild(video);
+  return wrap;
 }
 
 function imageSrc(el: ImageElement, resources?: Resources): string {
