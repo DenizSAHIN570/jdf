@@ -804,7 +804,7 @@ pnpm tauri build</code></pre>
         const vals = rows.map((r) => r.values[metric] ?? 0);
         const max = Math.max(...vals) || 1;
         rowsEl.classList.remove("is-ready");
-        const pdfVals = rows.filter((r) => !r.jdf).map((r) => r.values[metric]).filter((v) => v != null);
+        const pdfVals = rows.filter((r) => !r.jdf && !r.converted).map((r) => r.values[metric]).filter((v) => v != null);
         const bestPdf = pdfVals.length ? (m.higher ? Math.max(...pdfVals) : Math.min(...pdfVals)) : null;
         const delta = (r) => {
           if (!r.jdf || bestPdf == null) return "";
@@ -814,7 +814,7 @@ pnpm tauri build</code></pre>
         };
         rowsEl.innerHTML = rows.map((r) => {
           const v = r.values[metric] ?? 0;
-          return `<li class="bench-row${r.jdf ? " is-jdf" : r.converted ? " is-conv" : ""}" style="--w:${((v / max) * 100).toFixed(1)}%"><div class="bench-name">${r.name}<span class="bench-ver">${r.version}</span></div><div class="bench-track"><div class="bench-bar"></div>${delta(r)}</div><div class="bench-time">${r.display[metric]}</div></li>`;
+          return `<li class="bench-row${r.jdf ? " is-jdf" : r.converted ? " is-conv" : ""}" style="--w:${((v / max) * 100).toFixed(1)}%"><div class="bench-name">${r.name}<span class="bench-ver">${r.version}</span>${delta(r)}</div><div class="bench-track"><div class="bench-bar"></div></div><div class="bench-time">${r.display[metric]}</div></li>`;
         }).join("");
         subEl.textContent = m.label;
         requestAnimationFrame(() => requestAnimationFrame(() => rowsEl.classList.add("is-ready")));
