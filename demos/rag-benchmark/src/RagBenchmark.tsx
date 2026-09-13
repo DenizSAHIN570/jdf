@@ -1,9 +1,10 @@
 import React from "react";
 import { AbsoluteFill, Audio, interpolate, spring, staticFile, useCurrentFrame, Easing } from "remotion";
+import { DURATION_SEC } from "./timeline";
 import bench from "../../../docs/bench.json";
 import { FPS, DURATION_FRAMES, T, s } from "./timeline";
 
-// Hard cuts, slams, one bar race — no slides. Timeline + synthesised score in ./timeline.ts / scripts/make-score.ts.
+// Hard cuts, slams, one bar race — no slides. Timeline in ./timeline.ts; soundtrack fetched by scripts/fetch-music.ts.
 export { FPS, DURATION_FRAMES };
 
 const font = "Inter, -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif";
@@ -268,7 +269,8 @@ const Outro: React.FC = () => {
 
 export const RagBenchmark: React.FC = () => (
   <AbsoluteFill style={{ background: C.bg }}>
-    <Audio src={staticFile("score.wav")} volume={0.9} />
+    {/* "Driving Ambition" — Ahjay Stelino, Mixkit Stock Music Free License (fetched by scripts/fetch-music.ts). Fade in, duck slightly under the money slam, fade out. */}
+    <Audio src={staticFile("music.mp3")} volume={(f) => interpolate(f, [0, 20, s(DURATION_SEC) - 40, s(DURATION_SEC)], [0, 0.85, 0.85, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} />
     <Bg />
     <Cut from={T.open} to={T.race}><Open /></Cut>
     <Cut from={T.race} to={T.tokens}><Race /></Cut>

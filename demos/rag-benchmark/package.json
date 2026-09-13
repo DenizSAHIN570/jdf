@@ -7,9 +7,9 @@
   "scripts": {
     "verify": "cd ../../bench && python3 rag_bench.py --verify --embedder none",
     "studio": "remotion studio src/index.ts",
-    "render": "tsx scripts/make-score.ts && remotion render src/index.ts RagBenchmark out/rag-benchmark.mp4 --crf 16 && cp out/rag-benchmark.mp4 rag-benchmark.mp4",
+    "render": "tsx scripts/fetch-music.ts && remotion render src/index.ts RagBenchmark out/rag-benchmark.mp4 --crf 16 && cp out/rag-benchmark.mp4 rag-benchmark.mp4",
     "stills": "for f in 60 240 420 660 900 1080; do remotion still src/index.ts RagBenchmark out/still-$f.png --frame=$f; done",
-    "score": "tsx scripts/make-score.ts"
+    "music": "tsx scripts/fetch-music.ts"
   },
   "dependencies": {
     "@remotion/cli": "4.0.240",
