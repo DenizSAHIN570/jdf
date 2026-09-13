@@ -53,7 +53,6 @@
       <a href="#features">Features</a>
       <a href="#install">Install</a>
       <a href="docs/">Docs</a>
-      <a href="demo.html">Demo</a>
       <a href="https://github.com/uurtech/jdf" target="_blank" rel="noopener">GitHub →</a>
     </nav>
   </header>
@@ -401,7 +400,7 @@ $ jdf embed report.jdf <span class="cli-flag">--incremental</span>   <span class
             <tr><td>LLM input cost · Claude Sonnet 5 input</td><td class="is-jdf">$1,506.73</td><td>$2,447.25</td></tr>
           </tbody>
         </table></div>
-        <p class="rag-bench-note">1,000 files per format = the 24-document corpus cycled. Tokens are counted from the chunks each pipeline produces (ceil(chars/4), both sides); embedding time is measured throughput on Apple M5 (2026-09-13) applied to the totals. Prices from <code>bench/prices.json</code> (as of 2026-09-12); edit it for your provider — the benchmark never calls a paid API. The PDF column is the PDF pipeline that scored best in the accuracy run. Re-index: JDF re-embeds only chunks whose content hash changed (<code>jdf embed --incremental</code>); a PDF has no chunk identity, so an edit means re-chunking and re-embedding the whole document.</p>
+        <p class="rag-bench-note">1,000 files per format = the 24-document corpus cycled. Tokens are counted from the chunks each pipeline produces (ceil(chars/4), both sides); embedding time is measured throughput on Apple M5 (2026-09-13) applied to the totals. Prices from <code>bench/prices.json</code> (as of 2026-09-12); edit it for your provider — the benchmark never calls a paid API. The PDF column is the PDF pipeline that scored best in the accuracy run. <strong>Scaling:</strong> figures are measured at 1,000 documents and 1,000,000 queries; anything at other volumes (10,000 documents, 10M queries) is a linear estimate, not a measurement — index and re-index costs scale with documents, query cost scales with questions asked. Re-index: JDF re-embeds only chunks whose content hash changed (<code>jdf embed --incremental</code>); a PDF has no chunk identity, so an edit means re-chunking and re-embedding the whole document.</p>
 <!-- bench:cost:end -->
         <figure class="rag-video">
           <video controls muted playsinline preload="metadata" poster="" src="demos/rag-benchmark.mp4"></video>
@@ -853,6 +852,7 @@ pnpm tauri build</code></pre>
           <div class="bench-save-hero">
             <div class="bench-save-big">${usd(saved)}<span> saved</span></div>
             <div class="bench-save-line">per 1M questions on ${c.llmLabel.replace(" input", "")} — ${usd(c.jdf.queryUsd)} instead of ${usd(c.pdf.queryUsd)}, same pipeline, only the input format differs</div>
+            <div class="bench-save-scale"><b>Measured</b> at ${c.files.toLocaleString("en-US")} documents · 1M questions. <b>Linear estimate, not measured:</b> 10M questions ≈ ${usd(saved * 10)} saved · 100M ≈ ${usd(saved * 100)}; at 10,000 documents the re-index saving is ×10. Your prices in <code>bench/prices.json</code>.</div>
           </div>
           <div class="bench-save-grid bench-save-grid-4">
             <div><b>−${pct(cut)}%</b><span>LLM tokens per answer</span><i>${tokJ != null && tokP != null ? `${Math.round(tokJ).toLocaleString("en-US")} vs ${Math.round(tokP).toLocaleString("en-US")} tokens of context` : "top-5 context"}</i></div>

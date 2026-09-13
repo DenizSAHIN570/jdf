@@ -1409,3 +1409,6 @@ footer ul li a:hover { color: var(--brand); }
 .bench-save-grid-4 span code { background: rgba(148, 163, 184, 0.14); color: #e2e8f0; font-size: 11px; }
 .bench-save-grid-4 i { font-size: 11px; }
 @media (max-width: 720px) { .bench-save-grid-4 { grid-template-columns: 1fr; } .bench-save-big { font-size: 34px; } }
+.bench-save-scale { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(52, 211, 153, 0.3); font-size: 11px; color: #94a3b8; line-height: 1.45; }
+.bench-save-scale b { color: #cbd5e1; }
+.bench-save-scale code { background: rgba(148, 163, 184, 0.14); color: #e2e8f0; font-size: 10.5px; }

@@ -1,13 +1,10 @@
 import React from "react";
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, Easing } from "remotion";
+import { AbsoluteFill, Audio, interpolate, spring, staticFile, useCurrentFrame, Easing } from "remotion";
 import bench from "../../../docs/bench.json";
+import { FPS, DURATION_FRAMES, T, s } from "./timeline";
 
-// Ten seconds. Hard cuts, slams, one bar race — no slides.
-export const FPS = 30;
-export const DURATION_FRAMES = FPS * 10;
-const s = (sec: number) => Math.round(sec * FPS);
-
-const T = { open: 0, race: 1.0, tokens: 3.4, reindex: 4.6, money: 5.8, convert: 7.6, outro: 8.8, end: 10 };
+// Hard cuts, slams, one bar race — no slides. Timeline + synthesised score in ./timeline.ts / scripts/make-score.ts.
+export { FPS, DURATION_FRAMES };
 
 const font = "Inter, -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const mono = "'JetBrains Mono', ui-monospace, Menlo, monospace";
@@ -215,7 +212,8 @@ const Money: React.FC = () => {
       <Tag>per 1,000,000 questions · counted, not estimated</Tag>
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", opacity: a.opacity, transform: `translate(${a.shake}px, 0) scale(${a.scale})` }}>
         <Glitch on={a.glitch}><div style={{ fontFamily: mono, fontSize: 210, fontWeight: 700, color: C.good, letterSpacing: -8, lineHeight: 1 }}>{money(saved * p)}</div></Glitch>
-        <div style={{ fontSize: 34, letterSpacing: 6, textTransform: "uppercase", color: C.text, marginTop: 10 }}>saved</div>
+        <div style={{ fontSize: 34, letterSpacing: 6, textTransform: "uppercase", color: C.text, marginTop: 10 }}>saved per 1M questions</div>
+        <div style={{ fontSize: 22, color: C.soft, marginTop: 8, opacity: sub }}>≈ {money(saved * 10)} per 10M · {money(saved * 100)} per 100M — linear estimate, not measured</div>
         <div style={{ marginTop: 40, display: "flex", gap: 70, opacity: sub, transform: `translateY(${(1 - sub) * 20}px)` }}>
           <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 64, fontWeight: 700, color: C.jdf }}>+{accPts.toFixed(0)} pts</div><div style={{ fontSize: 20, color: C.soft }}>accuracy</div></div>
           <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 64, fontWeight: 700, color: C.jdf }}>{money(jq)}</div><div style={{ fontSize: 20, color: C.soft }}>JDF · {(cost.prices.llm_input as any)[lk].label.replace(" input", "")}</div></div>
@@ -270,6 +268,7 @@ const Outro: React.FC = () => {
 
 export const RagBenchmark: React.FC = () => (
   <AbsoluteFill style={{ background: C.bg }}>
+    <Audio src={staticFile("score.wav")} volume={0.9} />
     <Bg />
     <Cut from={T.open} to={T.race}><Open /></Cut>
     <Cut from={T.race} to={T.tokens}><Race /></Cut>

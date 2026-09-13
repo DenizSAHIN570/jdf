@@ -380,7 +380,7 @@ R@1k tok = answer found within the first 1,000 tokens of retrieved context (chun
 | LLM input tokens per 1,000,000 queries (top-5 context) | **753,364,583** | 1,223,625,000 |
 | LLM input cost · Claude Sonnet 5 input | **$1,506.73** | $2,447.25 |
 
-1,000 files per format (24-document corpus cycled); tokens counted from each pipeline's chunks, embedding time measured on Apple M5, 2026-09-13. Prices: [`bench/prices.json`](bench/prices.json). Method: [`bench/README.md`](bench/README.md).
+1,000 files per format (24-document corpus cycled); tokens counted from each pipeline's chunks, embedding time measured on Apple M5, 2026-09-13. Other volumes (10,000 documents, 10M queries) are linear estimates, not measurements. Prices: [`bench/prices.json`](bench/prices.json). Method: [`bench/README.md`](bench/README.md).
 <!-- bench:cost:end -->
 
 Reproduce it — Python only, no Node toolchain:
