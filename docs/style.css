@@ -1395,3 +1395,17 @@ footer ul li a:hover { color: var(--brand); }
 .bench-table tr.is-conv td { color: var(--text); background: rgba(37, 99, 235, 0.03); font-style: italic; }
 .bench-row.is-conv .bench-bar { background: linear-gradient(90deg, #6366f1, #a5b4fc); }
 .bench-row.is-conv .bench-name { color: #c7d2fe; }
+
+/* Benchmark card: mode switch + savings panel */
+.bench-mode { display: inline-flex; gap: 2px; padding: 3px; background: rgba(148, 163, 184, 0.1); border-radius: 10px; margin: 0 0 12px; }
+.bench-mode-btn { background: transparent; border: 0; color: #cbd5e1; border-radius: 8px; padding: 6px 14px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.bench-mode-btn.is-active { background: linear-gradient(120deg, #3b82f6, #2563eb); color: #fff; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); }
+.bench-save-hero { padding: 14px 16px; border-radius: 14px; background: linear-gradient(135deg, rgba(52, 211, 153, 0.16), rgba(96, 165, 250, 0.08)); border: 1px solid rgba(52, 211, 153, 0.35); margin-bottom: 10px; }
+.bench-save-big { font-family: "JetBrains Mono", monospace; font-size: 44px; font-weight: 700; line-height: 1; color: #34d399; letter-spacing: -0.03em; }
+.bench-save-big span { font-family: "Inter", sans-serif; font-size: 16px; font-weight: 700; color: #f1f5f9; letter-spacing: 0.02em; margin-left: 8px; text-transform: uppercase; }
+.bench-save-line { font-size: 12.5px; color: #cbd5e1; margin-top: 8px; line-height: 1.45; }
+.bench-save-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.bench-save-grid-4 b { font-size: 30px; }
+.bench-save-grid-4 span code { background: rgba(148, 163, 184, 0.14); color: #e2e8f0; font-size: 11px; }
+.bench-save-grid-4 i { font-size: 11px; }
+@media (max-width: 720px) { .bench-save-grid-4 { grid-template-columns: 1fr; } .bench-save-big { font-size: 34px; } }

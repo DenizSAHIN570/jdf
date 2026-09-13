@@ -108,10 +108,18 @@ brew install jdf">
         <div class="bench-head">
           <div>
             <div class="bench-title">RAG retrieval — same reports as <span class="bench-pdf">PDF</span> vs <span class="bench-jdf">JDF</span></div>
-            <div class="bench-sub" data-bench-sub>tokens handed to the LLM for the top-5 chunks · lower is better</div>
+            <div class="bench-sub" data-bench-sub>1,000 documents · same RAG pipeline · JDF vs the best PDF pipeline</div>
           </div>
           <button class="bench-replay" type="button" data-bench-replay>replay</button>
         </div>
+        <div class="bench-mode" role="tablist">
+          <button class="bench-mode-btn is-active" role="tab" data-bench-mode="savings">What you save</button>
+          <button class="bench-mode-btn" role="tab" data-bench-mode="tech">Technical</button>
+        </div>
+        <div class="bench-panel" data-bench-panel="savings">
+          <div class="bench-cost-strip" data-bench-cost></div>
+        </div>
+        <div class="bench-panel" data-bench-panel="tech" hidden>
         <div class="bench-tabs" role="tablist" data-bench-tabs>
 <!-- bench:tabs:start -->
           <button class="bench-tab" role="tab" data-bench-retriever="bm25">BM25 (lexical)</button>
@@ -139,7 +147,8 @@ brew install jdf">
             <option value="recall5">top-5 hit</option>
           </select>
         </div>
-        <div class="bench-cost-strip" data-bench-cost></div>
+
+        </div>
         <div class="bench-foot">
           <span data-bench-foot></span>
           <a href="docs/benchmark.html">Full tables, method, RAG cost at 1,000 files →</a>
@@ -396,7 +405,7 @@ $ jdf embed report.jdf <span class="cli-flag">--incremental</span>   <span class
 <!-- bench:cost:end -->
         <figure class="rag-video">
           <video controls muted playsinline preload="metadata" poster="" src="demos/rag-benchmark.mp4"></video>
-          <figcaption>42-second walkthrough of the benchmark — every number on screen is read from <code>docs/bench.json</code>, the same file this page uses. Source: <a href="https://github.com/uurtech/jdf/tree/master/demos/rag-benchmark">demos/rag-benchmark</a>.</figcaption>
+          <figcaption>10-second cut of the benchmark — every number on screen is read from <code>docs/bench.json</code>, the same file this page uses. Source: <a href="https://github.com/uurtech/jdf/tree/master/demos/rag-benchmark">demos/rag-benchmark</a>.</figcaption>
         </figure>
         <p class="rag-bench-note">Synthetic corpus by design — a retrieval benchmark needs ground truth for every question, which public PDF corpora don't ship. The generator, every document, every question and every retrieved rank are in <a href="https://github.com/uurtech/jdf/tree/master/bench">bench/</a>. Run it on your own corpus and <a href="https://github.com/uurtech/jdf/issues" target="_blank" rel="noopener">open an issue</a> with the numbers.</p>
       </div>
@@ -827,6 +836,7 @@ pnpm tauri build</code></pre>
       card.querySelector("[data-bench-replay]").addEventListener("click", render);
 
       const costEl = card.querySelector("[data-bench-cost]");
+      const SAVINGS_SUB = "1,000 documents · same RAG pipeline · JDF vs the best PDF pipeline";
       if (costEl && data.cost) {
         const c = data.cost;
         const usd = (x) => "$" + Math.round(x).toLocaleString("en-US");
@@ -835,16 +845,35 @@ pnpm tauri build</code></pre>
         const cut = 1 - c.jdf.queryUsd / c.pdf.queryUsd;
         const reindexX = c.pdf.reindexUsd / c.jdf.reindexUsd;
         const accPts = (c.jdf.acc - c.pdf.acc) * 100;
-        costEl.innerHTML = `<div class="bench-cost-title">what JDF saves you · ${c.files.toLocaleString("en-US")} documents, same pipeline</div>
-          <div class="bench-save-grid">
-            <div><b>−${pct(cut)}%</b><span>LLM spend per query</span><i>${usd(saved)} saved per 1M queries · ${c.llmLabel}</i></div>
-            <div><b>${reindexX >= 10 ? Math.round(reindexX) : reindexX.toFixed(1)}×</b><span>cheaper re-indexing</span><i>edit a paragraph → ${data.jdfOnly.chunksReembedded} of ${data.jdfOnly.corpusChunks} chunks re-embedded, not the whole file</i></div>
+        const convRow = (data.rows[data.headline] || []).find((r) => r.converted);
+        const jdfRow = (data.rows[data.headline] || []).find((r) => r.jdf);
+        const pdfRows = (data.rows[data.headline] || []).filter((r) => !r.jdf && !r.converted);
+        const tokJ = jdfRow?.values.ctxTokensTop5, tokP = pdfRows.length ? Math.min(...pdfRows.map((r) => r.values.ctxTokensTop5)) : null;
+        costEl.innerHTML = `
+          <div class="bench-save-hero">
+            <div class="bench-save-big">${usd(saved)}<span> saved</span></div>
+            <div class="bench-save-line">per 1M questions on ${c.llmLabel.replace(" input", "")} — ${usd(c.jdf.queryUsd)} instead of ${usd(c.pdf.queryUsd)}, same pipeline, only the input format differs</div>
+          </div>
+          <div class="bench-save-grid bench-save-grid-4">
+            <div><b>−${pct(cut)}%</b><span>LLM tokens per answer</span><i>${tokJ != null && tokP != null ? `${Math.round(tokJ).toLocaleString("en-US")} vs ${Math.round(tokP).toLocaleString("en-US")} tokens of context` : "top-5 context"}</i></div>
+            <div><b>${reindexX >= 10 ? Math.round(reindexX) : reindexX.toFixed(1)}×</b><span>cheaper re-indexing</span><i>edit a paragraph → ${data.jdfOnly.chunksReembedded} of ${data.jdfOnly.corpusChunks} chunks re-embedded</i></div>
             <div><b>+${accPts.toFixed(0)} pts</b><span>retrieval accuracy</span><i>${pct(c.jdf.acc)}% vs ${pct(c.pdf.acc)}% — answer in the first 1k tokens</i></div>
+            ${convRow ? `<div><b>${(convRow.values.recall1 * 100).toFixed(0)}%</b><span>top-1 after <code>jdf convert</code></span><i>your PDFs, converted — keeps the savings (native JDF ${(jdfRow.values.recall1 * 100).toFixed(0)}%)</i></div>` : ""}
           </div>`;
       }
+      // Mode: "what you save" (default) vs the technical view.
+      const panels = card.querySelectorAll("[data-bench-panel]");
+      const replayBtn = card.querySelector("[data-bench-replay]");
+      const setMode = (mode) => {
+        panels.forEach((p) => { p.hidden = p.getAttribute("data-bench-panel") !== mode; });
+        card.querySelectorAll("[data-bench-mode]").forEach((b) => b.classList.toggle("is-active", b.getAttribute("data-bench-mode") === mode));
+        if (replayBtn) replayBtn.style.visibility = mode === "tech" ? "visible" : "hidden";
+        if (mode === "tech") render(); else subEl.textContent = SAVINGS_SUB;
+      };
+      card.querySelectorAll("[data-bench-mode]").forEach((b) => b.addEventListener("click", () => setMode(b.getAttribute("data-bench-mode"))));
       const foot = card.querySelector("[data-bench-foot]");
-      if (foot) foot.textContent = `${data.corpus.documents} reports · ${data.corpus.questions} questions · local embeddings · "PDF → JDF" = the same PDFs run through jdf convert · PDF rows = each parser's best chunk size · ${data.date}`;
-      render();
+      if (foot) foot.textContent = `${data.corpus.documents} reports · ${data.corpus.questions} questions · local embeddings · "PDF → JDF" = the same PDFs run through jdf convert · ${data.date}`;
+      setMode("savings");
     })();
 
     document.querySelectorAll("[data-copy]").forEach((btn) => {

@@ -2,327 +2,281 @@ import React from "react";
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, Easing } from "remotion";
 import bench from "../../../docs/bench.json";
 
+// Ten seconds. Hard cuts, slams, one bar race — no slides.
 export const FPS = 30;
-export const DURATION_FRAMES = FPS * 50;
+export const DURATION_FRAMES = FPS * 10;
 const s = (sec: number) => Math.round(sec * FPS);
 
-// ── timeline (seconds) ──────────────────────────────────────────────────────
-const T = {
-  title: 0, setup: 4, accuracy: 10, cost: 24, savings: 33, reindex: 41.5, outro: 46, end: 50,
-};
+const T = { open: 0, race: 1.0, tokens: 3.4, reindex: 4.6, money: 5.8, convert: 7.6, outro: 8.8, end: 10 };
 
 const font = "Inter, -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const mono = "'JetBrains Mono', ui-monospace, Menlo, monospace";
-const C = { bg: "#0b1220", panel: "#111a2e", text: "#f1f5f9", soft: "#94a3b8", line: "rgba(148,163,184,0.18)", jdf: "#60a5fa", jdf2: "#3b82f6", pdf: "#94a3b8", pdf2: "#64748b", good: "#34d399" };
+const C = { bg: "#05080f", text: "#f8fafc", soft: "#94a3b8", jdf: "#60a5fa", jdf2: "#2563eb", conv: "#a5b4fc", pdf: "#64748b", pdf2: "#94a3b8", good: "#34d399", bad: "#f87171" };
 
-// ── data (all from docs/bench.json) ─────────────────────────────────────────
+// ── data (docs/bench.json) ───────────────────────────────────────────────────
 type Pipe = (typeof bench.accuracy.pipelines)[number];
 const acc = bench.accuracy;
 const cost = bench.cost!;
-const pipes: Pipe[] = acc.pipelines as Pipe[];
+const pipes = acc.pipelines as Pipe[];
 const jdf = pipes.find((p) => p.id === "jdf")!;
-const retrievers = Object.keys(jdf.retrievers);
-const label = (r: string) => (r === "bm25" ? "BM25 (lexical)" : r.replace(/^dense:/, "").split("/").pop()!.replace("-en-v1.5", "").replace("all-", ""));
+const conv = pipes.find((p) => p.format === "jdf-converted");
+const R = (p: Pipe, r: string) => (p.retrievers as any)[r].all as Record<string, number>;
+const bestPdf = (r: string, m: string) => pipes.filter((p) => p.format === "pdf").sort((a, b) => R(b, r)[m] - R(a, r)[m])[0];
+const label = (r: string) => (r === "bm25" ? "BM25" : r.replace(/^dense:/, "").split("/").pop()!.replace("-en-v1.5", "").replace("all-", ""));
 const pc = (x: number) => `${(x * 100).toFixed(1)}%`;
+const pc0 = (x: number) => `${Math.round(x * 100)}%`;
 const int = (x: number) => Math.round(x).toLocaleString("en-US");
-const usd = (x: number) => (x >= 1 ? `$${x.toLocaleString("en-US", { maximumFractionDigits: 0 })}` : `$${x.toFixed(4)}`);
-const METRIC = "recallAt1000Tok" as const;
+const money = (x: number) => `$${Math.round(x).toLocaleString("en-US")}`;
+const cj = cost.sides.find((x) => x.id === "jdf")!, cp = cost.sides.find((x) => x.id !== "jdf")!;
+const lk = Object.keys(cost.prices.llm_input)[0], ek = Object.keys(cost.prices.embedding)[0];
+const jq = (cj.query!.usd as any)[lk] as number, pq = (cp.query!.usd as any)[lk] as number;
+const cut = 1 - jq / pq, saved = pq - jq;
+const reindexX = ((cp.reindex.usd as any)[ek] as number) / ((cj.reindex.usd as any)[ek] as number);
+const accPts = (cj.accuracy!.recallAt1000Tok - cp.accuracy!.recallAt1000Tok) * 100;
+const retrievers = [acc.headline, ...Object.keys(jdf.retrievers).filter((r) => r !== acc.headline && r !== "bm25"), "bm25"].filter((r, i, a) => a.indexOf(r) === i).slice(0, 3);
 
-/** JDF + each PDF parser's best config for the metric under a retriever. */
-function rows(r: string) {
-  const byTool = new Map<string, Pipe>();
-  for (const p of pipes.filter((x) => x.format === "pdf")) {
-    const cur = byTool.get(p.tool);
-    if (!cur || (p.retrievers as any)[r].all[METRIC] > (cur.retrievers as any)[r].all[METRIC]) byTool.set(p.tool, p);
-  }
-  const pdf = [...byTool.values()].sort((a, b) => (b.retrievers as any)[r].all[METRIC] - (a.retrievers as any)[r].all[METRIC]);
-  return [jdf, ...pdf].map((p) => ({
-    name: p.format === "jdf" ? "JDF" : `PDF · ${p.tool.split(" ")[0]}`,
-    sub: p.format === "jdf" ? "jdf chunk · section" : p.label.replace(/^.*fixed /, "fixed ") + " chars",
-    isJdf: p.format === "jdf",
-    v: (p.retrievers as any)[r].all[METRIC] as number,
-    ctx: (p.retrievers as any)[r].all.ctxTokensTop5 as number,
-  }));
-}
-// Order the retriever showcase: headline first, then the rest (BM25 last).
-const showcase = [acc.headline, ...retrievers.filter((r) => r !== acc.headline && r !== "bm25"), "bm25"].filter((r, i, a) => a.indexOf(r) === i);
-
-// ── helpers ─────────────────────────────────────────────────────────────────
-const fade = (frame: number, from: number, to: number, inD = 12, outD = 12) =>
-  interpolate(frame, [s(from), s(from) + inD, s(to) - outD, s(to)], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-const rise = (frame: number, at: number, d = 14) => interpolate(frame, [s(at), s(at) + d], [18, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.out(Easing.cubic) });
-
-const Scene: React.FC<{ from: number; to: number; children: React.ReactNode }> = ({ from, to, children }) => {
-  const frame = useCurrentFrame();
-  const a = fade(frame, from, to);
-  if (frame < s(from) - 1 || frame > s(to) + 1) return null;
-  return <AbsoluteFill style={{ opacity: a }}>{children}</AbsoluteFill>;
+// ── fx ───────────────────────────────────────────────────────────────────────
+const clamp = { extrapolateLeft: "clamp" as const, extrapolateRight: "clamp" as const };
+const slam = (frame: number, at: number) => {
+  const f = frame - s(at);
+  const p = spring({ frame: f, fps: FPS, config: { damping: 14, stiffness: 260, mass: 0.7 } });
+  const shake = f >= 0 && f < 9 ? Math.sin(f * 2.7) * (9 - f) * 1.6 : 0;
+  return { scale: 1.7 - 0.7 * p, opacity: f < 0 ? 0 : Math.min(1, f / 2), shake, glitch: f >= 0 && f < 5 };
 };
-
-const Caption: React.FC<{ from: number; to: number; children: React.ReactNode }> = ({ from, to, children }) => {
+const flash = (frame: number, at: number) => interpolate(frame - s(at), [0, 1, 4], [0, 0.55, 0], clamp);
+const Cut: React.FC<{ from: number; to: number; children: React.ReactNode }> = ({ from, to, children }) => {
   const frame = useCurrentFrame();
-  const a = fade(frame, from, to, 8, 8);
-  if (a <= 0) return null;
+  if (frame < s(from) || frame >= s(to)) return null;
+  return <AbsoluteFill>{children}</AbsoluteFill>;
+};
+const Bg: React.FC = () => {
+  const frame = useCurrentFrame();
   return (
-    <div style={{ position: "absolute", left: 0, right: 0, bottom: 30, display: "flex", justifyContent: "center", opacity: a, transform: `translateY(${rise(frame, from, 8)}px)` }}>
-      <div style={{ background: "rgba(241,245,249,0.96)", color: "#0f172a", fontFamily: font, fontSize: 20, fontWeight: 500, padding: "11px 20px", borderRadius: 12, boxShadow: "0 12px 40px rgba(0,0,0,0.35)", maxWidth: 1040, textAlign: "center", lineHeight: 1.35 }}>
-        {children}
-      </div>
-    </div>
+    <AbsoluteFill style={{ background: `radial-gradient(1200px 700px at 50% 40%, #0f1a33 0%, ${C.bg} 70%)` }}>
+      <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(96,165,250,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(96,165,250,0.06) 1px, transparent 1px)", backgroundSize: "64px 64px", transform: `translateY(${(frame * 0.6) % 64}px)` }} />
+      <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0 2px, transparent 2px 4px)" }} />
+      <div style={{ position: "absolute", left: 0, right: 0, top: ((frame * 9) % 800) - 60, height: 60, background: "linear-gradient(180deg, transparent, rgba(96,165,250,0.08), transparent)" }} />
+      <div style={{ position: "absolute", inset: 0, boxShadow: "inset 0 0 220px rgba(0,0,0,0.85)" }} />
+    </AbsoluteFill>
   );
 };
-
-const Brand: React.FC = () => (
-  <div style={{ position: "absolute", left: 40, top: 28, display: "flex", alignItems: "center", gap: 10, fontFamily: font, color: C.text }}>
-    <div style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg,#3b82f6,#1d4ed8)", display: "grid", placeItems: "center", fontWeight: 900, fontSize: 11, color: "#fff", letterSpacing: -0.5 }}>JDF</div>
-    <span style={{ fontWeight: 700, fontSize: 16 }}>JDF</span>
-    <span style={{ color: C.soft, fontSize: 14 }}>/ RAG benchmark</span>
+const Glitch: React.FC<{ on: boolean; children: React.ReactNode; style?: React.CSSProperties }> = ({ on, children, style }) => (
+  <div style={{ position: "relative", ...style }}>
+    {on && <div style={{ position: "absolute", inset: 0, color: "#f87171", transform: "translate(-4px, 0)", opacity: 0.7, mixBlendMode: "screen" }} aria-hidden>{children}</div>}
+    {on && <div style={{ position: "absolute", inset: 0, color: "#22d3ee", transform: "translate(4px, 0)", opacity: 0.7, mixBlendMode: "screen" }} aria-hidden>{children}</div>}
+    <div>{children}</div>
   </div>
 );
-
-// ── scenes ──────────────────────────────────────────────────────────────────
-const Title: React.FC = () => {
+const Slam: React.FC<{ at: number; size?: number; color?: string; children: React.ReactNode; sub?: string }> = ({ at, size = 150, color = C.text, children, sub }) => {
   const frame = useCurrentFrame();
-  const y = rise(frame, T.title + 0.2, 20);
+  const a = slam(frame, at);
   return (
-    <AbsoluteFill style={{ display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font, color: C.text }}>
-      <div style={{ textAlign: "center", transform: `translateY(${y}px)` }}>
-        <div style={{ fontSize: 15, letterSpacing: 3, textTransform: "uppercase", color: C.soft, marginBottom: 18 }}>the same documents, two formats, one RAG pipeline</div>
-        <div style={{ fontSize: 64, fontWeight: 900, letterSpacing: -2, lineHeight: 1.05 }}>
-          <span style={{ color: C.pdf }}>PDF</span> vs <span style={{ color: C.jdf }}>JDF</span> for RAG
-        </div>
-        <div style={{ fontSize: 22, color: C.soft, marginTop: 22 }}>
-          {acc.corpus.documents} reports · {acc.corpus.pages} pages · {acc.corpus.questions} questions with known answers · {acc.embeddings.length} embedding models + BM25
-        </div>
-      </div>
-    </AbsoluteFill>
-  );
-};
-
-const Setup: React.FC = () => {
-  const frame = useCurrentFrame();
-  const step = (i: number) => spring({ frame: frame - s(T.setup + 0.4 + i * 0.55), fps: FPS, config: { damping: 18, stiffness: 120 } });
-  const Col: React.FC<{ title: string; color: string; steps: string[]; idx: number }> = ({ title, color, steps, idx }) => (
-    <div style={{ width: 520, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "26px 30px", fontFamily: font, color: C.text }}>
-      <div style={{ fontSize: 26, fontWeight: 800, color, marginBottom: 18 }}>{title}</div>
-      {steps.map((t, i) => {
-        const p = step(i + idx * 0.5);
-        return (
-          <div key={t} style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12, opacity: p, transform: `translateX(${(1 - p) * -16}px)` }}>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: `${color}22`, color, display: "grid", placeItems: "center", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{i + 1}</div>
-            <div style={{ fontSize: 19, lineHeight: 1.3 }}>{t}</div>
-          </div>
-        );
-      })}
-    </div>
-  );
-  return (
-    <AbsoluteFill style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <Brand />
-      <div style={{ display: "flex", gap: 40, marginTop: 10 }}>
-        <Col idx={0} title="PDF pipeline" color={C.pdf} steps={["Parse the PDF (PyMuPDF, pdfplumber, pypdf, pdftotext)", "Fixed-size chunks — LangChain RecursiveCharacterTextSplitter, 1000/200 and 2000/200 chars", "Embed every chunk, index in a vector store", "Retrieve top-k for each question"]} />
-        <Col idx={1} title="JDF pipeline" color={C.jdf} steps={["Read the JSON — structure is already there", "jdf chunk — one chunk per section, tables as “Header: value” rows, heading breadcrumb attached", "Embed every chunk, same model, same store", "Retrieve top-k — same retriever, same questions"]} />
-      </div>
-      <Caption from={T.setup + 0.6} to={T.accuracy}>The PDFs were printed from the JDF originals by a real browser — identical content, clean text layer. Same hit rule for both: right document, and the chunk contains the answer with its row/subject key.</Caption>
-    </AbsoluteFill>
-  );
-};
-
-const Bars: React.FC<{ retriever: string; from: number; to: number }> = ({ retriever, from, to }) => {
-  const frame = useCurrentFrame();
-  const data = rows(retriever);
-  const max = Math.max(...data.map((d) => d.v)) || 1;
-  const a = fade(frame, from, to, 8, 8);
-  if (a <= 0) return null;
-  return (
-    <div style={{ position: "absolute", left: 120, right: 120, top: 150, opacity: a, fontFamily: font, color: C.text }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 22 }}>
-        <div>
-          <div style={{ fontSize: 30, fontWeight: 800 }}>Answer inside the first 1,000 tokens of retrieved context</div>
-          <div style={{ fontSize: 17, color: C.soft, marginTop: 4 }}>higher is better · chunk-size neutral · {acc.corpus.questions} questions</div>
-        </div>
-        <div style={{ fontFamily: mono, fontSize: 18, color: C.jdf, background: "rgba(96,165,250,0.12)", border: "1px solid rgba(96,165,250,0.4)", borderRadius: 999, padding: "6px 16px" }}>{label(retriever)}</div>
-      </div>
-      {data.map((d, i) => {
-        const p = spring({ frame: frame - s(from) - 6 - i * 4, fps: FPS, config: { damping: 22, stiffness: 90 } });
-        const w = (d.v / max) * p;
-        return (
-          <div key={d.name} style={{ display: "grid", gridTemplateColumns: "250px 1fr 110px", alignItems: "center", gap: 20, marginBottom: 20 }}>
-            <div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: d.isJdf ? C.jdf : C.text }}>{d.name}</div>
-              <div style={{ fontSize: 13, color: C.soft, fontFamily: mono, marginTop: 2 }}>{d.sub}</div>
-            </div>
-            <div style={{ height: 36, background: "rgba(148,163,184,0.12)", borderRadius: 9, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${w * 100}%`, borderRadius: 9, background: d.isJdf ? `linear-gradient(90deg,${C.jdf2},${C.jdf})` : `linear-gradient(90deg,${C.pdf2},${C.pdf})` }} />
-            </div>
-            <div style={{ fontFamily: mono, fontSize: 24, fontWeight: 700, textAlign: "right", color: d.isJdf ? C.jdf : C.text }}>{pc(d.v * p)}</div>
-          </div>
-        );
-      })}
+    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", opacity: a.opacity, transform: `translate(${a.shake}px, ${-a.shake * 0.6}px) scale(${a.scale})`, fontFamily: font, textAlign: "center" }}>
+      <Glitch on={a.glitch}><div style={{ fontSize: size, fontWeight: 900, letterSpacing: -4, lineHeight: 0.95, color }}>{children}</div></Glitch>
+      {sub && <div style={{ fontSize: 26, color: C.soft, marginTop: 18, letterSpacing: 4, textTransform: "uppercase" }}>{sub}</div>}
     </div>
   );
 };
+const Flash: React.FC<{ at: number }> = ({ at }) => {
+  const frame = useCurrentFrame();
+  const o = flash(frame, at);
+  return o > 0 ? <AbsoluteFill style={{ background: "#fff", opacity: o }} /> : null;
+};
+const Tag: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div style={{ position: "absolute", left: 48, top: 36, fontFamily: mono, fontSize: 15, letterSpacing: 3, color: C.soft, textTransform: "uppercase" }}>{children}</div>
+);
 
-const Accuracy: React.FC = () => {
-  const per = (T.cost - T.accuracy) / showcase.length;
+// ── 0.0–1.0 cold open ────────────────────────────────────────────────────────
+const Open: React.FC = () => {
+  const frame = useCurrentFrame();
+  const words = [`${acc.corpus.documents} REPORTS`, `${acc.corpus.questions} QUESTIONS`, "SAME PIPELINE"];
+  const i = Math.min(words.length - 1, Math.floor(frame / 6));
+  const local = frame - i * 6;
+  const show = frame < 18;
+  const a = slam(frame, 0.6);
   return (
-    <AbsoluteFill>
-      <Brand />
-      {showcase.map((r, i) => <Bars key={r} retriever={r} from={T.accuracy + i * per} to={T.accuracy + (i + 1) * per} />)}
-      <Caption from={T.accuracy + 0.5} to={T.cost}>
-        PDF rows show each parser's best chunk size. Top-1 flips with tiny embedding models because a 2,000-character PDF chunk is a quarter of the document — and then costs 3× the tokens; the token-budget metric is the fair one. Full tables per model on the site.
-      </Caption>
-    </AbsoluteFill>
+    <>
+      {show && (
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>
+          <Glitch on={local < 2}><div style={{ fontSize: 96, fontWeight: 900, letterSpacing: 6, color: C.text }}>{words[i]}</div></Glitch>
+        </div>
+      )}
+      {!show && (
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font, opacity: a.opacity, transform: `translate(${a.shake}px,0) scale(${a.scale})` }}>
+          <Glitch on={a.glitch}><div style={{ fontSize: 170, fontWeight: 900, letterSpacing: -6 }}><span style={{ color: C.pdf }}>PDF</span> <span style={{ color: C.soft, fontWeight: 300 }}>vs</span> <span style={{ color: C.jdf }}>JDF</span></div></Glitch>
+        </div>
+      )}
+      <Flash at={0.6} />
+    </>
   );
 };
 
-const Cost: React.FC = () => {
+// ── 1.0–3.4 bar race across three retrievers ─────────────────────────────────
+const Race: React.FC = () => {
   const frame = useCurrentFrame();
-  const j = cost.sides.find((x) => x.id === "jdf")!, p = cost.sides.find((x) => x.id !== "jdf")!;
-  const ek = Object.keys(cost.prices.embedding)[0], lk = Object.keys(cost.prices.llm_input)[0];
-  const rowsC: [string, string, string, boolean][] = [
-    ["Accuracy · answer in first 1k tokens", pc(j.accuracy!.recallAt1000Tok), pc(p.accuracy!.recallAt1000Tok), true],
-    ["Chunks", int(j.chunks), int(p.chunks), false],
-    ["Embedding tokens · initial index", int(j.embedTokens), int(p.embedTokens), false],
-    [`Embedding cost · ${(cost.prices.embedding as any)[ek].label}`, usd((j.embedUsd as any)[ek]), usd((p.embedUsd as any)[ek]), false],
-    ["Re-embed tokens · one paragraph edited per document", int(j.reindex.tokensAllDocsEdited), int(p.reindex.tokensAllDocsEdited), true],
-    [`LLM input tokens · 1M queries, top-5 context`, int(j.query!.inputTokens), int(p.query!.inputTokens), true],
-    [`LLM input cost · ${(cost.prices.llm_input as any)[lk].label}`, usd((j.query!.usd as any)[lk]), usd((p.query!.usd as any)[lk]), true],
+  const per = (T.tokens - T.race) / retrievers.length;
+  const idx = Math.min(retrievers.length - 1, Math.floor((frame - s(T.race)) / s(per)));
+  const r = retrievers[idx];
+  const start = s(T.race) + idx * s(per);
+  const best = bestPdf(r, "recallAt1000Tok");
+  const rows = [
+    { name: "JDF", v: R(jdf, r).recallAt1000Tok, c: [C.jdf2, C.jdf] },
+    ...(conv ? [{ name: "PDF → JDF", v: R(conv, r).recallAt1000Tok, c: ["#6366f1", C.conv] }] : []),
+    { name: `PDF · ${best.tool.split(" ")[0]}`, v: R(best, r).recallAt1000Tok, c: [C.pdf, C.pdf2] },
   ];
   return (
-    <AbsoluteFill style={{ fontFamily: font, color: C.text }}>
-      <Brand />
-      <div style={{ position: "absolute", left: 100, right: 100, top: 78 }}>
-        <div style={{ fontSize: 30, fontWeight: 800 }}>RAG cost — {int(cost.files)} PDF files vs {int(cost.files)} JDF files</div>
-        <div style={{ fontSize: 17, color: C.soft, marginTop: 4 }}>same pipeline: chunks → embeddings → vector store → top-5 context → LLM · PDF column = best PDF pipeline from the accuracy run ({p.label})</div>
-        <div style={{ marginTop: 18, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 16, overflow: "hidden" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 250px 250px", padding: "12px 26px", fontSize: 14, textTransform: "uppercase", letterSpacing: 1.5, color: C.soft, borderBottom: `1px solid ${C.line}` }}>
-            <div>per {int(cost.files)} documents</div><div style={{ textAlign: "right", color: C.jdf }}>JDF</div><div style={{ textAlign: "right" }}>PDF</div>
-          </div>
-          {rowsC.map(([name, a, b, hi], i) => {
-            const pr = spring({ frame: frame - s(T.cost) - 10 - i * 9, fps: FPS, config: { damping: 20, stiffness: 110 } });
-            return (
-              <div key={name} style={{ display: "grid", gridTemplateColumns: "1fr 250px 250px", padding: "9px 26px", fontSize: 18, borderBottom: `1px solid ${C.line}`, opacity: pr, transform: `translateX(${(1 - pr) * -14}px)`, background: hi ? "rgba(96,165,250,0.06)" : "transparent" }}>
-                <div>{name}</div>
-                <div style={{ textAlign: "right", fontFamily: mono, fontWeight: 700, color: C.jdf }}>{a}</div>
-                <div style={{ textAlign: "right", fontFamily: mono, color: C.text }}>{b}</div>
+    <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
+      <Tag>answer inside the first 1,000 tokens · higher is better</Tag>
+      <div style={{ position: "absolute", right: 48, top: 30, fontFamily: mono, fontSize: 30, fontWeight: 700, color: C.jdf, border: `2px solid ${C.jdf}`, borderRadius: 10, padding: "6px 18px", transform: `scale(${1 + 0.25 * Math.max(0, 1 - (frame - start) / 6)})` }}>{label(r)}</div>
+      <div style={{ position: "absolute", left: 48, right: 48, top: 150, display: "grid", gap: 26 }}>
+        {rows.map((row, i) => {
+          const p = interpolate(frame - start - i * 2, [0, 14], [0, 1], { ...clamp, easing: Easing.out(Easing.exp) });
+          return (
+            <div key={row.name} style={{ display: "grid", gridTemplateColumns: "300px 1fr 190px", alignItems: "center", gap: 24 }}>
+              <div style={{ fontSize: 40, fontWeight: 800, color: i === 0 ? C.jdf : i === 1 && conv ? C.conv : C.text }}>{row.name}</div>
+              <div style={{ height: 64, background: "rgba(148,163,184,0.1)", borderRadius: 10, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${row.v * 100 * p}%`, background: `linear-gradient(90deg, ${row.c[0]}, ${row.c[1]})`, boxShadow: i === 0 ? `0 0 40px ${C.jdf}88` : "none" }} />
               </div>
-            );
-          })}
-        </div>
+              <div style={{ fontFamily: mono, fontSize: 54, fontWeight: 700, textAlign: "right", color: i === 0 ? C.jdf : C.text }}>{pc(row.v * p)}</div>
+            </div>
+          );
+        })}
       </div>
-      <Caption from={T.cost + 0.6} to={T.savings}>Tokens are counted from the chunks each pipeline produces; dollars are public list prices from bench/prices.json. The benchmark never calls a paid API.</Caption>
-    </AbsoluteFill>
+      <div style={{ position: "absolute", left: 48, bottom: 40, fontSize: 20, color: C.soft }}>same questions · same embeddings · JDF leads with every retriever tested</div>
+      <Flash at={T.race} />
+    </div>
   );
 };
 
-
-const Counter: React.FC<{ from: number; value: number; fmt: (v: number) => string; delay?: number }> = ({ from, value, fmt, delay = 0 }) => {
+// ── 3.4–4.6 tokens → −38% ────────────────────────────────────────────────────
+const Tokens: React.FC = () => {
   const frame = useCurrentFrame();
-  const p = interpolate(frame, [s(from) + delay, s(from) + delay + 40], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.out(Easing.cubic) });
-  return <>{fmt(value * p)}</>;
-};
-
-const Savings: React.FC = () => {
-  const frame = useCurrentFrame();
-  const j = cost.sides.find((x) => x.id === "jdf")!, p = cost.sides.find((x) => x.id !== "jdf")!;
-  const ek = Object.keys(cost.prices.embedding)[0], lk = Object.keys(cost.prices.llm_input)[0];
-  const jq = (j.query!.usd as any)[lk] as number, pq = (p.query!.usd as any)[lk] as number;
-  const saved = pq - jq, cut = 1 - jq / pq;
-  const jr = (j.reindex.usd as any)[ek] as number, pr = (p.reindex.usd as any)[ek] as number;
-  const reindexX = pr / jr;
-  const accPts = (j.accuracy!.recallAt1000Tok - p.accuracy!.recallAt1000Tok) * 100;
-  const tile = (i: number) => spring({ frame: frame - s(T.savings) - 8 - i * 10, fps: FPS, config: { damping: 16, stiffness: 100 } });
-  const Tile: React.FC<{ i: number; big: React.ReactNode; label: string; sub: string }> = ({ i, big, label, sub }) => {
-    const q = tile(i);
-    return (
-      <div style={{ flex: 1, background: "linear-gradient(180deg, rgba(96,165,250,0.16), rgba(96,165,250,0.05))", border: "1px solid rgba(96,165,250,0.35)", borderRadius: 20, padding: "30px 28px", opacity: q, transform: `translateY(${(1 - q) * 30}px) scale(${0.96 + 0.04 * q})` }}>
-        <div style={{ fontFamily: mono, fontSize: 66, fontWeight: 700, color: C.jdf, letterSpacing: -2, lineHeight: 1 }}>{big}</div>
-        <div style={{ fontSize: 22, fontWeight: 700, marginTop: 12 }}>{label}</div>
-        <div style={{ fontSize: 15, color: C.soft, marginTop: 8, lineHeight: 1.4 }}>{sub}</div>
-      </div>
-    );
-  };
-  const money = (v: number) => `$${Math.round(v).toLocaleString("en-US")}`;
+  const f = frame - s(T.tokens);
+  const p = interpolate(f, [0, 12], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
+  const t1 = cj.query!.ctxTokensPerQuery, t2 = cp.query!.ctxTokensPerQuery;
+  const punch = f >= s(0.6);
   return (
-    <AbsoluteFill style={{ fontFamily: font, color: C.text, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <Brand />
-      <div style={{ width: 1100 }}>
-        <div style={{ fontSize: 34, fontWeight: 800, textAlign: "center", marginBottom: 6 }}>What JDF saves you</div>
-        <div style={{ fontSize: 17, color: C.soft, textAlign: "center", marginBottom: 26 }}>{int(cost.files)} documents · same pipeline · only the input format differs</div>
-        <div style={{ display: "flex", gap: 20 }}>
-          <Tile i={0} big={<>−<Counter from={T.savings} delay={8} value={cut * 100} fmt={(v) => v.toFixed(0)} />%</>} label="LLM spend per query" sub={`${money(jq)} instead of ${money(pq)} per 1M queries on ${(cost.prices.llm_input as any)[lk].label.replace(" input", "")} — top-5 context is ${int(j.query!.ctxTokensPerQuery)} tokens vs ${int(p.query!.ctxTokensPerQuery)}`} />
-          <Tile i={1} big={<><Counter from={T.savings} delay={18} value={reindexX} fmt={(v) => (reindexX >= 10 ? v.toFixed(0) : v.toFixed(1))} />×</>} label="cheaper re-indexing" sub={`edit one paragraph in every document: ${int(j.reindex.tokensAllDocsEdited)} tokens re-embedded instead of ${int(p.reindex.tokensAllDocsEdited)}`} />
-          <Tile i={2} big={<>+<Counter from={T.savings} delay={28} value={accPts} fmt={(v) => v.toFixed(0)} /> pts</>} label="retrieval accuracy" sub={`${pc(j.accuracy!.recallAt1000Tok)} vs ${pc(p.accuracy!.recallAt1000Tok)} of answers inside the first 1,000 tokens of context`} />
+    <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
+      <Tag>tokens handed to the LLM per question</Tag>
+      {!punch && (
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 90 }}>
+          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 150, fontWeight: 700, color: C.jdf }}>{int(t1 * p)}</div><div style={{ fontSize: 30, color: C.jdf }}>JDF</div></div>
+          <div style={{ fontSize: 60, color: C.soft }}>vs</div>
+          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 150, fontWeight: 700, color: C.pdf2 }}>{int(t2 * p)}</div><div style={{ fontSize: 30, color: C.soft }}>PDF</div></div>
         </div>
-        <div style={{ marginTop: 28, textAlign: "center", fontSize: 30, fontWeight: 800, opacity: interpolate(frame, [s(T.savings) + 55, s(T.savings) + 75], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) }}>
-          <span style={{ color: C.good }}><Counter from={T.savings} delay={55} value={saved} fmt={money} /></span> saved per million questions — and the answer is found more often.
-        </div>
-      </div>
-      <Caption from={T.savings + 0.5} to={T.reindex}>Every figure is counted, not estimated: tokens from the chunks each pipeline produces, prices from bench/prices.json (as-of date and source per entry). Swap in your own prices — the ratio is what matters.</Caption>
-    </AbsoluteFill>
+      )}
+      {punch && <Slam at={T.tokens + 0.6} color={C.good} sub={`LLM spend per query · ${(cost.prices.llm_input as any)[lk].label.replace(" input", "")}`}>−{pc0(cut)}</Slam>}
+      <Flash at={T.tokens + 0.6} />
+    </div>
   );
 };
 
+// ── 4.6–5.8 re-index → 16× ───────────────────────────────────────────────────
 const Reindex: React.FC = () => {
   const frame = useCurrentFrame();
-  const n = acc.jdfOnly.corpusChunks, changed = acc.jdfOnly.chunksReembedded;
-  const cols = 16, size = 20, gap = 6;
-  const litAt = s(T.reindex + 1.2);
+  const n = acc.jdfOnly.corpusChunks, cols = 32, size = 30, gap = 7;
+  const f = frame - s(T.reindex);
+  const flood = interpolate(f, [6, 16], [0, 1], clamp);
+  const punch = f >= s(0.65);
   return (
-    <AbsoluteFill style={{ fontFamily: font, color: C.text, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <Brand />
-      <div style={{ display: "flex", gap: 56, alignItems: "center", marginTop: 10 }}>
-        <div style={{ width: 520 }}>
-          <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.2 }}>Edit one paragraph.<br />What has to be re-embedded?</div>
-          <div style={{ fontSize: 19, color: C.soft, marginTop: 16, lineHeight: 1.45 }}>
-            JDF chunks are content-hashed. <code style={{ fontFamily: mono, color: C.jdf }}>jdf embed --incremental</code> re-embeds only the chunks whose hash changed: <b style={{ color: C.jdf }}>{changed} of {n}</b> in the corpus.
-            <br /><br />A PDF has no chunk identity — re-parse, re-chunk, re-embed the whole document, every time.
+    <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
+      <Tag>edit one paragraph · what gets re-embedded?</Tag>
+      {!punch && (
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, ${size}px)`, gap }}>
+            {Array.from({ length: n }).map((_, i) => {
+              const isChanged = i === 7;
+              const pdfRed = flood > i / n;
+              const bg = isChanged ? C.good : pdfRed ? C.bad : "rgba(96,165,250,0.25)";
+              return <div key={i} style={{ width: size, height: size, borderRadius: 6, background: bg, boxShadow: isChanged ? `0 0 26px ${C.good}` : pdfRed ? `0 0 10px ${C.bad}66` : "none" }} />;
+            })}
+          </div>
+          <div style={{ position: "absolute", left: 48, bottom: 40, fontSize: 26, display: "flex", gap: 40 }}>
+            <span style={{ color: C.good, fontWeight: 800 }}>JDF: {acc.jdfOnly.chunksReembedded} of {n}</span>
+            <span style={{ color: C.bad, fontWeight: 800, opacity: flood }}>PDF: every chunk of every file</span>
           </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, ${size}px)`, gap }}>
-          {Array.from({ length: n }).map((_, i) => {
-            const isChanged = i === 7; // the edited section, drawn in the first document's row
-            const lit = frame >= litAt && isChanged;
-            const pulse = lit ? 1 + 0.15 * Math.sin((frame - litAt) / 3) : 1;
-            const p = spring({ frame: frame - s(T.reindex) - Math.floor(i / cols) * 2, fps: FPS, config: { damping: 20, stiffness: 140 } });
-            return <div key={i} style={{ width: size, height: size, borderRadius: 5, background: lit ? C.good : "rgba(96,165,250,0.35)", opacity: p, transform: `scale(${pulse})`, boxShadow: lit ? `0 0 18px ${C.good}` : "none" }} />;
-          })}
-        </div>
-      </div>
-      <Caption from={T.reindex + 0.5} to={T.outro}>{n} JDF chunks in the corpus · {changed} re-embedded after the edit · verified by python rag_bench.py --verify</Caption>
-    </AbsoluteFill>
+      )}
+      {punch && <Slam at={T.reindex + 0.65} sub="cheaper re-indexing">{reindexX >= 10 ? Math.round(reindexX) : reindexX.toFixed(1)}×</Slam>}
+      <Flash at={T.reindex + 0.65} />
+    </div>
   );
 };
 
+// ── 5.8–7.6 money ────────────────────────────────────────────────────────────
+const Money: React.FC = () => {
+  const frame = useCurrentFrame();
+  const f = frame - s(T.money);
+  const p = interpolate(f, [2, 22], [0, 1], { ...clamp, easing: Easing.out(Easing.exp) });
+  const a = slam(frame, T.money);
+  const sub = interpolate(f, [24, 32], [0, 1], clamp);
+  return (
+    <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
+      <Tag>per 1,000,000 questions · counted, not estimated</Tag>
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", opacity: a.opacity, transform: `translate(${a.shake}px, 0) scale(${a.scale})` }}>
+        <Glitch on={a.glitch}><div style={{ fontFamily: mono, fontSize: 210, fontWeight: 700, color: C.good, letterSpacing: -8, lineHeight: 1 }}>{money(saved * p)}</div></Glitch>
+        <div style={{ fontSize: 34, letterSpacing: 6, textTransform: "uppercase", color: C.text, marginTop: 10 }}>saved</div>
+        <div style={{ marginTop: 40, display: "flex", gap: 70, opacity: sub, transform: `translateY(${(1 - sub) * 20}px)` }}>
+          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 64, fontWeight: 700, color: C.jdf }}>+{accPts.toFixed(0)} pts</div><div style={{ fontSize: 20, color: C.soft }}>accuracy</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 64, fontWeight: 700, color: C.jdf }}>{money(jq)}</div><div style={{ fontSize: 20, color: C.soft }}>JDF · {(cost.prices.llm_input as any)[lk].label.replace(" input", "")}</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 64, fontWeight: 700, color: C.pdf2 }}>{money(pq)}</div><div style={{ fontSize: 20, color: C.soft }}>PDF</div></div>
+        </div>
+      </div>
+      <Flash at={T.money} />
+    </div>
+  );
+};
+
+// ── 7.6–8.8 only PDFs? convert ───────────────────────────────────────────────
+const Convert: React.FC = () => {
+  const frame = useCurrentFrame();
+  const f = frame - s(T.convert);
+  const typed = "$ jdf convert report.pdf".slice(0, Math.min(24, Math.floor(f * 2.2)));
+  const punch = f >= s(0.55);
+  const r = acc.headline;
+  return (
+    <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
+      <Tag>only have PDFs?</Tag>
+      {!punch && (
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ fontFamily: mono, fontSize: 70, fontWeight: 700, color: C.text }}>{typed}<span style={{ opacity: Math.floor(f / 3) % 2 ? 0 : 1 }}>▌</span></div>
+        </div>
+      )}
+      {punch && conv && (
+        <Slam at={T.convert + 0.55} size={130} color={C.conv} sub={`top-1 after jdf convert · native JDF ${pc(R(jdf, r).recall1)} · best raw PDF ${pc(R(bestPdf(r, "recall1"), r).recall1)}`}>{pc(R(conv, r).recall1)}</Slam>
+      )}
+      <Flash at={T.convert + 0.55} />
+    </div>
+  );
+};
+
+// ── 8.8–10 outro ─────────────────────────────────────────────────────────────
 const Outro: React.FC = () => {
   const frame = useCurrentFrame();
-  const y = rise(frame, T.outro + 0.2, 18);
+  const f = frame - s(T.outro);
+  const a = slam(frame, T.outro);
+  const cmd = "python rag_bench.py --verify".slice(0, Math.max(0, Math.floor((f - 6) * 2.2)));
   return (
-    <AbsoluteFill style={{ display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font, color: C.text }}>
-      <div style={{ textAlign: "center", transform: `translateY(${y}px)` }}>
-        <div style={{ fontSize: 44, fontWeight: 900, letterSpacing: -1 }}>Measured, not claimed. Run it yourself.</div>
-        <div style={{ marginTop: 26, display: "inline-block", textAlign: "left", background: C.panel, border: `1px solid ${C.line}`, borderRadius: 14, padding: "18px 26px", fontFamily: mono, fontSize: 19, lineHeight: 1.7, color: "#e2e8f0" }}>
-          <div><span style={{ color: C.soft }}>$ </span>cd bench && pip install -r requirements.txt</div>
-          <div><span style={{ color: C.soft }}>$ </span>python rag_bench.py <span style={{ color: C.soft }}># accuracy</span></div>
-          <div><span style={{ color: C.soft }}>$ </span>python cost_bench.py <span style={{ color: C.soft }}># RAG cost</span></div>
-          <div><span style={{ color: C.soft }}>$ </span>python rag_bench.py --verify</div>
-        </div>
-        <div style={{ fontSize: 20, color: C.soft, marginTop: 24 }}>uurtech.github.io/jdf/docs/benchmark.html · github.com/uurtech/jdf/tree/master/bench</div>
-        <div style={{ fontSize: 14, color: C.soft, marginTop: 10, opacity: 0.8 }}>{acc.machine.cpu} · {acc.date} · synthetic corpus with exact ground truth — a floor for the gap, not a ceiling</div>
+    <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", opacity: a.opacity, transform: `translate(${a.shake}px,0) scale(${a.scale})` }}>
+        <Glitch on={a.glitch}><div style={{ fontSize: 84, fontWeight: 900, letterSpacing: -2 }}>MEASURED. <span style={{ color: C.jdf }}>NOT CLAIMED.</span></div></Glitch>
+        <div style={{ marginTop: 28, fontFamily: mono, fontSize: 30, color: C.good }}><span style={{ color: C.soft }}>$ </span>{cmd}<span style={{ opacity: Math.floor(f / 3) % 2 ? 0 : 1 }}>▌</span></div>
+        <div style={{ marginTop: 26, fontSize: 20, color: C.soft }}>uurtech.github.io/jdf · bench/ · {acc.date}</div>
       </div>
-    </AbsoluteFill>
+      <Flash at={T.outro} />
+    </div>
   );
 };
 
 export const RagBenchmark: React.FC = () => (
   <AbsoluteFill style={{ background: C.bg }}>
-    <Scene from={T.title} to={T.setup}><Title /></Scene>
-    <Scene from={T.setup} to={T.accuracy}><Setup /></Scene>
-    <Scene from={T.accuracy} to={T.cost}><Accuracy /></Scene>
-    <Scene from={T.cost} to={T.savings}><Cost /></Scene>
-    <Scene from={T.savings} to={T.reindex}><Savings /></Scene>
-    <Scene from={T.reindex} to={T.outro}><Reindex /></Scene>
-    <Scene from={T.outro} to={T.end}><Outro /></Scene>
+    <Bg />
+    <Cut from={T.open} to={T.race}><Open /></Cut>
+    <Cut from={T.race} to={T.tokens}><Race /></Cut>
+    <Cut from={T.tokens} to={T.reindex}><Tokens /></Cut>
+    <Cut from={T.reindex} to={T.money}><Reindex /></Cut>
+    <Cut from={T.money} to={T.convert}><Money /></Cut>
+    <Cut from={T.convert} to={T.outro}><Convert /></Cut>
+    <Cut from={T.outro} to={T.end}><Outro /></Cut>
   </AbsoluteFill>
 );
