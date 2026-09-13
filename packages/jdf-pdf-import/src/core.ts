@@ -1069,6 +1069,14 @@ export async function importPdfToJdf(
       const arr = opBins.get(key);
       if (arr) arr.push(op); else opBins.set(key, [op]);
     }
+    // Two operators can start at the very same point with different sizes —
+    // FlowCV/Quartz draws a 0.75pt "•" glyph and the 11pt bullet text from one
+    // origin. Distance alone then picks the wrong one and the whole line
+    // inherits its (white) fill. Penalise size mismatch alongside distance.
+    const sizePenalty = (op: TextOp, fontSize: number) => {
+      if (!op.fontSize || !fontSize) return 0;
+      return Math.abs(Math.log(op.fontSize / fontSize)) * 6; // ~1pt of distance per 18% size difference
+    };
     const findOp = (x: number, y: number, fontSize: number): TextOp | null => {
       let best: TextOp | null = null;
       let bestD = Infinity;
@@ -1078,7 +1086,7 @@ export async function importPdfToJdf(
           const arr = opBins.get(`${bx + dx},${by + dy}`);
           if (!arr) continue;
           for (const op of arr) {
-            const d = Math.hypot(op.x - x, op.y - y);
+            const d = Math.hypot(op.x - x, op.y - y) + sizePenalty(op, fontSize);
             if (d < bestD) { bestD = d; best = op; }
           }
         }
@@ -1086,15 +1094,18 @@ export async function importPdfToJdf(
       if (best) return best;
       // Item start didn't line up with any operator start (glyph-advance
       // estimate drifted, Type3 font, vertical text). Fall back to the nearest
-      // operator on the same baseline, then to the nearest anywhere.
+      // operator on the same baseline, then to the nearest anywhere — but never
+      // to an operator of a clearly different size.
       const tol = Math.max(2, fontSize * 0.6);
+      const sizeOk = (op: TextOp) => !op.fontSize || !fontSize || (op.fontSize / fontSize > 0.6 && op.fontSize / fontSize < 1.7);
       for (const op of ops.textOps) {
-        if (Math.abs(op.y - y) > tol) continue;
+        if (!sizeOk(op) || Math.abs(op.y - y) > tol) continue;
         const d = Math.abs(op.x - x) + Math.abs(op.y - y) * 4;
         if (d < bestD) { bestD = d; best = op; }
       }
       if (best) return best;
       for (const op of ops.textOps) {
+        if (!sizeOk(op)) continue;
         const d = Math.hypot(op.x - x, op.y - y);
         if (d < bestD) { bestD = d; best = op; }
       }
@@ -1114,6 +1125,9 @@ export async function importPdfToJdf(
       const conv = viewport.convertToViewportPoint(baseX, baseY) as [number, number];
       const vx = safeNum(conv?.[0], 0);
       const vy = safeNum(conv?.[1], 0);
+      // Sub-1.5pt runs are decoration (FlowCV's scaled "•" under a drawn dot),
+      // not readable text — they would only render as stray specks.
+      if (fontSize < 1.5) return;
       const op = findOp(vx, vy, fontSize);
       const mode = op?.mode ?? 0;
       // Mode 7 adds to the clip path only — nothing is painted, and it is
@@ -1283,10 +1297,93 @@ export async function importPdfToJdf(
     for (const l of lines) { const k = Math.round(l.fontSize * 2) / 2; sizeChars.set(k, (sizeChars.get(k) ?? 0) + l.text.length); }
     const bodyFontSize = [...sizeChars.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 0;
 
+    // Visual rows: runs on one baseline that sit right next to each other but
+    // differ in style ("Full Stack Developer," bold + " Decktopus AI" regular).
+    // As separate absolutely-positioned boxes they overlap whenever the
+    // rendering font is wider than the PDF's; as one `richtext` the browser
+    // lays the runs out inline. Also lets a single run know its right-hand
+    // neighbour so its width can be capped before the neighbour starts.
+    const rowOf = new Map<number, number[]>();   // first index → all indices in the visual row
+    const rowStartOf = new Map<number, number>();
+    const nextOnRow = new Map<number, number>(); // index → next run on the same baseline (any gap)
+    {
+      const order = lines.map((_, i) => i).filter((i) => !consumedLines.has(i));
+      for (let a = 0; a < order.length; a++) {
+        const i = order[a], li = lines[i];
+        const tolY = Math.max(0.6, li.fontSize * PT_TO_MM * 0.35);
+        let bestNext = -1, bestX = Infinity;
+        for (let b = 0; b < order.length; b++) {
+          const j = order[b], lj = lines[j];
+          if (j === i || Math.abs(lj.y - li.y) > tolY || lj.x <= li.x) continue;
+          if (lj.x < bestX) { bestX = lj.x; bestNext = j; }
+        }
+        if (bestNext >= 0) nextOnRow.set(i, bestNext);
+      }
+      const seen = new Set<number>();
+      for (const i of order) {
+        if (seen.has(i)) continue;
+        const row = [i]; seen.add(i);
+        let cur = i;
+        while (nextOnRow.has(cur)) {
+          const j = nextOnRow.get(cur)!, lc = lines[cur], lj = lines[j];
+          const em = Math.min(lc.fontSize, lj.fontSize) * PT_TO_MM;
+          const gap = lj.x - (lc.x + lc.width);
+          if (gap < -em * 0.3 || gap > em * 0.6) break; // a real gap → separate column / element
+          row.push(j); seen.add(j); cur = j;
+        }
+        rowOf.set(i, row);
+        for (const j of row) rowStartOf.set(j, i);
+      }
+    }
+    const runStyle = (l: TextRun) => {
+      const cls = fontMap.get(l.fontName) || classifyFont(l.fontName || "");
+      return { cls, bold: cls.weight === "bold", italic: cls.style === "italic" };
+    };
+
     lines.forEach((l, lineIdx) => {
       const tableEl = tableAtLine.get(lineIdx);
       if (tableEl) elements.push(tableEl);
       if (consumedLines.has(lineIdx)) return;
+      const row = rowOf.get(lineIdx);
+      if (!row) return; // continuation of a richtext row already emitted
+      if (row.length > 1) {
+        const first = lines[row[0]], last = lines[row[row.length - 1]];
+        const base = runStyle(first);
+        const rowEnd = last.x + last.width;
+        const measuredW = Math.max((rowEnd - first.x) * 1.2 + first.fontSize * PT_TO_MM * 0.4, first.fontSize * PT_TO_MM);
+        const nextIdx = nextOnRow.get(row[row.length - 1]);
+        const cap = nextIdx != null ? lines[nextIdx].x - first.x - first.fontSize * PT_TO_MM * 0.3 : pageWmm - first.x;
+        const runs: any[] = [];
+        row.forEach((idx, k) => {
+          const r = lines[idx];
+          const st = runStyle(r);
+          let text = r.text;
+          if (k > 0) {
+            const prev = lines[row[k - 1]];
+            const gap = r.x - (prev.x + prev.width);
+            if (gap > r.fontSize * PT_TO_MM * 0.08 && !/\s$/.test(prev.text) && !/^\s/.test(text)) text = " " + text;
+          }
+          const run: any = { text };
+          if (st.bold) run.bold = true;
+          if (st.italic) run.italic = true;
+          if (r.color !== "#000000") run.color = r.color;
+          if (Math.abs(r.fontSize - first.fontSize) >= 0.5) run.fontSize = Math.round(r.fontSize * 10) / 10;
+          if (st.cls.family !== base.cls.family) run.fontFamily = st.cls.family;
+          const lk = findLinkForRun(r);
+          if (lk) run.link = lk.url ? lk.url : lk.destPage != null ? { type: "internal", target: `#page-${lk.destPage + 1}` } : undefined;
+          runs.push(run);
+        });
+        const style: any = { fontSize: Math.round(first.fontSize * 10) / 10, fontFamily: base.cls.family };
+        if (first.opacity < 0.999) style.opacity = Math.round(first.opacity * 100) / 100;
+        elements.push({
+          type: "richtext",
+          runs,
+          position: { x: Math.max(0, Math.round(first.x * 100) / 100), y: Math.max(0, Math.round(Math.min(...row.map((i) => lines[i].y)) * 100) / 100) },
+          width: Math.max(2, Math.round(Math.max(first.fontSize * PT_TO_MM, Math.min(measuredW, cap)) * 100) / 100),
+          style,
+        } as any);
+        return;
+      }
       const cls = fontMap.get(l.fontName) || classifyFont(l.fontName || "");
       const style: any = {
         fontSize: Math.round(l.fontSize * 10) / 10,
@@ -1299,13 +1396,19 @@ export async function importPdfToJdf(
 
       const link = findLinkForRun(l);
 
-      const measured = Math.max(l.width + l.fontSize * PT_TO_MM * 0.4, l.fontSize * PT_TO_MM);
+      // The rendering font (Inter/Helvetica fallback) is often wider than the
+      // PDF's embedded face; a box cut to the PDF's advance width wraps the
+      // line onto the one below. Give single lines 20% slack, capped at the page.
+      const measured = Math.max(l.width * 1.2 + l.fontSize * PT_TO_MM * 0.4, l.fontSize * PT_TO_MM);
       // If l.x is past the page edge (CropBox-offset PDFs sometimes do this
       // for trailing artifacts), `pageWmm - l.x` goes negative and clamps to
       // a 2mm-wide invisible run. Clamp to a positive minimum so the run
       // keeps its measured width and the renderer can still place it.
       const remaining = Math.max(measured, pageWmm - l.x);
-      const elWidth = Math.min(measured, remaining);
+      // Never run into the next run on the same baseline (a column to the right).
+      const nextIdx = nextOnRow.get(lineIdx);
+      const cap = nextIdx != null ? Math.max(l.fontSize * PT_TO_MM, lines[nextIdx].x - l.x - l.fontSize * PT_TO_MM * 0.3) : Infinity;
+      const elWidth = Math.min(measured, remaining, cap);
       const text: TextElement = {
         type: "text",
         content: l.text,

@@ -5,7 +5,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · semantic-ish
 
 ## [Unreleased]
 
-_Nothing yet._
+### Fixed — PDF importer (found on a FlowCV résumé)
+- Half the body text imported as white: text↔operator colour matching picked a 0.75pt decorative "•" operator drawn from the same origin as the 11pt line. Matching now penalises font-size mismatch and never falls back to an operator of a clearly different size; sub-1.5pt runs (decoration) are dropped.
+- Lines wrapped onto the next line and overlapped: element boxes were cut to the PDF's advance width, narrower than the rendering font. Single lines get 20% slack capped at the page edge and at the next run on the same baseline.
+- Adjacent runs of different style on one baseline ("**Full Stack Developer,** Decktopus AI", "**İsa Tanış**, *CTO*, Decktopus AI") are now one `richtext` element with per-run bold/italic/colour/link instead of overlapping absolute boxes — also one retrieval unit for RAG.
 
 ## [0.2.0] — 2026-09-13
 
