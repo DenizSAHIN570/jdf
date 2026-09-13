@@ -20,7 +20,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <noscript><style>.bench-rows .bench-bar { width: var(--w); } .bench-tabs, .bench-replay { display: none; }</style></noscript>
+  <noscript><style>.bench-rows .bench-bar { width: var(--w); } .bench-tabs { display: none; }</style></noscript>
 
   <!-- jdf.js — powers the live <jdf> embeds lower on the page. Build is
        served from /jdfjs-local so the demo always reflects the current
@@ -109,7 +109,6 @@ brew install jdf">
             <div class="bench-title">RAG retrieval — same reports as <span class="bench-pdf">PDF</span> vs <span class="bench-jdf">JDF</span></div>
             <div class="bench-sub" data-bench-sub>1,000 documents · same RAG pipeline · JDF vs the best PDF pipeline</div>
           </div>
-          <button class="bench-replay" type="button" data-bench-replay>replay</button>
         </div>
         <div class="bench-mode" role="tablist">
           <button class="bench-mode-btn is-active" role="tab" data-bench-mode="savings">What you save</button>
@@ -832,7 +831,6 @@ pnpm tauri build</code></pre>
         retriever = b.getAttribute("data-bench-retriever"); render();
       }));
       if (metricSel) metricSel.addEventListener("change", () => { metric = metricSel.value; render(); });
-      card.querySelector("[data-bench-replay]").addEventListener("click", render);
 
       const costEl = card.querySelector("[data-bench-cost]");
       const SAVINGS_SUB = "1,000 documents · same RAG pipeline · JDF vs the best PDF pipeline";
@@ -863,11 +861,9 @@ pnpm tauri build</code></pre>
       }
       // Mode: "what you save" (default) vs the technical view.
       const panels = card.querySelectorAll("[data-bench-panel]");
-      const replayBtn = card.querySelector("[data-bench-replay]");
       const setMode = (mode) => {
         panels.forEach((p) => { p.hidden = p.getAttribute("data-bench-panel") !== mode; });
         card.querySelectorAll("[data-bench-mode]").forEach((b) => b.classList.toggle("is-active", b.getAttribute("data-bench-mode") === mode));
-        if (replayBtn) replayBtn.style.visibility = mode === "tech" ? "visible" : "hidden";
         if (mode === "tech") render(); else subEl.textContent = SAVINGS_SUB;
       };
       card.querySelectorAll("[data-bench-mode]").forEach((b) => b.addEventListener("click", () => setMode(b.getAttribute("data-bench-mode"))));
