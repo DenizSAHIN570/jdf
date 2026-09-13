@@ -212,14 +212,14 @@ const Money: React.FC = () => {
   const SCALE = 10;
   return (
     <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
-      <Tag>at 10× scale · {int(cost.files * SCALE)} documents · {int(cost.queries * SCALE)} questions</Tag>
+      <Tag>per {int(cost.queries * SCALE)} questions · the saving scales with questions asked, not with document count</Tag>
       <div style={{ position: "absolute", right: 48, top: 30, fontFamily: mono, fontSize: 22, fontWeight: 700, color: C.bad, border: `2px solid ${C.bad}`, borderRadius: 10, padding: "6px 16px", letterSpacing: 2 }}>ESTIMATED</div>
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", opacity: a.opacity, transform: `translate(${a.shake}px, 0) scale(${a.scale})` }}>
         <Glitch on={a.glitch}><div style={{ fontFamily: mono, fontSize: 210, fontWeight: 700, color: C.good, letterSpacing: -8, lineHeight: 1 }}>{money(saved * SCALE * p)}</div></Glitch>
         <div style={{ fontSize: 34, letterSpacing: 6, textTransform: "uppercase", color: C.text, marginTop: 10 }}>saved</div>
         <div style={{ marginTop: 34, display: "flex", gap: 60, opacity: sub, transform: `translateY(${(1 - sub) * 20}px)` }}>
-          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 56, fontWeight: 700, color: C.jdf }}>{money(saved)}</div><div style={{ fontSize: 19, color: C.soft }}>measured · {int(cost.files)} documents · 1M questions</div></div>
-          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 56, fontWeight: 700, color: C.text }}>×{SCALE}</div><div style={{ fontSize: 19, color: C.soft }}>linear estimate · not measured</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 56, fontWeight: 700, color: C.jdf }}>{money(saved)}</div><div style={{ fontSize: 19, color: C.soft }}>measured · per 1M questions</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 56, fontWeight: 700, color: C.text }}>×{SCALE} questions</div><div style={{ fontSize: 19, color: C.soft }}>linear estimate · not measured</div></div>
           <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 56, fontWeight: 700, color: C.jdf }}>+{accPts.toFixed(0)} pts</div><div style={{ fontSize: 19, color: C.soft }}>accuracy · {(cost.prices.llm_input as any)[lk].label.replace(" input", "")} prices</div></div>
         </div>
       </div>
