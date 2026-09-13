@@ -1,18 +1,18 @@
 /**
  * Downloads the soundtrack for the benchmark video into public/ (gitignored).
  *
- * Track: "Driving Ambition" by Ahjay Stelino — Mixkit Stock Music Free License
+ * Track: "Epical Drums 02" by Grigoriy Nuzhny (percussion trailer) — Mixkit Stock Music Free License
  * (free for personal and commercial use in videos, no attribution required;
  * the track itself may not be redistributed on its own, which is why it is
  * fetched at render time instead of being committed).
- *   https://mixkit.co/free-stock-music/driving-ambition-32/
+ *   https://mixkit.co/free-stock-music/epical-drums-02-677/
  *   https://mixkit.co/license/#musicFree
  */
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const URL_ = "https://assets.mixkit.co/music/32/32.mp3";
+const URL_ = "https://assets.mixkit.co/music/677/677.mp3";
 const out = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../public/music.mp3");
 if (fs.existsSync(out) && fs.statSync(out).size > 100_000) {
   console.log(`music: already present → ${path.relative(process.cwd(), out)}`);

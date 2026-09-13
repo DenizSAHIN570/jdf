@@ -2,7 +2,7 @@ import React from "react";
 import { AbsoluteFill, Audio, interpolate, spring, staticFile, useCurrentFrame, Easing } from "remotion";
 import { DURATION_SEC } from "./timeline";
 import bench from "../../../docs/bench.json";
-import { FPS, DURATION_FRAMES, T, s } from "./timeline";
+import { FPS, DURATION_FRAMES, T, s, BEAT } from "./timeline";
 
 // Hard cuts, slams, one bar race — no slides. Timeline in ./timeline.ts; soundtrack fetched by scripts/fetch-music.ts.
 export { FPS, DURATION_FRAMES };
@@ -88,10 +88,11 @@ const Tag: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 const Open: React.FC = () => {
   const frame = useCurrentFrame();
   const words = [`${acc.corpus.documents} REPORTS`, `${acc.corpus.questions} QUESTIONS`, "SAME PIPELINE"];
-  const i = Math.min(words.length - 1, Math.floor(frame / 6));
-  const local = frame - i * 6;
-  const show = frame < 18;
-  const a = slam(frame, 0.6);
+  const per = s(BEAT) / words.length;
+  const i = Math.min(words.length - 1, Math.floor(frame / per));
+  const local = frame - i * per;
+  const show = frame < s(BEAT);
+  const a = slam(frame, BEAT);
   return (
     <>
       {show && (
@@ -104,7 +105,7 @@ const Open: React.FC = () => {
           <Glitch on={a.glitch}><div style={{ fontSize: 170, fontWeight: 900, letterSpacing: -6 }}><span style={{ color: C.pdf }}>PDF</span> <span style={{ color: C.soft, fontWeight: 300 }}>vs</span> <span style={{ color: C.jdf }}>JDF</span></div></Glitch>
         </div>
       )}
-      <Flash at={0.6} />
+      <Flash at={BEAT} />
     </>
   );
 };
@@ -150,9 +151,9 @@ const Race: React.FC = () => {
 const Tokens: React.FC = () => {
   const frame = useCurrentFrame();
   const f = frame - s(T.tokens);
-  const p = interpolate(f, [0, 12], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
+  const p = interpolate(f, [0, s(BEAT) - 6], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
   const t1 = cj.query!.ctxTokensPerQuery, t2 = cp.query!.ctxTokensPerQuery;
-  const punch = f >= s(0.6);
+  const punch = f >= s(BEAT);
   return (
     <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
       <Tag>tokens handed to the LLM per question</Tag>
@@ -163,8 +164,8 @@ const Tokens: React.FC = () => {
           <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 150, fontWeight: 700, color: C.pdf2 }}>{int(t2 * p)}</div><div style={{ fontSize: 30, color: C.soft }}>PDF</div></div>
         </div>
       )}
-      {punch && <Slam at={T.tokens + 0.6} color={C.good} sub={`LLM spend per query · ${(cost.prices.llm_input as any)[lk].label.replace(" input", "")}`}>−{pc0(cut)}</Slam>}
-      <Flash at={T.tokens + 0.6} />
+      {punch && <Slam at={T.tokens + BEAT} color={C.good} sub={`LLM spend per query · ${(cost.prices.llm_input as any)[lk].label.replace(" input", "")}`}>−{pc0(cut)}</Slam>}
+      <Flash at={T.tokens + BEAT} />
     </div>
   );
 };
@@ -174,8 +175,8 @@ const Reindex: React.FC = () => {
   const frame = useCurrentFrame();
   const n = acc.jdfOnly.corpusChunks, cols = 32, size = 30, gap = 7;
   const f = frame - s(T.reindex);
-  const flood = interpolate(f, [6, 16], [0, 1], clamp);
-  const punch = f >= s(0.65);
+  const flood = interpolate(f, [8, s(BEAT) - 4], [0, 1], clamp);
+  const punch = f >= s(BEAT);
   return (
     <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
       <Tag>edit one paragraph · what gets re-embedded?</Tag>
@@ -195,30 +196,31 @@ const Reindex: React.FC = () => {
           </div>
         </div>
       )}
-      {punch && <Slam at={T.reindex + 0.65} sub="cheaper re-indexing">{reindexX >= 10 ? Math.round(reindexX) : reindexX.toFixed(1)}×</Slam>}
-      <Flash at={T.reindex + 0.65} />
+      {punch && <Slam at={T.reindex + BEAT} sub="cheaper re-indexing">{reindexX >= 10 ? Math.round(reindexX) : reindexX.toFixed(1)}×</Slam>}
+      <Flash at={T.reindex + BEAT} />
     </div>
   );
 };
 
-// ── 5.8–7.6 money ────────────────────────────────────────────────────────────
+// ── money: 10× scale, clearly marked as an estimate ──────────────────────────
 const Money: React.FC = () => {
   const frame = useCurrentFrame();
   const f = frame - s(T.money);
-  const p = interpolate(f, [2, 22], [0, 1], { ...clamp, easing: Easing.out(Easing.exp) });
+  const p = interpolate(f, [2, s(BEAT)], [0, 1], { ...clamp, easing: Easing.out(Easing.exp) });
   const a = slam(frame, T.money);
-  const sub = interpolate(f, [24, 32], [0, 1], clamp);
+  const sub = interpolate(f, [s(BEAT) + 2, s(BEAT) + 10], [0, 1], clamp);
+  const SCALE = 10;
   return (
     <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
-      <Tag>per 1,000,000 questions · counted, not estimated</Tag>
+      <Tag>at 10× scale · {int(cost.files * SCALE)} documents · {int(cost.queries * SCALE)} questions</Tag>
+      <div style={{ position: "absolute", right: 48, top: 30, fontFamily: mono, fontSize: 22, fontWeight: 700, color: C.bad, border: `2px solid ${C.bad}`, borderRadius: 10, padding: "6px 16px", letterSpacing: 2 }}>ESTIMATED</div>
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", opacity: a.opacity, transform: `translate(${a.shake}px, 0) scale(${a.scale})` }}>
-        <Glitch on={a.glitch}><div style={{ fontFamily: mono, fontSize: 210, fontWeight: 700, color: C.good, letterSpacing: -8, lineHeight: 1 }}>{money(saved * p)}</div></Glitch>
-        <div style={{ fontSize: 34, letterSpacing: 6, textTransform: "uppercase", color: C.text, marginTop: 10 }}>saved per 1M questions</div>
-        <div style={{ fontSize: 22, color: C.soft, marginTop: 8, opacity: sub }}>≈ {money(saved * 10)} per 10M · {money(saved * 100)} per 100M — linear estimate, not measured</div>
-        <div style={{ marginTop: 40, display: "flex", gap: 70, opacity: sub, transform: `translateY(${(1 - sub) * 20}px)` }}>
-          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 64, fontWeight: 700, color: C.jdf }}>+{accPts.toFixed(0)} pts</div><div style={{ fontSize: 20, color: C.soft }}>accuracy</div></div>
-          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 64, fontWeight: 700, color: C.jdf }}>{money(jq)}</div><div style={{ fontSize: 20, color: C.soft }}>JDF · {(cost.prices.llm_input as any)[lk].label.replace(" input", "")}</div></div>
-          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 64, fontWeight: 700, color: C.pdf2 }}>{money(pq)}</div><div style={{ fontSize: 20, color: C.soft }}>PDF</div></div>
+        <Glitch on={a.glitch}><div style={{ fontFamily: mono, fontSize: 210, fontWeight: 700, color: C.good, letterSpacing: -8, lineHeight: 1 }}>{money(saved * SCALE * p)}</div></Glitch>
+        <div style={{ fontSize: 34, letterSpacing: 6, textTransform: "uppercase", color: C.text, marginTop: 10 }}>saved</div>
+        <div style={{ marginTop: 34, display: "flex", gap: 60, opacity: sub, transform: `translateY(${(1 - sub) * 20}px)` }}>
+          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 56, fontWeight: 700, color: C.jdf }}>{money(saved)}</div><div style={{ fontSize: 19, color: C.soft }}>measured · {int(cost.files)} documents · 1M questions</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 56, fontWeight: 700, color: C.text }}>×{SCALE}</div><div style={{ fontSize: 19, color: C.soft }}>linear estimate · not measured</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontFamily: mono, fontSize: 56, fontWeight: 700, color: C.jdf }}>+{accPts.toFixed(0)} pts</div><div style={{ fontSize: 19, color: C.soft }}>accuracy · {(cost.prices.llm_input as any)[lk].label.replace(" input", "")} prices</div></div>
         </div>
       </div>
       <Flash at={T.money} />
@@ -230,8 +232,8 @@ const Money: React.FC = () => {
 const Convert: React.FC = () => {
   const frame = useCurrentFrame();
   const f = frame - s(T.convert);
-  const typed = "$ jdf convert report.pdf".slice(0, Math.min(24, Math.floor(f * 2.2)));
-  const punch = f >= s(0.55);
+  const typed = "$ jdf convert report.pdf".slice(0, Math.min(24, Math.floor((f / (s(BEAT) - 4)) * 24)));
+  const punch = f >= s(BEAT);
   const r = acc.headline;
   return (
     <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
@@ -242,9 +244,9 @@ const Convert: React.FC = () => {
         </div>
       )}
       {punch && conv && (
-        <Slam at={T.convert + 0.55} size={130} color={C.conv} sub={`top-1 after jdf convert · native JDF ${pc(R(jdf, r).recall1)} · best raw PDF ${pc(R(bestPdf(r, "recall1"), r).recall1)}`}>{pc(R(conv, r).recall1)}</Slam>
+        <Slam at={T.convert + BEAT} size={130} color={C.conv} sub={`top-1 after jdf convert · native JDF ${pc(R(jdf, r).recall1)} · best raw PDF ${pc(R(bestPdf(r, "recall1"), r).recall1)}`}>{pc(R(conv, r).recall1)}</Slam>
       )}
-      <Flash at={T.convert + 0.55} />
+      <Flash at={T.convert + BEAT} />
     </div>
   );
 };
@@ -254,7 +256,7 @@ const Outro: React.FC = () => {
   const frame = useCurrentFrame();
   const f = frame - s(T.outro);
   const a = slam(frame, T.outro);
-  const cmd = "python rag_bench.py --verify".slice(0, Math.max(0, Math.floor((f - 6) * 2.2)));
+  const cmd = "python rag_bench.py --verify".slice(0, Math.max(0, Math.floor((f - 8) * 1.4)));
   return (
     <div style={{ position: "absolute", inset: 0, fontFamily: font, color: C.text }}>
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", opacity: a.opacity, transform: `translate(${a.shake}px,0) scale(${a.scale})` }}>
@@ -269,7 +271,7 @@ const Outro: React.FC = () => {
 
 export const RagBenchmark: React.FC = () => (
   <AbsoluteFill style={{ background: C.bg }}>
-    {/* "Driving Ambition" — Ahjay Stelino, Mixkit Stock Music Free License (fetched by scripts/fetch-music.ts). Fade in, duck slightly under the money slam, fade out. */}
+    {/* "Epical Drums 02" — Grigoriy Nuzhny, Mixkit Stock Music Free License (fetched by scripts/fetch-music.ts). Fade in, duck slightly under the money slam, fade out. */}
     <Audio src={staticFile("music.mp3")} volume={(f) => interpolate(f, [0, 20, s(DURATION_SEC) - 40, s(DURATION_SEC)], [0, 0.85, 0.85, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} />
     <Bg />
     <Cut from={T.open} to={T.race}><Open /></Cut>
