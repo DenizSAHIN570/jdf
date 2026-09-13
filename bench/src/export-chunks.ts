@@ -41,6 +41,20 @@ for (const page of edited.pages) for (const el of page.elements as any[]) {
 }
 fs.writeFileSync(path.join(CORPUS_DIR, "jdf-chunks.d01-edited.jsonl"), toLines("d01", edited).join("\n") + "\n");
 
-const meta = { tool: "jdf chunk", cli_version: cliVersion, strategy: "section", max_tokens: MAX_TOKENS, chunks: lines.length, embed_text: "heading breadcrumb + chunk text (embeddingInput)" };
+// Third pipeline: the PDFs converted back with `jdf convert` (same importer the
+// reader and CLI ship) → `jdf chunk`. Answers "I only have PDFs — does converting
+// them to JDF get me the JDF advantage?" Chunk ids are prefixed per document.
+import { importPdfToJdf } from "../../packages/jdf-pdf-import/src/node.ts";
+const convLines: string[] = [];
+for (const d of manifest.documents as { id: string }[]) {
+  const conv = await importPdfToJdf(path.join(DOCS_DIR, `${d.id}.pdf`), d.id, {});
+  for (const c of chunkDocument(conv, { strategy: "section", maxTokens: MAX_TOKENS })) {
+    convLines.push(JSON.stringify({ id: `${d.id}-${c.id}`, doc: d.id, text: c.text, embed_text: embeddingInput(c), path: c.path, page: c.page, types: c.types, tokens: c.tokens, hash: c.hash }));
+  }
+}
+fs.writeFileSync(path.join(CORPUS_DIR, "jdf-chunks.converted.jsonl"), convLines.join("\n") + "\n");
+console.log(`exported ${convLines.length} chunks from PDF→JDF converted documents → bench/corpus/jdf-chunks.converted.jsonl`);
+
+const meta = { tool: "jdf chunk", cli_version: cliVersion, strategy: "section", max_tokens: MAX_TOKENS, chunks: lines.length, converted_chunks: convLines.length, embed_text: "heading breadcrumb + chunk text (embeddingInput)" };
 fs.writeFileSync(path.join(CORPUS_DIR, "jdf-chunks.meta.json"), JSON.stringify(meta, null, 2) + "\n");
 console.log(`exported ${lines.length} chunks (jdf-cli ${cliVersion}) → bench/corpus/jdf-chunks.jsonl (+ d01-edited)`);

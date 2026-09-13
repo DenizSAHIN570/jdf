@@ -350,6 +350,7 @@ Same 24 multi-page reports, two ways in: as **PDF** (printed by a real browser f
 | Pipeline | Chunks | BM25 (lexical) R@1k tok | nomic-embed-text R@1k tok | bge-small R@1k tok | MiniLM-L6-v2 R@1k tok | bge-base R@1k tok | nomic-embed-text top-1 | Ctx tokens @5 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | **JDF · jdf chunk (section, 512 tok)** | 192 | **100.0%** | **99.0%** | **96.9%** | **97.4%** | **96.9%** | **76.6%** | 753 |
+| *PDF → jdf convert → jdf chunk (section, 512 tok)* | 216 | *100.0%* | *99.0%* | *95.8%* | *96.4%* | *99.5%* | *80.2%* | 721 |
 | PDF · PyMuPDF get_text() · fixed 1000/200 | 153 | 98.4% | 81.8% | 74.5% | 70.3% | 78.6% | 41.7% | 1,226 |
 | PDF · PyMuPDF get_text() · fixed 2000/200 | 90 | 97.9% | 77.1% | 64.1% | 60.9% | 56.8% | 63.0% | 1,781 |
 | PDF · pdfplumber extract_text() · fixed 1000/200 | 150 | 99.5% | 80.7% | 75.0% | 65.6% | 80.2% | 42.2% | 1,219 |
@@ -359,7 +360,7 @@ Same 24 multi-page reports, two ways in: as **PDF** (printed by a real browser f
 | PDF · pdftotext -layout (poppler) · fixed 1000/200 | 268 | 85.9% | 71.9% | 66.7% | 66.1% | 74.0% | 35.9% | 1,040 |
 | PDF · pdftotext -layout (poppler) · fixed 2000/200 | 96 | 92.7% | 62.0% | 48.4% | 54.2% | 44.8% | 46.4% | 2,269 |
 
-R@1k tok = answer found within the first 1,000 tokens of retrieved context (chunk-size neutral). 24 documents / 120 pages / 192 questions. All embeddings local. Editing one paragraph re-embeds **1 of 192** JDF chunks; a PDF pipeline re-embeds the whole document. Apple M5, 2026-09-12. Full tables incl. top-1/top-5/MRR per model: [`bench/results/report.md`](bench/results/report.md).
+R@1k tok = answer found within the first 1,000 tokens of retrieved context (chunk-size neutral). 24 documents / 120 pages / 192 questions. All embeddings local. Editing one paragraph re-embeds **1 of 192** JDF chunks; a PDF pipeline re-embeds the whole document. Apple M5, 2026-09-13. Full tables incl. top-1/top-5/MRR per model: [`bench/results/report.md`](bench/results/report.md).
 <!-- bench:results:end -->
 
 **RAG cost — 1,000 PDF files vs 1,000 JDF files.** Same pipeline, only the input format differs: chunks → embeddings → vector store → top-5 context → LLM. Tokens counted from the chunks each pipeline produces, dollars from published prices (`bench/prices.json`); the benchmark never calls a paid API.
@@ -372,7 +373,7 @@ R@1k tok = answer found within the first 1,000 tokens of retrieved context (chun
 | Chunks | **8,000** | 6,291 |
 | Embedding tokens, initial index | **1,305,820** | 1,390,646 |
 | Embedding cost · OpenAI text-embedding-3-small | **$0.0261** | $0.0278 |
-| Local embedding time · bge-small-en-v1.5 (measured throughput) | **36.7 s** | 31.6 s |
+| Local embedding time · bge-small-en-v1.5 (measured throughput) | **36.5 s** | 31.5 s |
 | Vector-store payload | **5.8 MB** | 5.6 MB |
 | Re-embed tokens when one paragraph changes in every document | **91,000** | 1,461,000 |
 | Re-index cost · OpenAI text-embedding-3-small | **$0.0018** | $0.0292 |

@@ -1392,3 +1392,6 @@ footer ul li a:hover { color: var(--brand); }
 .rag-video { margin: 22px 0 0; }
 .rag-video video { width: 100%; border-radius: var(--radius); border: 1px solid var(--border); background: #0b1220; box-shadow: var(--shadow-md); display: block; }
 .rag-video figcaption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+.bench-table tr.is-conv td { color: var(--text); background: rgba(37, 99, 235, 0.03); font-style: italic; }
+.bench-row.is-conv .bench-bar { background: linear-gradient(90deg, #6366f1, #a5b4fc); }
+.bench-row.is-conv .bench-name { color: #c7d2fe; }

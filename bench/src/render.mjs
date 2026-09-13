@@ -34,10 +34,12 @@ function heroRows(retriever, metric) {
     const cur = byTool.get(p.tool);
     if (!cur || p.retrievers[retriever].all[metric] > cur.retrievers[retriever].all[metric]) byTool.set(p.tool, p);
   }
-  return [jdf, ...[...byTool.values()].sort((a, b) => b.retrievers[retriever].all[metric] - a.retrievers[retriever].all[metric])];
+  const converted = acc.pipelines.find((p) => p.format === "jdf-converted");
+  // Hero shows the three strongest PDF parsers so the card stays above the fold; the full tables list every pipeline.
+  return [jdf, ...(converted ? [converted] : []), ...[...byTool.values()].sort((a, b) => b.retrievers[retriever].all[metric] - a.retrievers[retriever].all[metric]).slice(0, 3)];
 }
-const toolShort = (p) => (p.format === "jdf" ? "JDF" : `PDF · ${p.tool.split(" ")[0]}`);
-const chunkDesc = (p) => (p.format === "jdf" ? "jdf chunk · section" : p.label.replace(/^.*fixed /, "fixed ") + " chars");
+const toolShort = (p) => (p.format === "jdf" ? "JDF" : p.format === "jdf-converted" ? "PDF → JDF" : `PDF · ${p.tool.split(" ")[0]}`);
+const chunkDesc = (p) => (p.format === "jdf" ? "jdf chunk · section" : p.format === "jdf-converted" ? "jdf convert · jdf chunk" : p.label.replace(/^.*fixed /, "fixed ") + " chars");
 
 const METRICS = {
   recallAt1000Tok: { label: "answer inside the first 1,000 tokens of retrieved context · higher is better", fmt: pc, higher: true },
@@ -51,7 +53,7 @@ const heroData = {
   metrics: Object.fromEntries(Object.entries(METRICS).map(([k, m]) => [k, { label: m.label, higher: m.higher }])),
   // rows[retriever] = [{name, version, jdf, values{metric}, display{metric}}]
   rows: Object.fromEntries(retrievers.map((r) => [r, heroRows(r, HEADLINE_METRIC).map((p) => ({
-    id: p.id, name: toolShort(p), version: `${p.format === "jdf" ? "jdf-cli " : ""}v${p.version} · ${chunkDesc(p)}`, jdf: p.format === "jdf",
+    id: p.id, name: toolShort(p), version: `${p.format.startsWith("jdf") ? "jdf-cli " : ""}v${p.version} · ${chunkDesc(p)}`, jdf: p.format === "jdf", converted: p.format === "jdf-converted",
     values: Object.fromEntries(Object.keys(METRICS).map((m) => [m, p.retrievers[r].all[m]])),
     display: Object.fromEntries(Object.entries(METRICS).map(([m, d]) => [m, d.fmt(p.retrievers[r].all[m])])),
   }))])),
@@ -72,7 +74,7 @@ function accTableHtml() {
         <div class="bench-table-wrap"><table class="bench-table">
           <thead><tr><th>Pipeline</th><th>Chunks</th><th>R@1k tokens</th><th>R@2k tokens</th><th>Top-1</th><th>Top-5</th><th>MRR@10</th><th>Table cells R@1k</th><th>Ctx tokens @5</th></tr></thead>
           <tbody>
-${acc.pipelines.map((p) => `            <tr${p.format === "jdf" ? ' class="is-jdf"' : ""}><td>${esc(p.label)}</td><td>${p.chunks}</td>${cell(p, r, "recallAt1000Tok")}${cell(p, r, "recallAt2000Tok")}${cell(p, r, "recall1")}${cell(p, r, "recall5")}${cell(p, r, "mrr10", (x) => x.toFixed(3))}<td>${pc(p.retrievers[r].table.recallAt1000Tok)}</td><td>${int(p.retrievers[r].all.ctxTokensTop5)}</td></tr>`).join("\n")}
+${acc.pipelines.map((p) => `            <tr${p.format === "jdf" ? ' class="is-jdf"' : p.format === "jdf-converted" ? ' class="is-conv"' : ""}><td>${esc(p.label)}</td><td>${p.chunks}</td>${cell(p, r, "recallAt1000Tok")}${cell(p, r, "recallAt2000Tok")}${cell(p, r, "recall1")}${cell(p, r, "recall5")}${cell(p, r, "mrr10", (x) => x.toFixed(3))}<td>${pc(p.retrievers[r].table.recallAt1000Tok)}</td><td>${int(p.retrievers[r].all.ctxTokensTop5)}</td></tr>`).join("\n")}
           </tbody>
         </table></div>`).join("\n");
 }
@@ -150,7 +152,7 @@ let md = fs.readFileSync(readmePath, "utf8");
 const mdAcc = [
   `| Pipeline | Chunks | ${retrievers.map((r) => `${retrieverLabel(r)} R@1k tok`).join(" | ")} | ${retrieverLabel(acc.headline)} top-1 | Ctx tokens @5 |`,
   `|---|---:|${retrievers.map(() => "---:").join("|")}|---:|---:|`,
-  ...acc.pipelines.map((p) => { const b = (s) => (p.format === "jdf" ? `**${s}**` : s); return `| ${b(p.label)} | ${p.chunks} | ${retrievers.map((r) => b(pc(p.retrievers[r].all.recallAt1000Tok))).join(" | ")} | ${b(pc(p.retrievers[acc.headline].all.recall1))} | ${int(p.retrievers[acc.headline].all.ctxTokensTop5)} |`; }),
+  ...acc.pipelines.map((p) => { const b = (s) => (p.format === "jdf" ? `**${s}**` : p.format === "jdf-converted" ? `*${s}*` : s); return `| ${b(p.label)} | ${p.chunks} | ${retrievers.map((r) => b(pc(p.retrievers[r].all.recallAt1000Tok))).join(" | ")} | ${b(pc(p.retrievers[acc.headline].all.recall1))} | ${int(p.retrievers[acc.headline].all.ctxTokensTop5)} |`; }),
   "",
   `R@1k tok = answer found within the first 1,000 tokens of retrieved context (chunk-size neutral). ${acc.corpus.documents} documents / ${acc.corpus.pages} pages / ${acc.corpus.questions} questions. All embeddings local. Editing one paragraph re-embeds **${acc.jdfOnly.chunksReembedded} of ${acc.jdfOnly.corpusChunks}** JDF chunks; a PDF pipeline re-embeds the whole document. ${acc.machine.cpu}, ${acc.date}. Full tables incl. top-1/top-5/MRR per model: [\`bench/results/report.md\`](bench/results/report.md).`,
 ].join("\n");

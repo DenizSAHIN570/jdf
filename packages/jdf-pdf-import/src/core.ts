@@ -1278,6 +1278,11 @@ export async function importPdfToJdf(
       });
     }
 
+    // Body font size = the size carrying the most characters on the page.
+    const sizeChars = new Map<number, number>();
+    for (const l of lines) { const k = Math.round(l.fontSize * 2) / 2; sizeChars.set(k, (sizeChars.get(k) ?? 0) + l.text.length); }
+    const bodyFontSize = [...sizeChars.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 0;
+
     lines.forEach((l, lineIdx) => {
       const tableEl = tableAtLine.get(lineIdx);
       if (tableEl) elements.push(tableEl);
@@ -1308,19 +1313,36 @@ export async function importPdfToJdf(
         width: Math.max(2, Math.round(elWidth * 100) / 100),
         style,
       };
-      // Heading detection: large body text is common in marketing PDFs and
-      // shouldn't pollute the TOC. Require boldness for every heading level
-      // — if a paragraph happens to be 24pt regular, it's still body text.
-      // Larger threshold for H3 (16pt+ bold) avoids tagging emphasised words.
-      if (cls.weight === "bold") {
-        if (l.fontSize >= 22) text.heading = 1;
-        else if (l.fontSize >= 17) text.heading = 2;
-        else if (l.fontSize >= 16) text.heading = 3;
+      // Heading detection: bold AND clearly larger than the page's body text.
+      // Relative to the body size (not a fixed 16pt) so a report set in 11pt
+      // with 15pt section titles gets its headings — which is what `jdf chunk`
+      // splits sections on. Boldness stays required so a 24pt regular
+      // paragraph in a marketing PDF is still body text; short lines only,
+      // so an emphasised sentence never becomes a heading.
+      if (cls.weight === "bold" && l.text.trim().length <= 120 && !consumedLines.has(lineIdx)) {
+        const ratio = bodyFontSize > 0 ? l.fontSize / bodyFontSize : 1;
+        if (l.fontSize >= 22 || ratio >= 1.8) text.heading = 1;
+        else if (l.fontSize >= 17 || ratio >= 1.35) text.heading = 2;
+        else if (l.fontSize >= 16 || ratio >= 1.2) text.heading = 3;
       }
       if (text.heading) text.tocEntry = text.content;
       if (link) {
         if (link.url) text.link = link.url;
         else if (link.destPage != null) text.link = { type: "internal", target: `#page-${link.destPage + 1}` };
+      }
+      // A heading that wrapped onto a second line arrives as two bold lines of
+      // the same size, one line apart, both starting at the same x. Fold the
+      // continuation into the previous heading so the TOC and `jdf chunk`'s
+      // breadcrumb see one title, not "Acme … Operations" + "Report".
+      const prev = elements[elements.length - 1] as TextElement | undefined;
+      if (text.heading && prev && prev.type === "text" && prev.heading === text.heading && !link && !prev.link &&
+          Math.abs((prev.style as any)?.fontSize - style.fontSize) < 0.5 &&
+          Math.abs(prev.position!.x - text.position!.x) < 1 &&
+          text.position!.y - prev.position!.y < l.fontSize * PT_TO_MM * 2.2 && text.position!.y > prev.position!.y) {
+        prev.content = `${prev.content} ${text.content}`.replace(/\s+/g, " ");
+        prev.tocEntry = prev.content;
+        prev.width = Math.max(prev.width ?? 0, text.width ?? 0);
+        return;
       }
       elements.push(text);
     });

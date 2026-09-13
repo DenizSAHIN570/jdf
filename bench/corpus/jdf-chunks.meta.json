@@ -4,5 +4,6 @@
   "strategy": "section",
   "max_tokens": 512,
   "chunks": 192,
+  "converted_chunks": 216,
   "embed_text": "heading breadcrumb + chunk text (embeddingInput)"
 }

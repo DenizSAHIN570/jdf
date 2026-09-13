@@ -354,6 +354,17 @@ def load_jdf_pipeline(manifest: dict) -> Pipeline:
     return Pipeline("jdf", f"JDF · jdf chunk (section, {meta['max_tokens']} tok)", "jdf", "jdf chunk", meta["cli_version"], chunks)
 
 
+def load_converted_pipeline(manifest: dict) -> Pipeline | None:
+    """PDF → `jdf convert` → `jdf chunk` (committed output). The realistic path for someone who only has PDFs."""
+    f = CORPUS / "jdf-chunks.converted.jsonl"
+    if not f.exists():
+        return None
+    meta = json.loads((CORPUS / "jdf-chunks.meta.json").read_text())
+    chunks = [Chunk(r["id"], r["doc"], r["text"], r["embed_text"], r["tokens"])
+              for r in (json.loads(l) for l in f.read_text().splitlines() if l.strip())]
+    return Pipeline("jdf-converted", f"PDF → jdf convert → jdf chunk (section, {meta['max_tokens']} tok)", "jdf-converted", "jdf convert + chunk", meta["cli_version"], chunks)
+
+
 def build_pdf_pipelines(doc_ids: list[str], configs: list[tuple[int, int]]) -> list[Pipeline]:
     out: list[Pipeline] = []
     for ex_id, label, ver, fn in EXTRACTORS:
@@ -499,7 +510,10 @@ def main() -> int:
     print(f"JDF vs PDF RAG benchmark — {len(doc_ids)} documents, {len(questions)} questions\n\nBuilding pipelines:")
     jdf = load_jdf_pipeline(manifest)
     print(f"  · {jdf.label} (jdf-cli {jdf.version}): {len(jdf.chunks)} chunks")
-    pipelines = [jdf] + build_pdf_pipelines(doc_ids, configs)
+    conv = load_converted_pipeline(manifest)
+    if conv:
+        print(f"  · {conv.label} (jdf-cli {conv.version}): {len(conv.chunks)} chunks")
+    pipelines = [jdf] + ([conv] if conv else []) + build_pdf_pipelines(doc_ids, configs)
 
     embedders: list[Embedder] = []
     for spec in [x.strip() for x in a.embedder.split(",") if x.strip() and x.strip() != "none"]:
