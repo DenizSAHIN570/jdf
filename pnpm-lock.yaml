@@ -114,6 +114,31 @@ importers:
     dependencies:
       '@remotion/cli':
         specifier: 4.0.240
+        version: 4.0.240(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
+      remotion:
+        specifier: 4.0.240
+        version: 4.0.240(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+    devDependencies:
+      '@types/react':
+        specifier: ^18.3.12
+        version: 18.3.31
+      tsx:
+        specifier: ^4.19.2
+        version: 4.22.4
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+
+  demos/video-rag:
+    dependencies:
+      '@remotion/cli':
+        specifier: 4.0.240
         version: 4.0.240(postcss@8.5.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: 18.3.1

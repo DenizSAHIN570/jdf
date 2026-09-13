@@ -48,6 +48,8 @@ export interface EmbedOptions {
   provider?: EmbeddingProvider;
   model?: string;
   strategy?: ChunkStrategy;
+  /** Transcript window (seconds) for video chunks — same as `jdf chunk --window`. */
+  transcriptWindowSec?: number;
   maxTokens?: number;
   /** Reuse cached vectors for chunks whose hash is unchanged. */
   incremental?: boolean;
@@ -262,7 +264,7 @@ export async function embedFile(inputPath: string, opts: EmbedOptions = {}): Pro
   const strategy = opts.strategy ?? "section";
 
   const doc = await loadJdf(input);
-  const chunks = chunkDocument(doc, { strategy, maxTokens: opts.maxTokens });
+  const chunks = chunkDocument(doc, { strategy, maxTokens: opts.maxTokens, transcriptWindowSec: opts.transcriptWindowSec });
 
   const output = opts.output ? path.resolve(opts.output) : input.replace(/\.(jdf|jdfx)$/i, ".embeddings.json");
   const cachePath = opts.cache ? path.resolve(opts.cache) : output;

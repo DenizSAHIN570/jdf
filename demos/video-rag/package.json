@@ -1,0 +1,23 @@
+{
+  "name": "@jdf/demo-video-rag",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Demo video: a video inside a JDF document becomes searchable \u2014 jdf transcribe, time-windowed chunks with media.t0/t1, viewer.seek, jdf rag over a folder.",
+  "scripts": {
+    "verify": "cd ../../ && pnpm --filter @uurtech/jdf-cli --silent start chunk $PWD/docs/examples/video.jdf -o /tmp/video-rag-verify.jsonl",
+    "studio": "remotion studio src/index.ts",
+    "render": "tsx scripts/prepare.ts && tsx scripts/fetch-music.ts && remotion render src/index.ts VideoRag out/video-rag.mp4 --crf 16 && cp out/video-rag.mp4 video-rag.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.240",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.240"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "tsx": "^4.19.2",
+    "typescript": "^5.5.0"
+  }
+}

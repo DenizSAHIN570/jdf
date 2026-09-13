@@ -10,6 +10,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · semantic-ish
 - `demos/rag-benchmark/`: 25-second Remotion presentation of the benchmark (`rag-benchmark.mp4`), every number read from `docs/bench.json`.
 - Landing page hero: bun.com-style benchmark card (per-retriever tabs, metric switch, measured cost strip); RAG section, new `docs/benchmark.html` page and README carry the full tables. All generated from `bench/results/*.json`.
 
+### Added — video RAG: transcripts, `jdf transcribe`, `jdf rag`
+- `video.transcript` (`{language, source, created, segments:[{t0,t1,text,speaker?}]}`) and `video.chapters` (`[{t,title}]`) in types and schema — text in `document.json`, never an asset, so `.jdf`/`.jdfx` selection is unchanged.
+- `jdf chunk` cuts transcripts into time windows (`--window`, default 45 s; segments never split; chapter changes start a new window) and stamps each chunk with `media: {element, t0, t1}` plus a `[mm:ss–mm:ss]` prefix in the text. `jdf embed` inherits it.
+- `jdf transcribe`: `--from` SRT/VTT/JSON import (offline), `--provider whisper-cli` (whisper.cpp + ffmpeg, local) or `--provider openai` (audio API); `--prompt` passes Whisper's vocabulary hint; `--chapters`; `--element` for multi-video documents. Resolves the clip from bundle asset, data URL, local path or URL.
+- `jdf rag <dir>`: one command over a folder — transcribe (optional), chunk, embed incrementally, `.jdf-rag/index.jsonl` + `manifest.json`; defaults from `jdf.rag.json`; `--dry-run`, `--no-embed`.
+- `demos/video-rag/`: 25-second Remotion walkthrough of the video-RAG flow (`video-rag.mp4`, embedded in the CLI docs).
+- jdf.js: transcript rendered as a WebVTT captions track; new `viewer.seek(elementId, seconds)` jumps a video to a retrieval hit. Reader: same captions track; search indexes transcript and chapter text. Examples `spec/examples/video.jdfx` and `docs/examples/video.jdf` now carry transcripts + chapters.
+
 ### Added — `video` element
 - New element type `video`: plays inline in jdf.js and the desktop reader (HTML5 `<video>`, controls on by default, autoplay implies muted). Source is a bundled `.jdfx` asset (`resource` → `resources.videos[id]`, stored under `assets/`) or a `src` URL / data URI; optional `poster` (URL, data URI or image resource id), `title`, `fit`, `loop`. PDF export draws a dark poster placeholder with a play glyph and the title. `jdf chunk` indexes the title as `[video: …]`; the reader's Insert bar has a Video button. Examples: `spec/examples/video.jdfx` (bundled 3-second clip), `docs/examples/video.jdf` (hosted `src`). Schema, types, both bundle packers (reader + CLI), jdf.js unpacker and the Rust validator/exporter updated together.
 

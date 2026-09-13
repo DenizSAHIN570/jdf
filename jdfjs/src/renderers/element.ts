@@ -195,6 +195,20 @@ function renderVideo(el: VideoElement, ctx: RenderContext): HTMLElement {
     default: video.style.objectFit = "contain";
   }
   applyStyle(video, resolveStyle(el.style, ctx.styles));
+  if (el.id) video.setAttribute("data-jdf-video", el.id);
+  // Transcript → WebVTT captions, so playback shows the very text RAG indexed.
+  const segs = el.transcript?.segments;
+  if (segs && segs.length) {
+    const ts = (t: number) => { const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), sec = t % 60; return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${sec.toFixed(3).padStart(6, "0")}`; };
+    const body = segs.map((sg, i) => `${i + 1}\n${ts(sg.t0)} --> ${ts(Math.max(sg.t1, sg.t0 + 0.2))}\n${sg.speaker ? sg.speaker + ": " : ""}${sg.text}`).join("\n\n");
+    const track = document.createElement("track");
+    track.kind = "captions";
+    track.label = "Transcript";
+    track.srclang = el.transcript?.language || "en";
+    track.src = `data:text/vtt;charset=utf-8,${encodeURIComponent(`WEBVTT\n\n${body}\n`)}`;
+    track.default = true;
+    video.appendChild(track);
+  }
   wrap.appendChild(video);
   return wrap;
 }

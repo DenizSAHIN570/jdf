@@ -357,7 +357,19 @@
       "anyOf": [{ "required": ["resource"] }, { "required": ["src"] }],
       "properties": {
         "type": { "const": "video" },
+        "id": { "type": "string" },
         "resource": { "type": "string", "description": "Id in resources.videos (a .jdfx stores the file under assets/)" },
+        "transcript": {
+          "type": "object",
+          "required": ["segments"],
+          "properties": {
+            "language": { "type": "string" },
+            "source": { "type": "string" },
+            "created": { "type": "string" },
+            "segments": { "type": "array", "items": { "type": "object", "required": ["t0", "t1", "text"], "properties": { "t0": { "type": "number", "minimum": 0 }, "t1": { "type": "number", "minimum": 0 }, "text": { "type": "string" }, "speaker": { "type": "string" } } } }
+          }
+        },
+        "chapters": { "type": "array", "items": { "type": "object", "required": ["t", "title"], "properties": { "t": { "type": "number", "minimum": 0 }, "title": { "type": "string" } } } },
         "src": { "type": "string", "description": "URL, relative path or data: URL" },
         "poster": { "type": "string", "description": "Still frame: URL, data URL or image resource id" },
         "title": { "type": "string" },

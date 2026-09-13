@@ -100,6 +100,9 @@
           <tr><td><code>src</code></td><td>string — <code>https://</code> URL, relative URL or <code>data:</code> URI (a data URI is moved into the bundle on save).</td></tr>
           <tr><td><code>poster</code></td><td>string — still frame: URL, <code>data:</code> URI, or an image resource id.</td></tr>
           <tr><td><code>title</code></td><td>string — caption / accessible name; what search and RAG chunking see.</td></tr>
+          <tr><td><code>id</code></td><td>string — stable id; retrieval results point back to it (<code>media.element</code>) and <code>viewer.seek(id, t)</code> uses it.</td></tr>
+          <tr><td><code>transcript</code></td><td><code>{ language?, source?, created?, segments: [{ t0, t1, text, speaker? }] }</code> — time-stamped text, stored in <code>document.json</code> (not an asset). <code>jdf transcribe</code> writes it; <code>jdf chunk</code> cuts it into time windows with <code>media: { element, t0, t1 }</code>; viewers show it as a captions track; reader search indexes it.</td></tr>
+          <tr><td><code>chapters</code></td><td><code>[{ t, title }]</code> — chapter markers; chunk breadcrumbs read “… &gt; Video title &gt; Chapter”.</td></tr>
           <tr><td><code>controls</code> · <code>autoplay</code> · <code>loop</code> · <code>muted</code></td><td>boolean — controls default to on; autoplay implies muted (browsers block unmuted autoplay).</td></tr>
           <tr><td><code>fit</code></td><td><code>"contain"</code> · <code>"cover"</code> · <code>"fill"</code> · <code>"none"</code></td></tr>
         </tbody>

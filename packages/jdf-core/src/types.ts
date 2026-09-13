@@ -99,10 +99,36 @@ export interface ImageElement {
  * `.jdfx` stores under `assets/`) or a `src` URL / data URL. PDF export draws a
  * poster-style placeholder with the title, since PDF cannot play video.
  */
+/** One spoken/captioned span of a video, in seconds from the start. */
+export interface TranscriptSegment { t0: number; t1: number; text: string; speaker?: string; }
+/**
+ * Time-stamped text for a video — the part of a video RAG can actually use.
+ * Lives in document.json (it is text, not an asset), so a `.jdf` with a hosted
+ * `src` stays a single JSON file. `jdf chunk` turns segments into time-windowed
+ * chunks carrying `media: { element, t0, t1 }`; renderers expose it as captions.
+ */
+export interface VideoTranscript {
+  /** BCP-47 language tag, e.g. "en", "tr". */
+  language?: string;
+  /** Where the text came from: "whisper-large-v3", "srt-import", "manual", … */
+  source?: string;
+  /** When it was produced (ISO 8601). */
+  created?: string;
+  segments: TranscriptSegment[];
+}
+/** Named point in a video; becomes a breadcrumb level for the chunks under it. */
+export interface VideoChapter { t: number; title: string; }
+
 export interface VideoElement {
   type: "video";
+  /** Stable id — retrieval results point back to `media.element`; needed for `viewer.seek(id, t)`. */
+  id?: string;
   resource?: string;
   src?: string;
+  /** Time-stamped text; see VideoTranscript. */
+  transcript?: VideoTranscript;
+  /** Chapter markers; chunk breadcrumbs read "… > Video title > Chapter". */
+  chapters?: VideoChapter[];
   /** Still frame shown before playback: URL, data URL, or an image resource id. */
   poster?: string;
   /** Caption / accessible name. Also what `jdf chunk` and search index. */

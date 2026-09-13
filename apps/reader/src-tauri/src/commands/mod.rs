@@ -1736,6 +1736,24 @@ fn extract_text(el: &serde_json::Value) -> String {
         if !out.is_empty() { out.push(' '); }
         out.push_str(t);
     }
+    // Video transcripts are searchable text: "where did she mention churn?" must
+    // hit the clip, not just its title.
+    if let Some(segs) = el.get("transcript").and_then(|t| t.get("segments")).and_then(|s| s.as_array()) {
+        for sg in segs {
+            if let Some(t) = sg.get("text").and_then(|t| t.as_str()) {
+                if !out.is_empty() { out.push(' '); }
+                out.push_str(t);
+            }
+        }
+    }
+    if let Some(chs) = el.get("chapters").and_then(|c| c.as_array()) {
+        for ch in chs {
+            if let Some(t) = ch.get("title").and_then(|t| t.as_str()) {
+                if !out.is_empty() { out.push(' '); }
+                out.push_str(t);
+            }
+        }
+    }
     // Form fields — search must find user-filled values too. A document with
     // 50 input fields and a value typed in one of them must still be
     // searchable for that value.

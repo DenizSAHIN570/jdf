@@ -572,6 +572,8 @@ jdf validate doc.jdf
 | `jdf convert <file>` | PDF / JSON / Markdown → validated JDF. (alias: `import`) |
 | `jdf chunk <file>` | Split a JDF document into retrieval-ready chunks. Offline, deterministic. |
 | `jdf embed <file>` | Compute embeddings for the chunks. Local (Ollama) by default; incremental. |
+| `jdf transcribe <file>` | Attach a time-stamped transcript to a `video` element — import SRT/VTT/JSON, or run Whisper (local `whisper-cli` or OpenAI). Stored as text in the document; `jdf chunk` turns it into time-windowed chunks with `media: {element, t0, t1}`. |
+| `jdf rag <dir>` | Whole folder → retrieval-ready: finds `.jdf`/`.jdfx`, transcribes videos (if a provider is given), chunks, embeds incrementally, writes `.jdf-rag/index.jsonl` + `manifest.json`. Reads `jdf.rag.json` in the folder for defaults. |
 
 ### Why this CLI exists
 
@@ -595,6 +597,13 @@ jdf validate doc.jdf
 | `--model <name>` | embed | Model id (default `nomic-embed-text` / `text-embedding-3-small`). |
 | `--incremental` | embed | Skip chunks whose content hash is unchanged — re-embed only what changed. |
 | `--cache <path>` | embed | Sidecar to reuse vectors from with `--incremental` (default: the output path itself). |
+| `--window <sec>` | chunk / embed / rag | Transcript window per video chunk (default 45 s; segments are never split). |
+| `--from <file>` | transcribe | Import subtitles (`.srt`, `.vtt`, JSON segments) — offline, no model. |
+| `--provider whisper-cli\|openai` | transcribe / rag | Run Whisper locally (whisper.cpp + ffmpeg) or via the OpenAI audio API (`OPENAI_API_KEY`). |
+| `--prompt <text>` | transcribe / rag | Whisper vocabulary hint (names, acronyms) — a spelling bias, not an instruction. |
+| `--chapters <file>` | transcribe | `[{t,title}]` JSON or `mm:ss Title` lines → chapter breadcrumbs. |
+| `--transcribe none\|whisper-cli\|openai` | rag | Transcribe videos that have no transcript yet (default `none` = count and report). |
+| `--no-embed` · `--dry-run` · `--out <dir>` | rag | Chunk-only; preview; index folder (default `<dir>/.jdf-rag`). |
 
 ### RAG ingestion, incrementally
 

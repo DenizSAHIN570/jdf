@@ -37,8 +37,18 @@ function resolveMedia(resources: Resources | undefined, ref: string | undefined,
  * element box, controls on by default, muted whenever autoplay is set
  * (browsers block unmuted autoplay). PDF export draws a poster placeholder.
  */
+/** Build a WebVTT captions track from the transcript so playback shows the same text RAG indexes. */
+export function transcriptToVttUrl(el: VideoElement): string | undefined {
+  const segs = el.transcript?.segments;
+  if (!segs?.length) return undefined;
+  const ts = (t: number) => { const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = t % 60; return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${s.toFixed(3).padStart(6, "0")}`; };
+  const body = segs.map((sg, i) => `${i + 1}\n${ts(sg.t0)} --> ${ts(Math.max(sg.t1, sg.t0 + 0.2))}\n${sg.speaker ? sg.speaker + ": " : ""}${sg.text}`).join("\n\n");
+  return `data:text/vtt;charset=utf-8,${encodeURIComponent(`WEBVTT\n\n${body}\n`)}`;
+}
+
 export function VideoElementView(props: VideoElementViewProps) {
   const edit = useEdit();
+  const vtt = () => transcriptToVttUrl(props.element);
   const css = () => resolveStyle(props.element.style, props.styles);
   const src = () => {
     const el = props.element;
@@ -70,7 +80,13 @@ export function VideoElementView(props: VideoElementViewProps) {
         preload="metadata"
         class={`${fitClass()} block bg-black`}
         style={{ ...css(), width: "100%", height: "100%" }}
-      />
+        data-jdf-video={props.element.id || undefined}
+        crossorigin="anonymous"
+      >
+        <Show when={vtt()}>
+          <track kind="captions" src={vtt()} srclang={props.element.transcript?.language || "en"} label="Transcript" default />
+        </Show>
+      </video>
       <Show when={edit.enabled()}>
         <div class="text-[10px] text-gray-400 mt-1">
           src: <Editable value={props.element.src || ""} onCommit={(v) => edit.updateField(props.path, "src", v)} placeholder="(empty)" />

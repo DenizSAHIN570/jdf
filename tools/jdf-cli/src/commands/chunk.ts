@@ -38,12 +38,61 @@ export interface Chunk {
   tokens: number;
   /** SHA-256 (first 12 hex) of `text` — the incremental-reindex key. */
   hash: string;
+  /** Set on chunks cut from a video transcript: which element and which time window
+   *  (seconds). A retrieval hit becomes "open the video at 02:13" via viewer.seek(). */
+  media?: { element: string; t0: number; t1: number };
 }
 
 export interface ChunkOptions {
   strategy?: ChunkStrategy;
   /** Soft cap; a chunk that exceeds it is split on element boundaries. */
   maxTokens?: number;
+  /** Transcript window for video chunks, in seconds (default 45). Segments are
+   *  never split; a window closes at the first segment boundary past this. */
+  transcriptWindowSec?: number;
+}
+
+const DEFAULT_TRANSCRIPT_WINDOW = 45;
+
+const fmtTime = (sec: number) => {
+  const s = Math.max(0, Math.round(sec));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+  return h ? `${h}:${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}` : `${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}`;
+};
+
+/**
+ * Cut a video's transcript into time-windowed chunks. Each chunk text starts
+ * with "[hh:mm:ss–hh:mm:ss]" so the embedded vector, BM25 and the LLM all see
+ * the time; `media` carries the same window structurally. Chapters extend the
+ * breadcrumb so retrieval metadata reads "Report > 3. Section > Talk > Chapter".
+ */
+function transcriptChunks(el: any, elementId: string, page: number, crumb: string[], windowSec: number, maxTokens: number): Chunk[] {
+  const segs: any[] = Array.isArray(el?.transcript?.segments) ? el.transcript.segments : [];
+  if (!segs.length) return [];
+  const chapters: any[] = Array.isArray(el?.chapters) ? [...el.chapters].sort((a, b) => a.t - b.t) : [];
+  const chapterAt = (t: number) => { let cur: any = null; for (const c of chapters) { if (c.t <= t + 1e-6) cur = c; else break; } return cur; };
+  const out: Chunk[] = [];
+  let win: any[] = [];
+  const flush = () => {
+    if (!win.length) return;
+    const t0 = win[0].t0, t1 = win[win.length - 1].t1;
+    const body = win.map((sg) => (sg.speaker ? `${sg.speaker}: ${sg.text}` : sg.text)).join(" ").replace(/\s+/g, " ").trim();
+    const text = `[${fmtTime(t0)}–${fmtTime(t1)}] ${body}`;
+    const chapter = chapterAt(t0);
+    const path = [...crumb, ...(el.title ? [String(el.title)] : []), ...(chapter ? [String(chapter.title)] : [])];
+    out.push({ id: `${elementId}@${Math.round(t0)}`, text, path, page, types: ["video"], tokens: estimateTokens(text), hash: hashText(text), media: { element: elementId, t0, t1 } });
+    win = [];
+  };
+  for (const sg of segs) {
+    if (typeof sg?.text !== "string" || !sg.text.trim()) continue;
+    const startsNewChapter = win.length && chapterAt(sg.t0) !== chapterAt(win[0].t0);
+    const spansWindow = win.length && sg.t1 - win[0].t0 > windowSec;
+    const overBudget = win.length && estimateTokens(win.map((w) => w.text).join(" ") + sg.text) > maxTokens;
+    if (startsNewChapter || spansWindow || overBudget) flush();
+    win.push(sg);
+  }
+  flush();
+  return out;
 }
 
 const DEFAULT_MAX_TOKENS = 512;
@@ -189,8 +238,18 @@ function makeChunk(group: FlatEl[], breadcrumb: string[]): Chunk | null {
 export function chunkDocument(doc: JdfDocument, options: ChunkOptions = {}): Chunk[] {
   const strategy = options.strategy ?? "section";
   const maxTokens = options.maxTokens ?? DEFAULT_MAX_TOKENS;
+  const windowSec = options.transcriptWindowSec ?? DEFAULT_TRANSCRIPT_WINDOW;
   const flat = flatten(doc);
   const chunks: Chunk[] = [];
+  // Video transcripts ride along: whenever a group of elements is emitted, every
+  // video in it with a transcript contributes time-windowed chunks right after,
+  // under the same breadcrumb. Videos without a transcript stay "[video: title]".
+  const withTranscripts = (group: FlatEl[], crumb: string[], c: Chunk | null) => {
+    if (c) chunks.push(c);
+    for (const f of group) {
+      if ((f.el as any).type === "video") chunks.push(...transcriptChunks(f.el, f.id, f.page, crumb, windowSec, maxTokens));
+    }
+  };
 
   if (strategy === "element") {
     // One chunk per element, breadcrumb tracked from headings along the way.
@@ -201,8 +260,7 @@ export function chunkDocument(doc: JdfDocument, options: ChunkOptions = {}): Chu
         crumb.length = Math.max(0, lvl - 1);
         crumb[lvl - 1] = serializeElement(f.el);
       }
-      const c = makeChunk([f], crumb);
-      if (c) chunks.push(c);
+      withTranscripts([f], crumb, makeChunk([f], crumb));
     }
     return chunks;
   }
@@ -213,7 +271,7 @@ export function chunkDocument(doc: JdfDocument, options: ChunkOptions = {}): Chu
     const crumb: string[] = [];
     let buf: FlatEl[] = [];
     let bufTokens = 0;
-    const flush = () => { const c = makeChunk(buf, crumb); if (c) chunks.push(c); buf = []; bufTokens = 0; };
+    const flush = () => { withTranscripts(buf, crumb, makeChunk(buf, crumb)); buf = []; bufTokens = 0; };
     for (const f of flat) {
       const lvl = headingLevel(f.el);
       if (lvl != null) { crumb.length = Math.max(0, lvl - 1); crumb[lvl - 1] = serializeElement(f.el); }
@@ -239,12 +297,12 @@ export function chunkDocument(doc: JdfDocument, options: ChunkOptions = {}): Chu
     for (const f of buf) {
       const t = estimateTokens(serializeElement(f.el));
       if (subTokens + t > maxTokens && sub.length > 0) {
-        const c = makeChunk(sub, crumb); if (c) chunks.push(c);
+        withTranscripts(sub, crumb, makeChunk(sub, crumb));
         sub = []; subTokens = 0;
       }
       sub.push(f); subTokens += t;
     }
-    const c = makeChunk(sub, crumb); if (c) chunks.push(c);
+    withTranscripts(sub, crumb, makeChunk(sub, crumb));
     buf = [];
   };
 
@@ -292,7 +350,7 @@ export async function chunkFile(inputPath: string, opts: ChunkCliOptions = {}): 
   if (!fs.existsSync(input)) throw new Error(`File not found: ${input}`);
   const doc = await loadJdf(input);
   const strategy = opts.strategy ?? "section";
-  const chunks = chunkDocument(doc, { strategy, maxTokens: opts.maxTokens });
+  const chunks = chunkDocument(doc, { strategy, maxTokens: opts.maxTokens, transcriptWindowSec: opts.transcriptWindowSec });
 
   const format = opts.format ?? "jsonl";
   console.log(`Chunking:  ${input}`);

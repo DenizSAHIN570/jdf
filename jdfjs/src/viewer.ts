@@ -52,6 +52,13 @@ export interface JDFViewerInstance {
   getCurrentPage: () => number;
   /** Replace the document */
   setDocument: (doc: JdfDocument) => void;
+  /**
+   * Jump to a moment in a video element and start playing — the retrieval-side
+   * counterpart of `jdf chunk`'s `media: { element, t0 }`. `elementId` is the
+   * video element's `id`; `seconds` the offset. Scrolls the page into view.
+   * Returns false when no such video exists.
+   */
+  seek: (elementId: string, seconds: number) => boolean;
   /** Tear down — removes DOM and event listeners */
   destroy: () => void;
   /**
@@ -398,6 +405,19 @@ export class JDFViewer {
     this.applyZoom();
   }
 
+  /** Seek a video element (by its `id`) to `seconds` and play; scrolls it into view. */
+  seek(elementId: string, seconds: number): boolean {
+    const video = this.pagesEl.querySelector<HTMLVideoElement>(`video[data-jdf-video="${elementId.replace(/"/g, '\\"')}"]`);
+    if (!video) return false;
+    const pageWrap = video.closest<HTMLElement>(".jdfjs-page-wrapper");
+    const idx = pageWrap ? Number(pageWrap.getAttribute("data-page-index")) : NaN;
+    if (!Number.isNaN(idx)) this.goToPage(idx);
+    video.scrollIntoView({ block: "center" });
+    const go = () => { video.currentTime = Math.max(0, seconds); video.play().catch(() => { /* autoplay policy — user can press play */ }); };
+    if (video.readyState >= 1) go(); else video.addEventListener("loadedmetadata", go, { once: true });
+    return true;
+  }
+
   private renderPage(page: Page, pageIndex: number, styles: Record<string, Style>): HTMLDivElement {
     const dim = getPageDimensions(
       page.pageSize ?? this.doc.meta?.pageSize ?? "A4",
@@ -710,6 +730,7 @@ export class JDFViewer {
       setZoom: (z: number) => this.setZoom(z),
       getZoom: () => this.getZoom(),
       goToPage: (i: number) => this.goToPage(i),
+      seek: (elementId: string, seconds: number) => this.seek(elementId, seconds),
       getCurrentPage: () => this.getCurrentPage(),
       setDocument: (d: JdfDocument) => this.setDocument(d),
       destroy: () => this.destroy(),
