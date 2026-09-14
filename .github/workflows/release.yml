@@ -6,6 +6,16 @@ on:
       - "v*.*.*"
   workflow_dispatch:
 
+# Default GITHUB_TOKEN permissions are read-only on this repo, so
+# softprops/action-gh-release@v2's "Attach to release" step was failing on
+# every platform with "Resource not accessible by integration" — every
+# upstream release from v0.1.0 through v0.2.1 shipped with only the macOS
+# .dmg attached (uploaded locally by scripts/publish-dmg.sh, outside CI) even
+# though the workflow builds Linux + Windows bundles too. Scoped to just what
+# this workflow needs, rather than flipping the repo-wide default.
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build (${{ matrix.platform }})
@@ -59,7 +69,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Build Tauri bundles
+        # NO_STRIP: linuxdeploy's bundled `strip` predates glibc's .relr.dyn
+        # relocation section and fails on every system library once the
+        # runner image's toolchain emits it (already true on Fedora/Arch;
+        # ubuntu-22.04 doesn't yet, but this keeps the AppImage step from
+        # silently breaking the day it does). No-op on macOS/Windows.
         run: pnpm --filter @jdf/reader tauri build --target ${{ matrix.target }}
+        env:
+          NO_STRIP: true
 
       - name: Upload bundles
         uses: actions/upload-artifact@v4
